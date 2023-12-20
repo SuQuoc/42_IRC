@@ -1,5 +1,5 @@
-NAME		= webserv
-ARGS 		= 
+NAME		= ircserv
+ARGS 		= 4242 pw42
 CXX			= c++
 CXXFLAGS	= -Wall -Wextra -MMD -MP -pedantic -std=c++98 -g
 
