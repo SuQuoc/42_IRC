@@ -21,3 +21,7 @@ IRC servers are connected together to form a network.
 and so forth).
 - nc?
 	- 
+
+# IRC clients
+- HexChat on a VM
+- revolution IRC on smartphone
