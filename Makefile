@@ -1,36 +1,41 @@
 NAME		= ircserv
 ARGS 		= 4242 pw42
 CXX			= c++
-CXXFLAGS	= -Wall -Wextra -MMD -MP -pedantic -std=c++98 -g
-
-SRC_PATH 	= .
-OBJ_PATH 	= obj
+CXXFLAGS	= -Wall -Wextra -MMD -MP -pedantic -g -std=c++98
  
-HDR			= 	
+INCLUDES 	= ./includes
 
-SRCS		= 	main.cpp
+SRCS		= 	playground.cpp
 
-OBJS      = $(SRCS:%.cpp=$(OBJ_PATH)/%.o)
+SRC_DIR 	= ./srcs
+SRCS 		:= $(addprefix $(SRC_DIR)/, $(SRCS))
+
+
+OBJ_DIR 	= ./objects_and_dependencies
+OBJFILES 	= $(notdir $(SRCS:.cpp=.o))
+OBJS 		= $(addprefix $(OBJ_DIR)/, $(OBJFILES))
+
+DEPS 		:= $(OBJS:.o=.d)
 
 .PHONY: all clean fclean re run va scan fun
 
 #Build________________________________________________________
-all: $(OBJ_PATH) $(NAME)
+all: $(OBJ_DIR) $(NAME)
 
-$(OBJ_PATH):
-	@mkdir -p $(OBJ_PATH)
+$(OBJ_DIR):
+	@mkdir -p $(OBJ_DIR)
 
 $(NAME): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME)
 	@echo "$(GREEN)Executable \"$(NAME)\" succesfully created.$(NC)"
 
-$(OBJ_PATH)/%.o: $(SRC_PATH)/%.cpp $(HDR)
-	@$(CXX) $(CXXFLAGS) -c $< -o $@
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	$(CXX) $(CXXFLAGS) -MMD -MP -I$(INCLUDES) -c $< -o $@
 
 
 #General________________________________________________________
 clean:
-	rm -rf $(OBJ_PATH)
+	rm -rf $(OBJ_DIR)
 	@echo "$(MAGENTA)Obj directory removed.$(NC)"
 
 fclean: clean
@@ -58,6 +63,9 @@ scan: all
 fun: all
 	funcheck -a \
 	./$(NAME) $(ARGS)
+
+
+-include $(DEPS)
 
 #COLORS_____________________________________________________________
 RED			=	\033[0;31m

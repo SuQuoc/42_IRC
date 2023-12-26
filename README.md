@@ -6,6 +6,13 @@ It offers real-time messaging that can be either public or private. Users can ex
 IRC clients connect to IRC servers in order to join channels. 
 IRC servers are connected together to form a network.
 
+## IRC protocol
+- All communication between clients is relayed by the
+   server(s). --> no direct communication
+- a channel cease to exist if no user is in it
+- a channel has to keep track of all its users and relay the message from one to all others
+- 
+
 # Keep in mind
 - if you try to read/recv or write/send in any file descriptor without using poll() (or equivalent), your grade will be 0
 
@@ -25,3 +32,14 @@ and so forth).
 # IRC clients
 - HexChat on a VM
 - revolution IRC on smartphone
+
+
+# Sources
+- https://www.geeksforgeeks.org/socket-programming-cc/
+- I/O blocking and non-blocking
+	- https://www.youtube.com/watch?v=wB9tIg209-8
+- Example flight time server
+	- https://www.softprayog.in/programming/io-multiplexing-select-poll-epoll-in-linux
+
+# Testing
+- we should be able to connect from different pc's belongig to the 42 network? maybe even our phones, if we are connected to the wifi?
