@@ -22,7 +22,7 @@
 
 #define FLIGHT_NUM_SIZE            15
 
-#define SERVER_PORT                "8080"
+#define SERVER_PORT                "6667"
 #define STORE_FLIGHT               1
 #define FLIGHT_TIME_STORED         2
 #define FLIGHT_TIME                3
@@ -99,7 +99,13 @@ int main (int argc, char **argv)
 		printf ("Your message: ");
 		std::string userInput;
         std::getline(std::cin, userInput);
-
+        if (std::cin.eof()) {
+            std::cout << "End of input reached." << std::endl;
+            break;
+        } else if (std::cin.fail()) {
+            std::cerr << "Error reading input." << std::endl;
+            break;
+        }
 		 const char *_Message = userInput.c_str();
          // send request to server
          if (send (sock_fd, _Message, userInput.size(), MSG_NOSIGNAL) == -1)

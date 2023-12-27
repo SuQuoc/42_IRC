@@ -7,11 +7,27 @@ IRC clients connect to IRC servers in order to join channels.
 IRC servers are connected together to form a network.
 
 ## IRC protocol
+### Server
 - All communication between clients is relayed by the
    server(s). --> no direct communication
+- maximum length of 63 characters --> grammar: https://datatracker.ietf.org/doc/html/rfc2812#section-2.3.1
+
+### Channel
 - a channel cease to exist if no user is in it
 - a channel has to keep track of all its users and relay the message from one to all others
-- 
+### Messages
+- messages
+	- only valid prefix from client would be ":client_nickname"
+	- max length 512 chars ending with a (Carriage Return - Line Feed) pair (i.e., “\r\n”) --> so 510 useable chars
+		- what should happen if it exceeds? Error message back to client or truncate mesage?
+- nicknames
+	- unique across the server (or irc network? since we dont talk to other servers unique for our server i guess)
+	- Each user is distinguished from other users by a unique nickname
+   having a maximum length of nine (9) characters.
+   - https://datatracker.ietf.org/doc/html/rfc2813#section-3.3.1
+
+- server protocol: https://datatracker.ietf.org/doc/html/rfc2813#section-2.2
+- client protocol: https://datatracker.ietf.org/doc/html/rfc2812
 
 # Keep in mind
 - if you try to read/recv or write/send in any file descriptor without using poll() (or equivalent), your grade will be 0

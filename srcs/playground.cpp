@@ -1,46 +1,78 @@
-#include <iostream>
-#include <unistd.h>
-#include <sys/epoll.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <vector>
-#include <errno.h> 
-#include <stdio.h> 
 
-#include <cstring>
-#include <iostream>
-#include <sstream>
-#include <string>
 
+# include "irc.hpp"
 
 const int MAX_EVENTS = 10;
 const int MAX_CLIENTS = 10;
-const int PORT = 8080;
 
-// Function to handle client connections in a separate thread
+void sendToClient(int clientFd, const std::string& message)
+{
+    if (send(clientFd, message.c_str(), message.size(), 0) == -1)
+        perror("send");
+}
+
+void cleanClientFd(int epollFd, int clientFd, epoll_event& event)
+{
+	if (epoll_ctl (epollFd, EPOLL_CTL_DEL, clientFd, &event) == -1) // do i even need this event if i delete a client from epoll instance
+        perror ("epoll_ctl");
+    if (close (clientFd) == -1)
+        perror ("close");
+}
+
+void ClientConnectionAttempt(std::string pass_msg)
+{
+    std::string _serverPW = "test";
+    std::string buf;
+
+    std::istringstream iss(pass_msg);
+
+    std::getline(iss, buf, ' ');
+    if (iss.eof())
+        return;
+    else if (iss.fail()) 
+    {
+        std::cerr << "Error reading input." << std::endl;
+        return ;
+    }
+    else if (buf == "PASS")
+    {
+        std::getline(iss, buf, '\r');
+        if (buf == _serverPW)
+            initClient(); //setting nickname 
+        else
+            cleanClientFd();
+    }
+    else 
+        return ;
+}
+
+
+// Function to handle client connections
 void handleClient(int epollFd, int clientFd, epoll_event& event) 
 {
-    char recv_message[1000]; //max message len
-    std::memset(&recv_message, '\0', sizeof (recv_message));
-    ssize_t numbytes = recv(clientFd, &recv_message, sizeof(recv_message), 0); // should flag set to non block?
+	char buf[MAX_MSG_LEN];
+    ssize_t numbytes = recv(clientFd, &buf, MAX_MSG_LEN, 0); // should flag set to non block? does epoll make it unnecessary? MSG_DONTWAIT
 
+    std::string message(buf); //max message len
     if (numbytes == -1)
-        perror ("recv");
-    else if (numbytes == 0) // connection closed by client
+        perror ("recv error");
+    else if (numbytes == 0) // connection closed by client with QUIT message, not sure if this means that he's completely out from the server?
     {
         std::cout << "Socket " << clientFd << " closed by client" << std::endl;
         // delete fd from epoll
-        if (epoll_ctl (epollFd, EPOLL_CTL_DEL, clientFd, &event) == -1) // do i even need this event if i delete a client from epoll instance
-            perror ("epoll_ctl");
-        if (close (clientFd) == -1)
-            perror ("close");
+        cleanClientFd(epollFd, clientFd, event);
     }
-    else 
+	// else if (validateClient()) //check passw, nickname, username
+    // {
+        // cleanClientFd(epollFd, clientFd, event);
+	// }
+	else 
     {
-        std::cout << "Client[" << clientFd << "]: " << recv_message << std::endl;
+        //handleClientMessage();
+        std::cout << "Client[" << clientFd << "]: " << message << std::endl;
+        sendToClient(clientFd, "Message received!\n");
     }
+    std::cout << "Client[test]: " << message << std::endl;
 }
 
 
@@ -51,7 +83,6 @@ uint16_t convertPort(const std::string& str)
     
     try 
     {
-
         // Extract the unsigned short from the stringstream
         ss >> port;
 
@@ -63,7 +94,7 @@ uint16_t convertPort(const std::string& str)
             std::cout << "Converted unsigned short: " << port << std::endl;
         }
 
-        if (!ss.str().empty()) 
+        if (!ss.eof()) 
         {
             std::cerr << "Invalid characters in input.\n";
             return 1;
@@ -84,14 +115,18 @@ uint16_t convertPort(const std::string& str)
     return port;
 }
 
+
 int main(int argc, char **argv) 
 {
-    if (argc != 2) {
-	    std::cerr << "usage: showip hostname\n";
+    if (argc != 3) {
+	    std::cerr << "Usage: ./ircserv \"port (6667)\" \"password\"\n";
 	    return 1;
 	}
 
     const std::string _port = argv[1];
+	const std::string _pw = argv[2];
+
+
 
     struct addrinfo hints, *result, *p;
 	int status;
@@ -106,52 +141,33 @@ int main(int argc, char **argv)
 		return 2;
 	}
     
-    std::cout << "IP addresses for " << argv[1] << "\n\n";
-	for(p = result; p != NULL; p= p->ai_next)
-    {
-		void *addr;
-		std::string ipver;
-
-		// get the pointer to the address itself,
-		// different fields in IPv4 and IPv6:
-		if (p->ai_family == AF_INET)  // IPv4
-        {
-			struct sockaddr_in *ipv4 = (struct sockaddr_in *)p->ai_addr;
-			addr = &(ipv4->sin_addr);
-			ipver = "IPv4";
-		} 
-        else // IPv6
-        { 
-			struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *)p->ai_addr;
-			addr = &(ipv6->sin6_addr);
-			ipver = "IPv6";
-		}
-
-		// convert the IP to a string and print it:
-		inet_ntop(p->ai_family, addr, ipstr, sizeof(ipstr));
-        std::cout << ipver << ": " << ipstr << std::endl;
-	}
+    
 
 
     int serverFd, epollFd;
-    
 
     // Create socket
     serverFd = socket(AF_INET, SOCK_STREAM, 0); //IPPROTO_TCP as last argument also valid?
     if (serverFd == -1) 
     {
         std::cerr << "Failed to create socket." << std::endl;
+        freeaddrinfo(result);
         return 1;
     }
 
 
-    std::string portSTR = argv[1];
     // Bind socket to address and port
     
-    uint16_t port = convertPort(portSTR);
+    int port = convertPort(_port);
+    if (port == -1)
+    {
+        perror("portconvert");
+    }
+    
     if (bind(serverFd, result->ai_addr, result->ai_addrlen) == -1) 
     {
         std::cerr << "Failed to bind socket." << std::endl;
+        freeaddrinfo(result);
         close(serverFd);
         return 1;
     }
@@ -188,7 +204,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    std::cout << "Server started. Listening on port " << PORT << std::endl;
+    std::cout << "Server started. Listening on port " << static_cast<int>(port) << std::endl;
 
     while (true) {
         // waiting for event to happen
@@ -225,7 +241,7 @@ int main(int argc, char **argv)
                         continue;
                     }
 
-                    // would be cool print IP address of the new client
+                    // should i try to receive here already just for first connection? pass, nick, user, etc.
                 } 
                 else // data from an existing connection, receive it
                     handleClient(epollFd, epollEvents[i].data.fd, event);
@@ -236,4 +252,37 @@ int main(int argc, char **argv)
     close(serverFd);
     close(epollFd);
     return 0;
+}
+
+
+
+
+
+void printIPfrom_getaddinfo()
+{
+    std::cout << "IP addresses: " << "\n\n";
+	/* for(p = result; p != NULL; p= p->ai_next)
+    {
+		void *addr;
+		std::string ipver;
+
+		// get the pointer to the address itself,
+		// different fields in IPv4 and IPv6:
+		if (p->ai_family == AF_INET)  // IPv4
+        {
+			struct sockaddr_in *ipv4 = (struct sockaddr_in *)p->ai_addr;
+			addr = &(ipv4->sin_addr);
+			ipver = "IPv4";
+		} 
+        else // IPv6
+        { 
+			struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *)p->ai_addr;
+			addr = &(ipv6->sin6_addr);
+			ipver = "IPv6";
+		}
+
+		// convert the IP to a string and print it:
+		inet_ntop(p->ai_family, addr, ipstr, sizeof(ipstr));
+        std::cout << ipver << ": " << ipstr << std::endl;
+	} */
 }

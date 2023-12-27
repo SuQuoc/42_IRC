@@ -1,3 +1,11 @@
 
 .vscode
 .nfs*
+
+
+# Build
+objects_and_dependencies
+
+# programs
+./ircserv
+./client
