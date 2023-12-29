@@ -5,116 +5,39 @@
 const int MAX_EVENTS = 10;
 const int MAX_CLIENTS = 10;
 
-void sendToClient(int clientFd, const std::string& message)
+int *servFdPTR; // only until we do a class for server
+int *epollFDPTR;
+
+
+
+std::string get_ip_str(const struct sockaddr *sa)
 {
-    if (send(clientFd, message.c_str(), message.size(), 0) == -1)
-        perror("send");
-}
+    char client_ip[INET6_ADDRSTRLEN];
+    std::string ip_str;
 
-void cleanClientFd(int epollFd, int clientFd, epoll_event& event)
-{
-	if (epoll_ctl (epollFd, EPOLL_CTL_DEL, clientFd, &event) == -1) // do i even need this event if i delete a client from epoll instance
-        perror ("epoll_ctl");
-    if (close (clientFd) == -1)
-        perror ("close");
-}
-
-void ClientConnectionAttempt(std::string pass_msg)
-{
-    std::string _serverPW = "test";
-    std::string buf;
-
-    std::istringstream iss(pass_msg);
-
-    std::getline(iss, buf, ' ');
-    if (iss.eof())
-        return;
-    else if (iss.fail()) 
+    switch(sa->sa_family) 
     {
-        std::cerr << "Error reading input." << std::endl;
-        return ;
+        case AF_INET:
+            inet_ntop(AF_INET, &(((struct sockaddr_in *)sa)->sin_addr), client_ip, sizeof(client_ip));
+            break;
+        case AF_INET6:
+            inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)sa)->sin6_addr), client_ip, sizeof(client_ip));
+            break;
+        default:
+            ip_str.assign("Unknown AF", 0, sizeof(client_ip));
+            return ip_str;
     }
-    else if (buf == "PASS")
-    {
-        std::getline(iss, buf, '\r');
-        if (buf == _serverPW)
-            initClient(); //setting nickname 
-        else
-            cleanClientFd();
-    }
-    else 
-        return ;
+    ip_str.assign(client_ip, 0, sizeof(client_ip));
+    return std::string(client_ip);
 }
 
 
-// Function to handle client connections
-void handleClient(int epollFd, int clientFd, epoll_event& event) 
+void handle_SIGINT(int sig)
 {
-	char buf[MAX_MSG_LEN];
-    ssize_t numbytes = recv(clientFd, &buf, MAX_MSG_LEN, 0); // should flag set to non block? does epoll make it unnecessary? MSG_DONTWAIT
-
-    std::string message(buf); //max message len
-    if (numbytes == -1)
-        perror ("recv error");
-    else if (numbytes == 0) // connection closed by client with QUIT message, not sure if this means that he's completely out from the server?
-    {
-        std::cout << "Socket " << clientFd << " closed by client" << std::endl;
-        // delete fd from epoll
-        cleanClientFd(epollFd, clientFd, event);
-    }
-	// else if (validateClient()) //check passw, nickname, username
-    // {
-        // cleanClientFd(epollFd, clientFd, event);
-	// }
-	else 
-    {
-        //handleClientMessage();
-        std::cout << "Client[" << clientFd << "]: " << message << std::endl;
-        sendToClient(clientFd, "Message received!\n");
-    }
-    std::cout << "Client[test]: " << message << std::endl;
+    close(*servFdPTR);
+    close(*epollFDPTR);
+    _exit(0);
 }
-
-
-uint16_t convertPort(const std::string& str)
-{
-    uint16_t port;
-    std::stringstream ss(str);
-    
-    try 
-    {
-        // Extract the unsigned short from the stringstream
-        ss >> port;
-
-        if (ss.fail()) {
-            // Conversion failed
-            std::cerr << "Conversion failed. The string is not a valid unsigned short.\n";
-        } else {
-            // Conversion succeeded
-            std::cout << "Converted unsigned short: " << port << std::endl;
-        }
-
-        if (!ss.eof()) 
-        {
-            std::cerr << "Invalid characters in input.\n";
-            return 1;
-        }
-
-        std::cout << "Parsed port number: " << port << std::endl;
-    } 
-    catch (const std::out_of_range& e) 
-    {
-        std::cerr << "Out of range error: " << e.what() << std::endl;
-        return 1;
-    }
-    catch (const std::invalid_argument& e)
-    {
-        std::cerr << "Invalid argument error: " << e.what() << std::endl;
-        return 1;
-    }
-    return port;
-}
-
 
 int main(int argc, char **argv) 
 {
@@ -123,10 +46,19 @@ int main(int argc, char **argv)
 	    return 1;
 	}
 
+    struct sigaction sa;
+    sa.sa_handler = &handle_SIGINT;
+    sa.sa_flags = SA_RESTART; // library functions resume, function acts normally of SIGNAL was send during its execution.
+    sigaction(SIGINT, &sa, NULL); // last para holds old signal handler
+
     const std::string _port = argv[1];
 	const std::string _pw = argv[2];
 
-
+    int port = convertPort(_port);
+    if (port == -1)
+    {
+        perror("portconvert");
+    }
 
     struct addrinfo hints, *result, *p;
 	int status;
@@ -135,7 +67,8 @@ int main(int argc, char **argv)
 	std::memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC; // AF_INET or AF_INET6 to force version
 	hints.ai_socktype = SOCK_STREAM;
-	if ((status = getaddrinfo("localhost", _port.c_str(), &hints, &result)) != 0) 
+    hints.ai_flags = AI_PASSIVE; // 
+	if ((status = getaddrinfo("10.13.4.6", _port.c_str(), &hints, &result)) != 0) //dont know why but null (needs AI_PASSIVE?) doesnt work
     {
 		std::cerr << "getaddrinfo: " << gai_strerror(status) << std::endl;
 		return 2;
@@ -154,15 +87,11 @@ int main(int argc, char **argv)
         freeaddrinfo(result);
         return 1;
     }
-
+    servFdPTR = &serverFd;
 
     // Bind socket to address and port
     
-    int port = convertPort(_port);
-    if (port == -1)
-    {
-        perror("portconvert");
-    }
+    
     
     if (bind(serverFd, result->ai_addr, result->ai_addrlen) == -1) 
     {
@@ -192,6 +121,9 @@ int main(int argc, char **argv)
         close(serverFd);
         return 1;
     }
+    epollFDPTR = &epollFd;
+
+
 
     // Add server socket to epoll
     event.events = EPOLLIN;
@@ -222,6 +154,7 @@ int main(int argc, char **argv)
             {
                 if (epollEvents[i].data.fd == serverFd) 
                 {
+                    // Create a client Object here to store the IP-Adress?
                     // Accept new client connection
                     struct sockaddr_storage clientAddress; //storage bigger than normal sockaddr and can hold IPv6
                     socklen_t clientAddressLength = sizeof(sockaddr_storage);
@@ -230,6 +163,7 @@ int main(int argc, char **argv)
                         std::cerr << "Failed to accept client connection." << std::endl;
                         continue;
                     }
+                    std::cout << "Client ip: " << get_ip_str(reinterpret_cast<struct sockaddr*>(&clientAddress)) << std::endl; //
 
                     // Add client socket to epoll - could event.events be "global", outside of this scope?
                     event.events = EPOLLIN;
@@ -286,3 +220,7 @@ void printIPfrom_getaddinfo()
         std::cout << ipver << ": " << ipstr << std::endl;
 	} */
 }
+
+
+
+

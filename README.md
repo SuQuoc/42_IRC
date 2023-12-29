@@ -56,6 +56,8 @@ and so forth).
 	- https://www.youtube.com/watch?v=wB9tIg209-8
 - Example flight time server
 	- https://www.softprayog.in/programming/io-multiplexing-select-poll-epoll-in-linux
+- http://chi.cs.uchicago.edu/chirc/irc_examples.html
+
 
 # Testing
 - we should be able to connect from different pc's belongig to the 42 network? maybe even our phones, if we are connected to the wifi?

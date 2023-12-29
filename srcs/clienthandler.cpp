@@ -1,0 +1,72 @@
+
+# include "irc.hpp"
+
+void sendToClient(int clientFd, const std::string& message)
+{
+    if (send(clientFd, message.c_str(), message.size(), 0) == -1)
+        perror("send");
+}
+
+void cleanClientFd(int epollFd, int clientFd, epoll_event& event)
+{
+	if (epoll_ctl (epollFd, EPOLL_CTL_DEL, clientFd, &event) == -1) // do i even need this event if i delete a client from epoll instance
+        perror ("epoll_ctl");
+    if (close (clientFd) == -1)
+        perror ("close");
+}
+
+void registerClient(const std::string& registration)
+{
+    splitString(registration, "\r\n");
+
+}
+
+/* void assesCmd(std::string pass_msg) //can this be checked only once somehow? or is it normal to check every incoming send()
+{
+    std::string _serverPW = "test";
+    std::string buf;
+
+    std::istringstream iss(pass_msg);
+
+    std::getline(iss, buf, ' ');
+    if (iss.eof())
+        return;
+    else if (iss.fail()) 
+    {
+        std::cerr << "Error reading input." << std::endl;
+        return ;
+    }
+    else if (buf == "PASS")
+    {
+       registerClient();
+    }
+    else
+        exec
+    return ;
+} */
+
+
+// Function to handle client connections
+void handleClient(int epollFd, int clientFd, epoll_event& event) 
+{
+	char buf[MAX_MSG_LEN];
+    ssize_t numbytes = recv(clientFd, &buf, MAX_MSG_LEN, 0); // should flag set to non block? does epoll make it unnecessary? MSG_DONTWAIT
+
+    std::string message(buf); //max message len
+    if (numbytes == -1)
+        perror ("recv error");
+    else if (numbytes == 0) // connection closed by client with QUIT message, not sure if this means that he's completely out from the server?
+    {
+        std::cout << "Socket " << clientFd << " closed by client" << std::endl;
+        // delete fd from epoll
+        cleanClientFd(epollFd, clientFd, event);
+    }
+	else 
+    {
+        //handleClientMessage();
+        std::cout << "Client[" << clientFd << "]: " << message << std::endl;
+        // sendToClient(clientFd, "Message received!\n");
+        sendToClient(clientFd, "10.13.4.6 001 quoc :Welcome to the IRC Network, username!\r\n");
+    }
+    // std::cout << "Client[test]: " << message << std::endl;
+}

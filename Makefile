@@ -5,7 +5,10 @@ CXXFLAGS	= -Wall -Wextra -MMD -MP -pedantic -g -std=c++98
  
 INCLUDES 	= ./includes
 
-SRCS		= 	playground.cpp
+SRCS		= 	clienthandler.cpp \
+				main.cpp \
+				port.cpp \
+				utils_string.cpp
 
 SRC_DIR 	= ./srcs
 SRCS 		:= $(addprefix $(SRC_DIR)/, $(SRCS))
