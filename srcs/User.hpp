@@ -13,7 +13,7 @@ protected:
 	const std::string _username;
 	const std::string _hostname;
 	const std::string _realname;
-
+	const int _connecSocket;
 public:
 
 

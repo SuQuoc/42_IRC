@@ -18,7 +18,6 @@ void cleanClientFd(int epollFd, int clientFd, epoll_event& event)
 void registerClient(const std::string& registration)
 {
     splitString(registration, "\r\n");
-
 }
 
 /* void assesCmd(std::string pass_msg) //can this be checked only once somehow? or is it normal to check every incoming send()
@@ -63,10 +62,31 @@ void handleClient(int epollFd, int clientFd, epoll_event& event)
     }
 	else 
     {
-        //handleClientMessage();
+        
+        //exeClientRquest(message, getClient(clientFD)); //write getter to get client object by their fd
         std::cout << "Client[" << clientFd << "]: " << message << std::endl;
         // sendToClient(clientFd, "Message received!\n");
         sendToClient(clientFd, "10.13.4.6 001 quoc :Welcome to the IRC Network, username!\r\n");
     }
     // std::cout << "Client[test]: " << message << std::endl;
+}
+
+void exeClientRequest(const std::string& request, User& client)
+{
+    bool registered = isRegistered();
+    bool regAttempt = isRegAttempt();
+
+
+    if (!registered && !regAttempt)
+        std::cout << "not registered";
+    else if (!registered && regAttempt)
+        registerClient();
+    else if (registered && regAttempt)
+        std::cout << "already registered";
+    else 
+    {
+        std::cout << "exec other cmds"
+        // find CMD_STR in map and execute cmd
+        // every IRC CMD takes a REF to User Object
+    }
 }
