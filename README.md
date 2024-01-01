@@ -6,6 +6,14 @@ It offers real-time messaging that can be either public or private. Users can ex
 IRC clients connect to IRC servers in order to join channels. 
 IRC servers are connected together to form a network.
 
+## To Do
+- struktur fuer Commands die channels verwenden ueberlegen
+	- soll jeder command dann den channel namen rauslesen
+	- soll es davor rausgelesen werden und dann gepassed werden
+	- welches der beiden ist sinnvoller und sollen die commands unterschieden werden
+		zwischen denen die einen Channel nehmen und denen die keinen nehmen?
+
+
 ## IRC protocol
 ### Server
 - All communication between clients is relayed by the

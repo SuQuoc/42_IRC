@@ -138,6 +138,8 @@ int main(int argc, char **argv)
 
     std::cout << "Server started. Listening on port " << static_cast<int>(port) << std::endl;
 
+
+    // 
     while (true) {
         // waiting for event to happen
         int numEvents = epoll_wait(epollFd, epollEvents, MAX_EVENTS, -1);

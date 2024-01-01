@@ -5,10 +5,11 @@ CXXFLAGS	= -Wall -Wextra -MMD -MP -pedantic -g -std=c++98
  
 INCLUDES 	= ./includes
 
-SRCS		= 	clienthandler.cpp \
+SRCS		= 	Client.cpp \
+				clienthandler.cpp \
 				main.cpp \
 				port.cpp \
-				utils_string.cpp
+				utils_string.cpp \
 
 SRC_DIR 	= ./srcs
 SRCS 		:= $(addprefix $(SRC_DIR)/, $(SRCS))

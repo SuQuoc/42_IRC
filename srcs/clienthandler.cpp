@@ -1,5 +1,6 @@
 
 # include "irc.hpp"
+# include "Client.hpp"
 
 void sendToClient(int clientFd, const std::string& message)
 {
@@ -71,9 +72,28 @@ void handleClient(int epollFd, int clientFd, epoll_event& event)
     // std::cout << "Client[test]: " << message << std::endl;
 }
 
-void exeClientRequest(const std::string& request, User& client)
+bool isRegistered(Client& client)
 {
-    bool registered = isRegistered();
+    if (client.getNickname().empty())
+        return false;
+    return true;
+}
+bool isRegAttempt(const std::string& command)
+{
+    // just check if it starts with PASS i guess registerClient will handle the rest like incorrect params or pw
+    if (command.substr(0, 5) == "PASS ")
+        return true;
+    return false;
+}
+
+void registerClient()
+{
+    std::cout << "Succesfully registered";
+}
+
+void exeClientRequest(const std::string& command, Client& client)
+{
+    bool registered = isRegistered(client);
     bool regAttempt = isRegAttempt();
 
 
@@ -85,7 +105,7 @@ void exeClientRequest(const std::string& request, User& client)
         std::cout << "already registered";
     else 
     {
-        std::cout << "exec other cmds"
+        std::cout << "exec other cmds";
         // find CMD_STR in map and execute cmd
         // every IRC CMD takes a REF to User Object
     }
