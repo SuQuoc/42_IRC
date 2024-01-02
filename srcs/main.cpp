@@ -161,7 +161,8 @@ int main(int argc, char **argv)
                     struct sockaddr_storage clientAddress; //storage bigger than normal sockaddr and can hold IPv6
                     socklen_t clientAddressLength = sizeof(sockaddr_storage);
                     int clientFd = accept(serverFd, reinterpret_cast<struct sockaddr*>(&clientAddress), &clientAddressLength);
-                    if (clientFd == -1) {
+                    if (clientFd == -1) 
+                    {
                         std::cerr << "Failed to accept client connection." << std::endl;
                         continue;
                     }

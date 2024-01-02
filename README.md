@@ -12,7 +12,9 @@ IRC servers are connected together to form a network.
 	- soll es davor rausgelesen werden und dann gepassed werden
 	- welches der beiden ist sinnvoller und sollen die commands unterschieden werden
 		zwischen denen die einen Channel nehmen und denen die keinen nehmen?
-
+- find out the difference for disconnetcing and being leaving the entire server
+	- will the user be completely deleted and his nickname is available?
+- whats CAP LS 302
 
 ## IRC protocol
 ### Server

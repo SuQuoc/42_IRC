@@ -64,7 +64,9 @@ void handleClient(int epollFd, int clientFd, epoll_event& event)
 	else 
     {
         
-        //exeClientRquest(message, getClient(clientFD)); //write getter to get client object by their fd
+        //exeClientRequest(message, server.getClient(clientFD)); 
+        //write getter to get client object by their fd
+        //is it better to pass an object thats already in the server class? or should i pass the fd (also in server class) and look for the client later
         std::cout << "Client[" << clientFd << "]: " << message << std::endl;
         // sendToClient(clientFd, "Message received!\n");
         sendToClient(clientFd, "10.13.4.6 001 quoc :Welcome to the IRC Network, username!\r\n");
@@ -91,16 +93,15 @@ void registerClient()
     std::cout << "Succesfully registered";
 }
 
-void exeClientRequest(const std::string& command, Client& client)
+/* void exeClientRequest(const std::string& command, Client& client)
 {
     bool registered = isRegistered(client);
     bool regAttempt = isRegAttempt();
 
-
     if (!registered && !regAttempt)
         std::cout << "not registered";
     else if (!registered && regAttempt)
-        registerClient();
+        registerClient(); //"PASS"
     else if (registered && regAttempt)
         std::cout << "already registered";
     else 
@@ -109,4 +110,4 @@ void exeClientRequest(const std::string& command, Client& client)
         // find CMD_STR in map and execute cmd
         // every IRC CMD takes a REF to User Object
     }
-}
+} */
