@@ -1,12 +1,18 @@
 #pragma once
 
+#include <stdio.h> //fileno not allowed, header not needed without it!
+
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <sys/epoll.h>
 #include <unistd.h>
+#include <errno.h>
 #include <fcntl.h>
 
 #include <iostream>
+#include <sstream>
+#include <cstdlib>
 #include <string>
 #include <map>
 
