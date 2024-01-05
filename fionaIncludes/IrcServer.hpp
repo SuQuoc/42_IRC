@@ -17,8 +17,9 @@ private:
 	int		_epoll_fd;
 	int		_sock_fd;
 
-void	failure_exit(const std::string& error_msg); //exits?
 void	accept_connection();
+void	process_event(const	int& client_sock);
+void	failure_exit(const std::string& error_msg); //exits?
 
 
 public:
