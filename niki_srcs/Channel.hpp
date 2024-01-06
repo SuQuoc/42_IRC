@@ -12,6 +12,7 @@ class Channel
 {
 	private:
 
+		std::map<std::string, Client &> operators; 
 		std::map<std::string, Client &> members;        // should it be just a std::string or a ref to the client?? should there be a operator map/vector
 		const std::string _name;                        // can we change it ?
 		Client &_owner;									// should it be just a std::string or a ref to the client??
@@ -23,5 +24,6 @@ class Channel
 		Channel(Client &owner, const std::string &channel_name);
 
 		void sendMsgToChannel(Client &sender, const std::string &msg);
+		void kickFromChannel(Client &kick_client);
 		void addClient(Client &new_member);
 };

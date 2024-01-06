@@ -2,9 +2,10 @@
 
 Channel::Channel(Client &owner, const std::string &channel_name) : _owner(owner), _name(channel_name)
 {
-	members.insert(std::pair<std::string, Client &>(owner.getNickName(), owner)); // is it nessesay to add him to the members??
+	members.insert(std::pair<std::string, Client &>(owner.getUserName(), owner)); // is it nessesay to add him to the members??
+	operators.insert(std::pair<std::string, Client &>(owner.getUserName(), owner));
 }
-
+									//maybe it cloud just be the user name
 void	Channel::sendMsgToChannel(Client &sender, const std::string &msg)
 {
 	for(members_itr member = members.begin(); member != members.end(); member++)
@@ -17,6 +18,17 @@ void	Channel::sendMsgToChannel(Client &sender, const std::string &msg)
 			std::exit(EXIT_FAILURE);														// should it exit ? I don't think so
 		}
 	}
+}
+
+void	Channel::kickFromChannel(Client &kick_client)
+{
+	members_itr member;		// member that will be kicked
+
+	member = members.find(kick_client.getUserName());
+	if(member == members.end())
+		std::cout << ">>? kickFromChannel() did not find the clinet to kick from channel: " << _name << std::endl;		// should we send a msg back that the client was not found to kick
+	else
+		members.erase(member);
 }
 
 void	Channel::addClient(Client &new_member)
