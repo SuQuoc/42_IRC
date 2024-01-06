@@ -41,8 +41,28 @@ void	Channel::kickFromChannel(Client &executor, Client &kick_client)
 		_members.erase(member);
 }
 
-void	Channel::addClient(Client &new_member)
+//add clinet checks if clinet exists and add him to operator if wanted
+void	Channel::addClient(Client &new_client)
 {
 	// ### new_member.addChannel();				// add in client class the channel #############
-	_members.insert(std::pair<std::string, Client &>(new_member.getNickName(), new_member));
+	if(_members.find(new_client.getUserName()) == _members.end())
+		_members.insert(std::pair<std::string, Client &>(new_client.getNickName(), new_client));
+	else
+		std::cout << "? could not add clinet it is already a member" << std::endl;
 }
+
+void	Channel::addClient(Client &new_client, bool is_operator)
+{
+	// ### new_member.addChannel();				// add in client class the channel #############
+	addClient(new_client);
+	if(is_operator == true && _operators.find(new_client.getUserName()) == _operators.end())
+		_operators.insert(std::pair<std::string, Client &>(new_client.getNickName(), new_client));
+	else
+		std::cout << "? could not add clinet it is already a operator" << std::endl;
+}
+
+//			get and set
+void	Channel::setPassword( const std::string &password ) { _password = password; }
+
+const std::string &Channel::getPassword() const { return _password; };
+const std::string &Channel::getName() const { return _name; };
