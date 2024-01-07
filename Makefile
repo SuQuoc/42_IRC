@@ -2,7 +2,7 @@ NAME		= ircserv
 ARGS 		= 
 CXX			= c++
 CXXFLAGS	= -Wall -Wextra -MMD -MP -pedantic -g -std=c++98
- 
+#-Werror missing ? xD
 INCLUDES 	= ./includes
 
 SRCS		= 	Client.cpp \
