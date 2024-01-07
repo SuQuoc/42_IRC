@@ -1,15 +1,12 @@
-NAME		= ircserv
+NAME		= tester
 ARGS 		= 
 CXX			= c++
-CXXFLAGS	= -Wall -Wextra -MMD -MP -pedantic -g -std=c++98
+CXXFLAGS	= -Wall -Wextra -MMD -MP -pedantic -g
  
-INCLUDES 	= ./includes
+INCLUDES 	= ../includes
 
-SRCS		= 	Client.cpp \
-				clienthandler.cpp \
-				main.cpp \
-				port.cpp \
-				utils_string.cpp \
+SRCS		= 	splitIrcCmd.cpp \
+				tester_main.cpp
 
 SRC_DIR 	= ./srcs
 SRCS 		:= $(addprefix $(SRC_DIR)/, $(SRCS))
@@ -29,7 +26,7 @@ $(OBJ_DIR):
 	@mkdir -p $(OBJ_DIR)
 
 $(NAME): $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME)
+	$(CXX) $(CXXFLAGS) $(OBJS) $(MAIN_OBJS) -o $(NAME)
 	@echo "$(GREEN)Executable \"$(NAME)\" succesfully created.$(NC)"
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
@@ -51,6 +48,12 @@ re: fclean all
 #ADD ONS_______________________________________________________
 run: all
 	./$(NAME) $(ARGS)
+
+test: $(OBJS) $(TEST_OBJS)
+	$(CXX) $(OBJS) $(TEST_OBJS) -o tester
+
+$(TEST_DIR)/%.o: $(TEST_DIR)/%.cpp
+	$(CXX) -I$(INCLUDES) -c $< -o $@
 
 va: all
 	valgrind \

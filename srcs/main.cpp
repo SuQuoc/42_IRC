@@ -140,7 +140,8 @@ int main(int argc, char **argv)
 
 
     // 
-    while (true) {
+    while (true) 
+    {
         // waiting for event to happen
         int numEvents = epoll_wait(epollFd, epollEvents, MAX_EVENTS, -1);
         if (numEvents == -1) 

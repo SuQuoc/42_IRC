@@ -27,9 +27,9 @@ void handleClient(int epollFd, int clientFd, epoll_event& event);
 // port.cpp
 uint16_t convertPort(const std::string& str);
 
-//string_utils.cpp
-std::vector<std::string> splitString(const std::string& input, const std::string& delimiter);
-
 //utils_string.cpp
 std::vector<std::string> splitString(const std::string& input, const std::string& delimiter);
+std::vector<std::string> splitIrcCmd(const std::string& input, const std::string& delimiter);
+
+
 
