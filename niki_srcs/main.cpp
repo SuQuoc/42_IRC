@@ -1,13 +1,20 @@
 #include "Client.hpp"
 #include "Channel.hpp"
 
+void create_pointer(Channel &six)
+{
+    Client *fio = new Client(4, "fio", "fio");
+
+    six.addClient(fio);
+}
+
 int main()
 {
     Client niki(3, "niki", "niki");
-    Client fio(4, "fio", "fio");
     Channel six(&niki, "666");
-    
-    six.addClient(&fio);
-    std::cout << niki.getChannels()[0]->getName() << std::endl;
+    create_pointer(six);
+    std::cout << six.getMembers().find("fio")->second->getNickName() << std::endl;
+    /* six.addClient(&fio); */
+    /* std::cout << six. << std::endl; */
     return 0;
 }
