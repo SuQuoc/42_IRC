@@ -11,6 +11,7 @@
 #include <fcntl.h>
 
 #include <iostream>
+#include <cstring> //only strerror()
 #include <sstream>
 #include <cstdlib>
 #include <string>

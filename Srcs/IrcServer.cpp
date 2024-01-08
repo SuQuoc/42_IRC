@@ -1,4 +1,4 @@
-#include "../fionaIncludes/IrcServer.hpp"
+#include "../Includes/IrcServer.hpp"
 
 //con- and destructer
 IrcServer::IrcServer(): _epoll_fd(-1), _sock_fd(-1) {}
@@ -84,7 +84,7 @@ void	IrcServer::process_event(const int& client_sock)
 
 void	IrcServer::failure_exit(const std::string& error_msg)
 {
-	std::cout << "Error: " << error_msg << std::endl;
+	std::cerr << "Error: " << error_msg << ": " << std::strerror(errno) << std::endl;
 	std::exit(errno); //errno?
 }
 
@@ -106,7 +106,7 @@ void	IrcServer::createTcpSocket(const std::string& ip, const int& port) //exits?
 	if (bind(_sock_fd, reinterpret_cast<sockaddr*>(&saddr), sizeof(struct sockaddr_in)) == -1)
 		failure_exit("couldn't bind to socket");
 	if (listen(_sock_fd, 1000) == -1) //1000?
-		failure_exit("couldn't bind to socket");
+		failure_exit("couldn't listen(?) to socket");
 	if (fcntl(_sock_fd, F_SETFL, O_NONBLOCK) == -1)
 		failure_exit("fcntl failed");
 }

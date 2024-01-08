@@ -1,14 +1,14 @@
 NAME		= ircserv
 ARGS 		= 10.13.4.5 8080
 CXX			= c++
-CXXFLAGS	= -Wall -Wextra -MMD -MP -pedantic -g -std=c++98
+CXXFLAGS	= -Wall -Wextra -Werror -MMD -MP -pedantic -g -std=c++98
  
-INCLUDES 	= ./fionaIncludes
+INCLUDES 	= ./Includes
 
 SRCS		= 	IrcServer.cpp \
 				main.cpp
 
-SRC_DIR 	= ./fionaSrcs
+SRC_DIR 	= ./Srcs
 SRCS 		:= $(addprefix $(SRC_DIR)/, $(SRCS))
 
 
