@@ -1,14 +1,14 @@
-NAME		= ircserv
-ARGS 		= 10.13.4.5 8080
+NAME		= tester
+ARGS 		= 
 CXX			= c++
-CXXFLAGS	= -Wall -Wextra -Werror -MMD -MP -pedantic -g -std=c++98
+CXXFLAGS	= -Wall -Wextra -MMD -MP -pedantic -g
  
-INCLUDES 	= ./Includes
+INCLUDES 	= ../includes
 
-SRCS		= 	IrcServer.cpp \
-				main.cpp
+SRCS		= 	splitIrcCmd.cpp \
+				tester_main.cpp
 
-SRC_DIR 	= ./Srcs
+SRC_DIR 	= ./srcs
 SRCS 		:= $(addprefix $(SRC_DIR)/, $(SRCS))
 
 OBJ_DIR 	= ./objects_and_dependencies
@@ -19,21 +19,21 @@ DEPS 		:= $(OBJS:.o=.d)
 
 .PHONY: all clean fclean re run va scan fun
 
-#Build___________________________________________________________
+#Build________________________________________________________
 all: $(OBJ_DIR) $(NAME)
 
 $(OBJ_DIR):
 	@mkdir -p $(OBJ_DIR)
 
 $(NAME): $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME)
+	$(CXX) $(CXXFLAGS) $(OBJS) $(MAIN_OBJS) -o $(NAME)
 	@echo "$(GREEN)Executable \"$(NAME)\" succesfully created.$(NC)"
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MP -I$(INCLUDES) -c $< -o $@
 
 
-#General_________________________________________________________
+#General________________________________________________________
 clean:
 	rm -rf $(OBJ_DIR)
 	@echo "$(MAGENTA)Obj directory removed.$(NC)"
@@ -45,9 +45,15 @@ fclean: clean
 re: fclean all
 	@echo "$(GREEN)Recompilation successfully done!$(NC)"
 
-#ADD ONS_________________________________________________________
+#ADD ONS_______________________________________________________
 run: all
 	./$(NAME) $(ARGS)
+
+test: $(OBJS) $(TEST_OBJS)
+	$(CXX) $(OBJS) $(TEST_OBJS) -o tester
+
+$(TEST_DIR)/%.o: $(TEST_DIR)/%.cpp
+	$(CXX) -I$(INCLUDES) -c $< -o $@
 
 va: all
 	valgrind \
@@ -67,7 +73,7 @@ fun: all
 
 -include $(DEPS)
 
-#COLORS__________________________________________________________
+#COLORS_____________________________________________________________
 RED			=	\033[0;31m
 GREEN		=	\033[0;32m
 YELLOW		=	\033[0;33m
@@ -76,7 +82,7 @@ MAGENTA 	=	\033[0;35m
 CYAN 		=	\033[0;36m
 WHITE		=	\033[0;37m
 NC			=	\033[0m
-#BOLD COLORS_____________________________________________________
+#BOLD COLORS________________________________________________________
 BRED		=	\033[1;31m
 BGREEN		=	\033[1;32m
 BYELLOW		=	\033[1;33m

@@ -67,7 +67,7 @@ void handleClient(int epollFd, int clientFd, epoll_event& event)
         //exeClientRequest(message, server.getClient(clientFD)); 
         //write getter to get client object by their fd
         //is it better to pass an object thats already in the server class? or should i pass the fd (also in server class) and look for the client later
-        std::cout << "Client[" << clientFd << "]: " << message << std::endl;
+        std::cout << "Client[" << clientFd << "] with ip[]: " << message << std::endl;
         // sendToClient(clientFd, "Message received!\n");
         sendToClient(clientFd, "10.13.4.6 001 quoc :Welcome to the IRC Network, username!\r\n");
     }

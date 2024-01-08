@@ -15,6 +15,9 @@ IRC servers are connected together to form a network.
 - find out the difference for disconnetcing and being leaving the entire server
 	- will the user be completely deleted and his nickname is available?
 - whats CAP LS 302
+	- used to get Capabilities of the server
+	- we can ignore it
+- how does SASL Auth work should we implement it?
 
 ## IRC protocol
 ### Server
