@@ -2,8 +2,8 @@
 
 Channel::Channel(Client *owner, const std::string &channel_name) : _name(channel_name), _owner(owner)
 {
-	_members.insert(std::pair<std::string, Client *>(owner->getUserName(), owner)); // is it nessesay to add him to the _members??
-	_operators.insert(std::pair<std::string, Client *>(owner->getUserName(), owner));
+	_members.insert(std::pair<std::string, Client *>(owner->getUserName(), _owner)); // is it nessesay to add him to the _members??
+	_operators.insert(std::pair<std::string, Client *>(owner->getUserName(), _owner));
 	owner->joinChannel(this);
 }
 Channel::Channel(const Channel &C) : _operators(C._operators), _members(C._members), _name(C._name), _owner(C._owner)
@@ -18,7 +18,7 @@ void	Channel::sendMsgToChannel(Client &sender, const std::string &msg)
 	{
 		if(member->second->getUserName() == sender.getUserName())
 			continue ;
-		if(send(member->second->getClientFd(), msg.c_str(), 513, 0) == -1)						//flags?
+		if(send(member->second->getClientFd(), msg.c_str(), 513, 0) == -1)					//flags?
 		{
 			std::cout << "Error Send faild class Channel sendMsgToChannel" << std::endl;
 			std::exit(EXIT_FAILURE);														// should it exit ? I don't think so

@@ -35,9 +35,13 @@ class Channel
 		void kickFromChannel(Client &executor, Client &kick_client);
 		void addClient(Client *new_member);
 		void addClient(Client *new_client, bool is_operator);		// maybe we can do this in one funktion but it is one if less in non operatotr case
-		
+
 		void setName(const std::string &name);
 		void setPassword(const std::string &password);
 		const std::string &getPassword() const;
 		const std::string &getName() const;
+		const std::map<std::string, Client *> &getMembers()
+		{
+			return _members;
+		}
 };
