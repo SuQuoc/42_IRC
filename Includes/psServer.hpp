@@ -17,9 +17,12 @@
 #include <string>
 #include <map>
 
-class IrcServer
+class Server
 {
 private:
+	//client_name-map!
+	//client_fd-map!
+	//channel-map!
 	struct epoll_event	_ev;
 	int		_epoll_fd;
 	int		_sock_fd;
@@ -28,14 +31,15 @@ private:
 void	accept_connection();
 void	process_event(const	int& client_sock);
 void	failure_exit(const std::string& error_msg); //exits?
+virtual void	command_switch(std::string command) = 0;
 
 
 public:
 //con- and destructer
-	IrcServer();
-	IrcServer(const IrcServer& S);
-	IrcServer operator=(const IrcServer& S);
-	~IrcServer();
+	Server();
+	Server(const Server& S);
+	Server operator=(const Server& S);
+	~Server();
 
 //methods
 	void	createTcpSocket(const std::string& ip, const int& port); //exits?
