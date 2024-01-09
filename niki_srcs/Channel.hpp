@@ -21,11 +21,11 @@ class Channel
 		std::string _name;                        		// can we change it ?
 		Client *_owner;									// should it be just a std::string or a ref to the client??
 
-		typedef std::map<std::string, Client *>::iterator members_itr;
 		
 		Channel();
 
 	public:
+		typedef std::map<std::string, Client *>::iterator members_itr;
 
 		Channel(Client *owner, const std::string &channel_name);
 		Channel(const Channel &C);
