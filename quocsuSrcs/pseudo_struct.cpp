@@ -32,10 +32,7 @@ void KICK(const Client* sender, )
 void MODE()
 
 
-void JOIN(const Client* sender, )
-{
 
-}
 
 void delUserFromChannel()
 {
