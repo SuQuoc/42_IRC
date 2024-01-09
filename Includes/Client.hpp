@@ -16,7 +16,7 @@
 class Client
 {
 private:
-	std::string _nickname; // values are change-able so not const take a look what can be changed
+	std::string _nickname;
 	std::string _username;
 	std::string _hostname;
 	std::string _realname;
@@ -40,7 +40,7 @@ public:
 	void setUser(const std::string& Uname, const std::string& Hname, const std::string& Rname);
 	//void setClientInfo(const std::string& nName, const std::string& uName, const std::string& hName, const std::string& rName);
 	// void setUserName(const std::string& name);
-	// void setHostname(const std::string& name);
+	// void setHostName(const std::string& name);
 	// void setRealName(const std::string& name);
 
 	const std::string& getNickname() const;

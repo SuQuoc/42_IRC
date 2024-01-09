@@ -19,17 +19,17 @@ public:
 	~Irc();
 
 //methods (commands)
-	void	JOIN(Client *sender, std::stringstream sstream);
-	void	PART(Client *sender, std::stringstream sstream);
-	void	QUIT(Client *sender, std::stringstream sstream);
-	void	KICK(Client *sender, std::stringstream sstream);
+	void	JOIN(Client *sender, std::stringstream& sstream);
+	void	PART(Client *sender, std::stringstream& sstream);
+	void	QUIT(Client *sender, std::stringstream& sstream);
+	void	KICK(Client *sender, std::stringstream& sstream);
 
-	void	PASS(Client *sender, std::stringstream sstream);
-	void	NICK(Client *sender, std::stringstream sstream);
-	void	USER(Client *sender, std::stringstream sstream);
-	void	PRIVMSG(Client *sender, std::stringstream sstream);
+	void	PASS(Client *sender, std::stringstream& sstream);
+	void	NICK(Client *sender, std::stringstream& sstream);
+	void	USER(Client *sender, std::stringstream& sstream);
+	void	PRIVMSG(Client *sender, std::stringstream& sstream);
 
-	void	MODE(Client *sender, std::stringstream sstream);
-	void	TOPIC(Client *sender, std::stringstream sstream);
-	void	INVITE(Client *sender, std::stringstream sstream);
+	void	MODE(Client *sender, std::stringstream& sstream);
+	void	TOPIC(Client *sender, std::stringstream& sstream);
+	void	INVITE(Client *sender, std::stringstream& sstream);
 };

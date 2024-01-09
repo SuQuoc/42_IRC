@@ -32,21 +32,21 @@ void	IrcServer::accept_connection()
 	struct sockaddr_in	client_addr;
 	struct epoll_event	ev_temp;
 	socklen_t			client_addr_len = sizeof(client_addr);
-	int		client_sock;
+	int		client_fd;
 
 	while (1)
 	{
-		client_sock = accept(_sock_fd, reinterpret_cast<struct sockaddr*>(&client_addr), &client_addr_len);
-		if (client_sock == -1)
+		client_fd = accept(_sock_fd, reinterpret_cast<struct sockaddr*>(&client_addr), &client_addr_len);
+		if (client_fd == -1)
 		{
 			if (errno != EAGAIN && errno != EWOULDBLOCK)
 				std::cerr << "Error: accept failed" << std::endl;
 			return ;
 		}
-		ev_temp.data.fd = client_sock;
+		ev_temp.data.fd = client_fd;
 		ev_temp.events = EPOLLIN | EPOLLET; //needs to be in loop? //niki says it could be changed in epoll_ctl() so just to be save
-		fcntl(client_sock, F_SETFL, O_NONBLOCK);
-		if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, client_sock, &ev_temp) == -1)
+		fcntl(client_fd, F_SETFL, O_NONBLOCK);
+		if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, client_fd, &ev_temp) == -1)
 		{
 			std::cerr << "Error: epoll_ctl failed in accept_connection" << std::endl;
 			return ;
@@ -54,14 +54,14 @@ void	IrcServer::accept_connection()
 	}
 }
 
-void	IrcServer::process_event(const int& client_sock)
+void	IrcServer::process_event(const int& client_fd)
 {
 	char	buf[513]; //13?	
 	int		bytes_recieved = -1; //better name?
 
 	while (1)
 	{
-		bytes_recieved = recv(client_sock, buf, sizeof(buf), 0);
+		bytes_recieved = recv(client_fd, buf, sizeof(buf), 0);
 		switch (bytes_recieved)
 		{
 			case (-1):
@@ -73,7 +73,7 @@ void	IrcServer::process_event(const int& client_sock)
 				return ;
 			case (0):
 				//disconnect_client(); !!!!
-				close(client_sock);
+				close(client_fd);
 				return ;
 			default:
 				std::cout << buf << std::endl;
