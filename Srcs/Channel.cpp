@@ -5,7 +5,7 @@ Channel::Channel(Client *owner, const std::string &channel_name) : _name(channel
 	_operators.push_back(owner);
 	// owner->joinChannel(this);	// is it nessesay to add him to the _members??
 }
-Channel::Channel(const Channel &C) : _operators(C._operators), _members(C._members), _name(C._name), _password(C._password), _topic(C._topic) 
+Channel::Channel(const Channel &C) : _operators(C._operators), _members(C._members), _password(C._password), _topic(C._topic), _name(C._name)
 {
 	
 }
@@ -65,6 +65,7 @@ void Channel::rmClient(Client *rm_client)
 //add clinet checks if clinet exists and add him to operator if wanted
 void	Channel::addMember(Client *new_client)
 {
+	(void)new_client;
 	/* if(_members.find(new_client->getUserName()) == _members.end())
 		_members.insert(std::pair<std::string, Client *>(new_client->getNickName(), new_client));
 	else
@@ -73,6 +74,7 @@ void	Channel::addMember(Client *new_client)
 
 void	Channel::addOperator(Client *new_operator)
 {
+	(void)new_operator;
 	/* if(is_operator == true && _operators.find(new_client->getUserName()) == _operators.end())
 		_operators.insert(std::pair<std::string, Client *>(new_client->getNickName(), new_client));
 	else
@@ -81,6 +83,7 @@ void	Channel::addOperator(Client *new_operator)
 
 bool Channel::isOperator(const Client *client)
 {
+	(void)client;
 	for(int i = 0; i < _operators.size(); i++)
 		if(_operators[i]->getUsername() == client->getUsername())
 			return false;
@@ -108,5 +111,5 @@ std::vector<Client *>::iterator Channel::getMember(const std::string &name)
 	return _members.end();
 }
 
-const std::string &Channel::getPassword() const { return _password; };
-const std::string &Channel::getName() const { return _name; };
+const std::string &Channel::getPassword() const { return _password; }
+const std::string &Channel::getName() const { return _name; }
