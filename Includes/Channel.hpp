@@ -24,6 +24,8 @@ class Channel
 
 		Channel();
 
+		void sendNonBlock(const int &fd, const std::string &msg);
+		
 		typedef std::vector<Client *>::iterator clients_itr;
 
 	public:

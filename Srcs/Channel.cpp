@@ -17,10 +17,22 @@ void Channel::sendMsg(const Client *sender, const std::string &msg)
 	{
 		if((*member)->getUsername() == sender->getUsername())
 			continue ;
-		if(send((*member)->getFd(), msg.c_str(), 513, 0) == -1)					//flags?
+		sendNonBlock(sender->getFd(), msg);
+	}
+}
+
+void Channel::sendNonBlock(const int &fd, const std::string &msg)
+{
+	//need to check if msg is not bigger than 512
+	int send_size = -1;
+	while( send_size == -1 )
+	{
+		if(send(fd, msg.c_str(), msg.size(), 0) == send_size)
 		{
-			std::cout << "Error Send faild class Channel sendMsgToChannel" << std::endl;
-			std::exit(EXIT_FAILURE);													// should it exit ? I don't think so
+			if (errno == EAGAIN || errno == EWOULDBLOCK)
+				continue ;
+			perror("Error send faild in channel.cpp");
+			std::exit(-1);
 		}
 	}
 }
