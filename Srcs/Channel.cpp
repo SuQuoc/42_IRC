@@ -28,37 +28,25 @@ void Channel::sendMsg(const Client *sender, const std::string &msg)
 //does not rm client from clients._channels
 void Channel::rmClient(const Client *executor, Client *rm_client)
 {
-	clients_itr *member;		// member that will be kicked
-
-	(void)executor;			// ? check if executer has the rights
-	if(isOperator(executor) == false)
-	{
-		std::cout << ">>? kickFromChannel() executor is not a operator" << std::endl;
-		return ;
-	}
-	if(isOperator(rm_client) == true)
-	{
-		
-	}
-	member = getClient(rm_client->getUsername());
-	if(member == NULL)
-		std::cout << ">>? kickFromChannel() did not find the clinet to kick from channel: " << _name << std::endl;		// should we send a msg back that the client was not found to kick
+	if(isOperator(executor))
+		rmClient(rm_client);
 	else
-		_members.erase();
+		std::cout << "Placeholder in rmClient() in channel.hpp" << std::endl << "Executor is not a operator in this channel!" << std::endl;
+	//need to  send a msg to the executor?
 }
 
 void Channel::rmClient(Client *rm_client)
 {
-	clients_itr member_itr;		// member that will be kicked
+	clients_itr client_itr;		// member that will be kicked
 
-	member_itr = getMember(rm_client->getUsername());
-	if(member_itr != _members.end())
+	client_itr = getOperator(rm_client->getUsername());
+	if(client_itr != _members.end())
 	{
 		_operators.erase(getOperator(rm_client->getUsername()));
 		return ;
 	}
-	member_itr = getMember(rm_client->getUsername());
-	if(member_itr != _members.end())
+	client_itr = getMember(rm_client->getUsername());
+	if(client_itr != _members.end())
 		_members.erase(getMember(rm_client->getUsername()));
 }
 
@@ -83,8 +71,7 @@ void	Channel::addOperator(Client *new_operator)
 
 bool Channel::isOperator(const Client *client)
 {
-	(void)client;
-	for(int i = 0; i < _operators.size(); i++)
+	for(size_t i = 0; i < _operators.size(); i++)
 		if(_operators[i]->getUsername() == client->getUsername())
 			return false;
 	return true; 
