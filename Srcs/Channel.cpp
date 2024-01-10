@@ -49,15 +49,17 @@ void Channel::rmClient(const Client *executor, Client *rm_client)
 
 void Channel::rmClient(Client *rm_client)
 {
-	clients_itr *member;		// member that will be kicked
+	clients_itr member_itr;		// member that will be kicked
 
-	if(isOperator(rm_client) == true)
-		_operators.erase();
-	member = getClient(rm_client->getUsername());
-	if(member == NULL)
-		std::cout << ">>? kickFromChannel() did not find the clinet to kick from channel: " << _name << std::endl;		// should we send a msg back that the client was not found to kick
-	else
-		_members.erase();
+	member_itr = getMember(rm_client->getUsername());
+	if(member_itr != _members.end())
+	{
+		_operators.erase(getOperator(rm_client->getUsername()));
+		return ;
+	}
+	member_itr = getMember(rm_client->getUsername());
+	if(member_itr != _members.end())
+		_members.erase(getMember(rm_client->getUsername()));
 }
 
 //add clinet checks if clinet exists and add him to operator if wanted
