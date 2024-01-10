@@ -4,10 +4,12 @@
 #include <iostream>
 #include <cstdlib>			// exit
 #include <vector>
+#include <cerrno>
 
 #include "../Includes/Client.hpp"
 
 #define EXIT_FAILURE 1
+#define MAX_CLIENTS 100
 
 class Client;
 
@@ -20,11 +22,12 @@ class Channel
 		std::string _password;
 		std::string _topic;
 		std::string _name;
-		int _client_limit;
+		int _max_clients;
 
 		Channel();
 
 		void sendNonBlock(const int &fd, const std::string &msg);
+		void addClient(std::vector<Client *> &vector, Client *new_client);
 		
 		typedef std::vector<Client *>::iterator clients_itr;
 
@@ -42,11 +45,13 @@ class Channel
 		void addOperator(Client *new_operator);		// maybe we can do this in one funktion but it is one if less in non operatotr case
 		bool isOperator(const Client *client);
 
-		void setName(const std::string &name);
 		void setPassword(const std::string &password);
+		void setMaxClients(const int &max_clients);
+		void setName(const std::string &name);
 
+		std::vector<Client *>::iterator getOperator(const std::string &name);
+		std::vector<Client *>::iterator getMember(const std::string &name);
 		const std::string &getPassword() const;
 		const std::string &getName() const;
-		std::vector<Client *>::iterator getMember(const std::string &name);
-		std::vector<Client *>::iterator getOperator(const std::string &name);
+		int size() const;
 };

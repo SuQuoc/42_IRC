@@ -1,16 +1,20 @@
 #include "../Includes/Channel.hpp"
 
-Channel::Channel(Client *owner, const std::string &channel_name) : _name(channel_name)
+Channel::Channel(Client *owner, const std::string &channel_name) : _name(channel_name), _max_clients(MAX_CLIENTS)
 {
+	if(owner == NULL)
+	{
+		std::cerr << "Channel constructor owner is NULL!" << std::endl;
+		return ;
+	}
 	_operators.push_back(owner);
-	// owner->joinChannel(this);	// is it nessesay to add him to the _members??
 }
 Channel::Channel(const Channel &C) : _operators(C._operators), _members(C._members), _password(C._password), _topic(C._topic), _name(C._name)
 {
 	
 }
 Channel::~Channel() {}
-									//maybe it cloud just be the user name
+
 void Channel::sendMsg(const Client *sender, const std::string &msg)
 {
 	for(clients_itr member = _members.begin(); member != _members.end(); member++)
@@ -24,16 +28,13 @@ void Channel::sendMsg(const Client *sender, const std::string &msg)
 void Channel::sendNonBlock(const int &fd, const std::string &msg)
 {
 	//need to check if msg is not bigger than 512
-	int send_size = -1;
-	while( send_size == -1 )
+	while(send(fd, msg.c_str(), msg.size(), 0) == -1)
 	{
-		if(send(fd, msg.c_str(), msg.size(), 0) == send_size)
-		{
-			if (errno == EAGAIN || errno == EWOULDBLOCK)
-				continue ;
-			perror("Error send faild in channel.cpp");
-			std::exit(-1);
-		}
+		if (errno == EAGAIN || errno == EWOULDBLOCK)
+			continue ;
+		std::cerr << "send faild in channel.cpp" << std::endl;
+		strerror(errno);
+		std::exit(EXIT_FAILURE);
 	}
 }
 
@@ -54,31 +55,37 @@ void Channel::rmClient(Client *rm_client)
 	client_itr = getOperator(rm_client->getUsername());
 	if(client_itr != _members.end())
 	{
-		_operators.erase(getOperator(rm_client->getUsername()));
+		_operators.erase(client_itr);
 		return ;
 	}
 	client_itr = getMember(rm_client->getUsername());
 	if(client_itr != _members.end())
-		_members.erase(getMember(rm_client->getUsername()));
+		_members.erase(client_itr);
 }
 
-//add clinet checks if clinet exists and add him to operator if wanted
+void	Channel::addClient(std::vector<Client *> &vector, Client *new_client)
+{
+	if(new_client == NULL)
+	{
+		std::cerr << "Error addMember(): new_client is NULL" << std::endl;
+		return ;
+	}
+	if(size() >= _max_clients)
+	{
+		std::cerr << "Error channel" << _name << " is full" << std::endl;
+		return ;
+	}	
+	vector.push_back(new_client);
+}
+
 void	Channel::addMember(Client *new_client)
 {
-	(void)new_client;
-	/* if(_members.find(new_client->getUserName()) == _members.end())
-		_members.insert(std::pair<std::string, Client *>(new_client->getNickName(), new_client));
-	else
-		std::cout << "? could not add clinet it is already a member" << std::endl; */
+	addClient(_members, new_client);
 }
 
 void	Channel::addOperator(Client *new_operator)
 {
-	(void)new_operator;
-	/* if(is_operator == true && _operators.find(new_client->getUserName()) == _operators.end())
-		_operators.insert(std::pair<std::string, Client *>(new_client->getNickName(), new_client));
-	else
-		std::cout << "? could not add clinet it is already a operator" << std::endl; */
+	addClient(_operators, new_operator);
 }
 
 bool Channel::isOperator(const Client *client)
@@ -91,6 +98,8 @@ bool Channel::isOperator(const Client *client)
 
 //			setter
 void	Channel::setName(const std::string &name) { _name = name; }
+void	Channel::setMaxClients(const int &max_clients) { _max_clients = max_clients; }
+// ? should it respond to the client if it to big?
 void	Channel::setPassword(const std::string &password) { _password = password; }
 
 //			getter
@@ -112,3 +121,4 @@ std::vector<Client *>::iterator Channel::getMember(const std::string &name)
 
 const std::string &Channel::getPassword() const { return _password; }
 const std::string &Channel::getName() const { return _name; }
+int Channel::size() const { return _operators.size() + _members.size(); }
