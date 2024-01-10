@@ -13,6 +13,8 @@
 
 //git checkout -b quocsu
 
+class Channel;
+
 class Client
 {
 private:
@@ -38,7 +40,7 @@ public:
 	void setUser(const std::string& Uname, const std::string& Hname, const std::string& Rname);
 	//void setClientInfo(const std::string& nName, const std::string& uName, const std::string& hName, const std::string& rName);
 	// void setUserName(const std::string& name);
-	// void setHostname(const std::string& name);
+	// void setHostName(const std::string& name);
 	// void setRealName(const std::string& name);
 
 
