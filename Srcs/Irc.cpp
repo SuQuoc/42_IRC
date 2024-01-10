@@ -1,4 +1,4 @@
-#include "../Srcs/Irc.hpp"
+#include "../Includes/Irc.hpp"
 
 //con- and destructer
 Irc();

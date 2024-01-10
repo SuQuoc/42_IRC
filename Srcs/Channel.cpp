@@ -5,7 +5,7 @@ Channel::Channel(Client *owner, const std::string &channel_name) : _name(channel
 	_operators.push_back(owner);
 	// owner->joinChannel(this);	// is it nessesay to add him to the _members??
 }
-Channel::Channel(const Channel &C) : _operators(C._operators), _members(C._members), _name(C._name), _password(C._password), _topic(C._topic) 
+Channel::Channel(const Channel &C) : _operators(C._operators), _members(C._members), _password(C._password), _topic(C._topic), _name(C._name)
 {
 	
 }
@@ -28,6 +28,8 @@ void Channel::sendMsgToChannel(const Client *sender, const std::string &msg)
 //does not rm client from clients._channels
 void Channel::rmClientFromChannel(const Client *executor, Client *rm_client)
 {
+	(void)executor;
+	(void)rm_client;
 	/* members_itr member;		// member that will be kicked
 
 	(void)executor;			// ? check if executer has the rights
@@ -46,6 +48,7 @@ void Channel::rmClientFromChannel(const Client *executor, Client *rm_client)
 //add clinet checks if clinet exists and add him to operator if wanted
 void	Channel::addMember(Client *new_client)
 {
+	(void)new_client;
 	/* if(_members.find(new_client->getUserName()) == _members.end())
 		_members.insert(std::pair<std::string, Client *>(new_client->getNickName(), new_client));
 	else
@@ -54,6 +57,7 @@ void	Channel::addMember(Client *new_client)
 
 void	Channel::addOperator(Client *new_operator)
 {
+	(void)new_operator;
 	/* if(is_operator == true && _operators.find(new_client->getUserName()) == _operators.end())
 		_operators.insert(std::pair<std::string, Client *>(new_client->getNickName(), new_client));
 	else
@@ -62,6 +66,7 @@ void	Channel::addOperator(Client *new_operator)
 
 bool Channel::isOperator(const Client *client)
 {
+	(void)client;
 /* 	
 	for(clients_itr itr_client; itr_client != _operators.end(); itr_client++)
 	{
@@ -69,6 +74,7 @@ bool Channel::isOperator(const Client *client)
 	}
 	return true; 
 */
+	return true;
 }
 
 //			seter
@@ -76,5 +82,5 @@ void	Channel::setName(const std::string &name) { _name = name; }
 void	Channel::setPassword( const std::string &password ) { _password = password; }
 
 //			geter
-const std::string &Channel::getPassword() const { return _password; };
-const std::string &Channel::getName() const { return _name; };
+const std::string &Channel::getPassword() const { return _password; }
+const std::string &Channel::getName() const { return _name; }
