@@ -11,15 +11,17 @@ private:
 //methods
 	void	command_switch(std::string	command);
 
+
 public:
 //con- and destructer
 	Irc();
-	Irc(const Irc& I);
-	Irc operator=(const Irc& I);
+	Irc(std::string password);
+ 	//Irc(const Irc& I); ?
+	//Irc operator=(const Irc& I); ?
 	~Irc();
 
 //methods (commands)
-	void	JOIN(Client *sender, std::stringstream& sstream);
+/* 	void	JOIN(Client *sender, std::stringstream& sstream);
 	void	PART(Client *sender, std::stringstream& sstream);
 	void	QUIT(Client *sender, std::stringstream& sstream);
 	void	KICK(Client *sender, std::stringstream& sstream);
@@ -31,5 +33,5 @@ public:
 
 	void	MODE(Client *sender, std::stringstream& sstream);
 	void	TOPIC(Client *sender, std::stringstream& sstream);
-	void	INVITE(Client *sender, std::stringstream& sstream);
+	void	INVITE(Client *sender, std::stringstream& sstream); */
 };

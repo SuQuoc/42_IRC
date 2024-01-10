@@ -28,8 +28,14 @@ private:
 	std::map<std::string, Client*>	_client_names;
 	std::map<int, Client*>			_client_fds;
 	struct epoll_event	_ev;
+	std::string			_password;
 	int		_epoll_fd;
 	int		_sock_fd;
+
+	typedef std::map<std::string, Channel*>::iterator	channel_map_iter_t;
+	typedef std::map<std::string, Client*>::iterator	client_name_map_iter_t;
+	typedef std::map<int, Client*>::iterator			client_fd_map_iter_t;
+
 
 //methods
 void	accept_connection();
@@ -41,6 +47,7 @@ virtual void	command_switch(std::string command) = 0;
 public:
 //con- and destructer
 	AServer();
+	AServer(std::string password);
 	//AServer(const AServer& S); ?
 	//AServer operator=(const AServer& S); //not possible?
 	~AServer();

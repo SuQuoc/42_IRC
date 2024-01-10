@@ -1,16 +1,17 @@
-#include "../Srcs/Irc.hpp"
+#include "../Includes/Irc.hpp"
 
 //con- and destructer
-Irc();
-Irc(const Irc& I);
-Irc operator=(const Irc& I);
-~Irc();
+Irc::Irc() {}
+Irc::Irc(std::string password): AServer(password) {}
+/* Irc::Irc(const Irc& I);
+Irc::Irc operator=(const Irc& I); */
+Irc::~Irc() {}
 
 //private methods 
 void	command_switch(std::string	command);
 
 //methods (commands)
-void	JOIN(Client *sender, std::stringstream &sstream)
+/* void	JOIN(Client *sender, std::stringstream &sstream)
 {
 	std::string	channel_name;
 	std::getline(sstream, channel_name, ' ');
@@ -72,4 +73,4 @@ void	PRIVMSG(Client *sender, std::stringstream &sstream);
 
 void	MODE(Client *sender, std::stringstream &sstream);
 void	TOPIC(Client *sender, std::stringstream &sstream);
-void	INVITE(Client *sender, std::stringstream &sstream);
+void	INVITE(Client *sender, std::stringstream &sstream); */
