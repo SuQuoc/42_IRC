@@ -13,6 +13,8 @@
 
 //git checkout -b quocsu
 
+class Channel;
+
 class Client
 {
 private:

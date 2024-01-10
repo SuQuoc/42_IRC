@@ -4,6 +4,7 @@ CXX			= c++
 CXXFLAGS	= -Wall -Wextra -Werror -MMD -MP -pedantic -g -std=c++98
  
 INCLUDES 	= ./Includes
+#dependencies don't work!
 
 SRCS		= 	AServer.cpp \
 				Channel.cpp \

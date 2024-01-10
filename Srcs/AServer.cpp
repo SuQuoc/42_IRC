@@ -2,9 +2,12 @@
 
 //con- and destructer
 AServer::AServer(): _epoll_fd(-1), _sock_fd(-1) {}
-AServer::AServer(const AServer& S)
+/* AServer::AServer(const AServer& S)
 {
-	*this = S;
+	for (int i = 0; i < S._channels.size(); i++)
+	{
+
+	}
 }
 AServer AServer::operator=(const AServer& S)
 {
@@ -17,7 +20,7 @@ AServer AServer::operator=(const AServer& S)
 	_epoll_fd = S._epoll_fd;
 	_sock_fd = S._sock_fd;
 	return (*this);
-}
+} */
 AServer::~AServer()
 {
 	if (_epoll_fd != -1)
@@ -76,7 +79,7 @@ void	AServer::process_event(const int& client_fd)
 				return ;
 			default:
 				std::cout << buf << std::endl;
-				comment_switch(buf);
+				command_switch(buf);
 				return ;
 		}
 	}

@@ -14,6 +14,7 @@
 #include <fcntl.h>
 
 #include <iostream>
+#include <iterator>
 #include <cstring> //only strerror()
 #include <sstream>
 #include <cstdlib>
@@ -40,8 +41,8 @@ virtual void	command_switch(std::string command) = 0;
 public:
 //con- and destructer
 	AServer();
-	AServer(const AServer& S);
-	AServer operator=(const AServer& S);
+	//AServer(const AServer& S); ?
+	//AServer operator=(const AServer& S); //not possible?
 	~AServer();
 
 //methods
