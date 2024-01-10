@@ -5,7 +5,10 @@ CXXFLAGS	= -Wall -Wextra -Werror -MMD -MP -pedantic -g -std=c++98
  
 INCLUDES 	= ./Includes
 
-SRCS		= 	IrcServer.cpp \
+SRCS		= 	AServer.cpp \
+				Channel.cpp \
+				Client.cpp \
+				Irc.cpp \
 				main.cpp
 
 SRC_DIR 	= ./Srcs

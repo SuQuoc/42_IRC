@@ -1,4 +1,4 @@
-#include "../Includes/IrcServer.hpp"
+#include "../Includes/Irc.hpp"
 
 static int	stoi_(const std::string str)
 {
@@ -11,7 +11,7 @@ static int	stoi_(const std::string str)
 
 int main(const int argc, const char *argv[])
 {
-	IrcServer	server;
+	Irc	server;
 
 	if (argc != 3)
 	{
