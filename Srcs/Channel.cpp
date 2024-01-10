@@ -47,6 +47,19 @@ void Channel::rmClient(const Client *executor, Client *rm_client)
 		_members.erase();
 }
 
+void Channel::rmClient(Client *rm_client)
+{
+	clients_itr *member;		// member that will be kicked
+
+	if(isOperator(rm_client) == true)
+		_operators.erase();
+	member = getClient(rm_client->getUsername());
+	if(member == NULL)
+		std::cout << ">>? kickFromChannel() did not find the clinet to kick from channel: " << _name << std::endl;		// should we send a msg back that the client was not found to kick
+	else
+		_members.erase();
+}
+
 //add clinet checks if clinet exists and add him to operator if wanted
 void	Channel::addMember(Client *new_client)
 {
@@ -72,20 +85,26 @@ bool Channel::isOperator(const Client *client)
 	return true; 
 }
 
-//			seter
+//			setter
 void	Channel::setName(const std::string &name) { _name = name; }
 void	Channel::setPassword(const std::string &password) { _password = password; }
 
-//			geter
-Client *Channel::getClient(const std::string &name)
+//			getter
+std::vector<Client *>::iterator Channel::getOperator(const std::string &name)
 {
-	for(int i = 0; i < _members.size(); i++)
-		if(_members[i]->getUsername() == name)
-			return _members[i];
-	for(int i = 0; i < _operators.size(); i++)
-		if(_operators[i]->getUsername() == name)
-			return _operators[i];
-	return NULL;
+	for(clients_itr itr = _operators.begin(); itr != _operators.end(); itr++)
+		if((*itr)->getUsername() == name)
+			return itr;
+	return _operators.end();
 }
+
+std::vector<Client *>::iterator Channel::getMember(const std::string &name)
+{
+	for(clients_itr itr = _members.begin(); itr != _members.end(); itr++)
+		if((*itr)->getUsername() == name)
+			return itr;
+	return _members.end();
+}
+
 const std::string &Channel::getPassword() const { return _password; };
 const std::string &Channel::getName() const { return _name; };

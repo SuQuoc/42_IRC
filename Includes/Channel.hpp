@@ -33,8 +33,8 @@ class Channel
 		~Channel();
 
 		void sendMsgToChannel(const Client *sender, const std::string &msg);
-		void rmClientFromChannel(const Client *executor, Client *rm_client);
-		void rmClientFromChannel(Client *rm_client);
+		void rmClient(const Client *executor, Client *rm_client);
+		void rmClient(Client *rm_client);
 
 		void addMember(Client *new_member);
 		void addOperator(Client *new_operator);		// maybe we can do this in one funktion but it is one if less in non operatotr case
@@ -45,5 +45,6 @@ class Channel
 
 		const std::string &getPassword() const;
 		const std::string &getName() const;
-		const std::vector<Client *> &getMembers() const;
+		std::vector<Client *>::iterator Channel::getMember(const std::string &name);
+		std::vector<Client *>::iterator Channel::getOperator(const std::string &name);
 };
