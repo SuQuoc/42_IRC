@@ -10,7 +10,7 @@ Client::~Client()
 {
 	if (close(_fd) == -1)
 	{
-		perror("close:");
+		/* perror("close:"); */
 	}
 }
 

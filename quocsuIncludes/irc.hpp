@@ -27,6 +27,7 @@ enum IRC_ERR
 {
     ERR_NOSUCHCHANNEL = 403, //? can this happen with our Reference client, when does it occur
     ERR_CANNOTSENDTOCHAN = 404, //?
+    ERR_UNKNOWNCOMMAND = 421,
     ERR_ERRONEUSNICKNAME = 432,
     ERR_NICKNAMEINUSE = 433,
     ERR_USERNOTINCHANNEL = 441, //?
