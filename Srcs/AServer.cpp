@@ -86,7 +86,7 @@ void	AServer::process_event(const int& client_fd)
 				return ;
 			default:
 				std::cout << buf << std::endl;
-				command_switch(buf);
+				//command_switch(/* buf */);
 				return ;
 		}
 	}
