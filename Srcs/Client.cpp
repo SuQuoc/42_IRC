@@ -1,14 +1,14 @@
 
 # include "../Includes/Client.hpp"
 
-Client::Client(int socketFd): _connecSocket(socketFd)
+Client::Client(int fd): _fd(fd)
 {
-	std::cout << "Client with socket: " << _connecSocket << "created" << std::endl;
+	std::cout << "Client with socket: " << _fd << "created" << std::endl;
 }
 
 Client::~Client()
 {
-	if (close(_connecSocket) == -1)
+	if (close(_fd) == -1)
 	{
 		perror("close:");
 	}
@@ -46,14 +46,11 @@ void Client::setUser(const std::string& u_name, const std::string& h_name, const
 // const std::string& Client::getUsername() const {return _username;}
 // const std::string& Client::getHostname() const {return _hostname;}
 // const std::string& Client::getRealname() const {return _realname;}
+const int& Client::getFd() const {return _fd;}
 const std::string& Client::getNickname() const {return _nickname;}
 const std::string& Client::getUsername() const {return _username;}
-
-
-const std::string& Client::getPrefix() const
-{
-	return (":" + _nickname + "!" + _username + "@" + _hostname);
-}
+const std::string& Client::getPrefix() const {return _prefix;}
+const std::vector<Channel *>& Client::getAllChannels() const {return _channels;}
 
 
 void Client::joinChannel(Channel *channel)

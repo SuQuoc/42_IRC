@@ -16,19 +16,17 @@
 class Client
 {
 private:
+	const int _fd;
 	std::string _nickname; // values are change-able so not const take a look what can be changed
 	std::string _username;
 	std::string _hostname;
 	std::string _realname;
 	std::string _prefix;
 
-	const int _connecSocket;
-
 	std::vector<Channel *> _channels;
 
 	Client(const Client&); //
     Client& operator=(const Client&); //
-
 public:
 	Client(int socketFd);
 	~Client();
@@ -43,11 +41,15 @@ public:
 	// void setHostname(const std::string& name);
 	// void setRealName(const std::string& name);
 
+
+	// const std::string& getHostname() const;
+	// const std::string& getRealname() const;
+	const int& getFd() const;
 	const std::string& getNickname() const;
 	const std::string& getUsername() const;
 	const std::string& getPrefix() const; //nickname!username@hostname
-	// const std::string& getHostname() const;
-	// const std::string& getRealname() const;
+	const std::vector<Channel *>& getAllChannels() const;
+
 
 	void joinChannel(Channel *channel); // i or fiona(const) could call then nikis function
 	void leaveChannel(Channel *channel); // i or fiona(const) could call then nikis function 
