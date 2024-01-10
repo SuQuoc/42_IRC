@@ -33,7 +33,8 @@ class Channel
 		~Channel();
 
 		void sendMsgToChannel(const Client *sender, const std::string &msg);
-		void rmClientFromChannel(const Client *executor, Client &rm_client);
+		void rmClientFromChannel(const Client *executor, Client *rm_client);
+		void rmClientFromChannel(Client *rm_client);
 
 		void addMember(Client *new_member);
 		void addOperator(Client *new_operator);		// maybe we can do this in one funktion but it is one if less in non operatotr case
