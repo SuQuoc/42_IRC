@@ -41,10 +41,10 @@ private: //protected?
 void	accept_connection();
 void	process_event(const	int& client_sock);
 void	failure_exit(const std::string& error_msg); //exits?
+virtual void	command_switch(/* std::string command */) = 0;
 
 
 public:
-virtual void	command_switch(/* std::string command */) = 0;
 //con- and destructer
 	AServer();
 	AServer(std::string password);

@@ -86,7 +86,7 @@ void	AServer::process_event(const int& client_fd)
 				return ;
 			default:
 				std::cout << buf << std::endl;
-				//command_switch(/* buf */);
+				command_switch(/* buf */);
 				return ;
 		}
 	}
@@ -153,7 +153,7 @@ void	AServer::epollLoop()
 			failure_exit("epoll_wait failed"); //exits?
 		for (int i = 0; i < ev_cnt; i++)
 		{
-			std::cout << events[i].data.fd << std::endl;
+			std::cout << "fd: " << events[i].data.fd << std::endl;
 			if (events[i].data.fd == _sock_fd)
 			{
 				std::cout << "accept connection" << std::endl;

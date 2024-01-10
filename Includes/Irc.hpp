@@ -9,10 +9,10 @@ class Irc : public AServer
 {
 private:
 //methods
+	void	command_switch(/* std::string	command */);
 
 
 public:
-	void	command_switch(/* std::string	command */);
 //con- and destructer
 	Irc();
 	Irc(std::string password);

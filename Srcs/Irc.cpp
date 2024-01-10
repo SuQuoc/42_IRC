@@ -8,7 +8,7 @@ Irc::Irc operator=(const Irc& I); */
 Irc::~Irc() {}
 
 //private methods 
-void	command_switch(/* std::string	command */) {}
+void	Irc::command_switch(/* std::string	command */) {std::cout << "command switch" << std::endl;}
 
 //methods (commands)
 /* void	JOIN(Client *sender, std::stringstream &sstream)
