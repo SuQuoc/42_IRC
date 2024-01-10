@@ -13,19 +13,20 @@ Channel::~Channel() {}
 									//maybe it cloud just be the user name
 void Channel::sendMsgToChannel(const Client *sender, const std::string &msg)
 {
-	/* for(members_itr member = _members.begin(); member != _members.end(); member++)
+	for(clients_itr member = _members.begin(); member != _members.end(); member++)
 	{
-		if(member->second->getUserName() == sender.getUserName())
+		if((*member)->getUsername() == sender->getUsername())
 			continue ;
-		if(send(member->second->getClientFd(), msg.c_str(), 513, 0) == -1)					//flags?
+		if(send((*member)->getFd(), msg.c_str(), 513, 0) == -1)					//flags?
 		{
 			std::cout << "Error Send faild class Channel sendMsgToChannel" << std::endl;
 			std::exit(EXIT_FAILURE);													// should it exit ? I don't think so
 		}
-	} */
+	}
 }
 
-void Channel::rmClientFromChannel(const Client *executor, Client &rm_client)
+//does not rm client from clients._channels
+void Channel::rmClientFromChannel(const Client *executor, Client *rm_client)
 {
 	/* members_itr member;		// member that will be kicked
 
