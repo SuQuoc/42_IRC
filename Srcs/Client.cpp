@@ -1,7 +1,7 @@
 
 # include "../Includes/Client.hpp"
 
-Client::Client(int fd): _fd(fd)
+Client::Client(int fd): _fd(fd) 
 {
 	std::cout << "Client with socket: " << _fd << "created" << std::endl;
 }
@@ -16,7 +16,7 @@ Client::~Client()
 
 bool Client::isRegistered() const
 {
-	if (!_nickname.empty() && !_username.empty())
+	if (!_nickname.empty() && !_username.empty() && _is_authenticated)
 		return true;
 	return false;
 }
@@ -33,11 +33,12 @@ void Client::setNickname(const std::string& name)
 	_prefix = ":" + _nickname + "!" + _username + "@" + _hostname; //bissi blöd but working
 }
 
-void Client::setUser(const std::string& u_name, const std::string& h_name, const std::string& r_name)
+void Client::setUser(const std::string& uname, const std::string& hname, const std::string& sname, const std::string& rname)
 {
-	_username = u_name;
-	_hostname = h_name;
-	_realname = r_name;
+	_username = uname;
+	_hostname = hname;
+	_realname = rname;
+	_servername = sname;
 
 	//Annahme das NICK immer zuerst gemacht wird aber dann ist dann nc nicht gecovered falls wirs covern müssen
 	_prefix = ":" + _nickname + "!" + _username + "@" + _hostname;
