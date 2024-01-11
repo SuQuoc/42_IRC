@@ -1,86 +1,124 @@
 #include "../Includes/Channel.hpp"
 
-Channel::Channel(Client *owner, const std::string &channel_name) : _name(channel_name)
+Channel::Channel(Client *owner, const std::string &channel_name) : _name(channel_name), _max_clients(MAX_CLIENTS)
 {
-	_operators.push_back(owner);
-	// owner->joinChannel(this);	// is it nessesay to add him to the _members??
+	if(owner == NULL)
+	{
+		std::cerr << "Channel constructor owner is NULL!" << std::endl;
+		return ;
+	}
+	addClient(owner, true);
 }
-Channel::Channel(const Channel &C) : _operators(C._operators), _members(C._members), _password(C._password), _topic(C._topic), _name(C._name)
+Channel::Channel(const Channel &C) : _clients(C._clients), _password(C._password), _topic(C._topic), _name(C._name)
 {
 	
 }
 Channel::~Channel() {}
-									//maybe it cloud just be the user name
-void Channel::sendMsgToChannel(const Client *sender, const std::string &msg)
+
+void Channel::sendMsg(const Client *sender, const std::string &msg)
 {
-	for(clients_itr member = _members.begin(); member != _members.end(); member++)
+	for(clients_itr itr = _clients.begin(); itr != _clients.end(); itr++)
 	{
-		if((*member)->getUsername() == sender->getUsername())
+		if(itr->members == sender)
 			continue ;
-		if(send((*member)->getFd(), msg.c_str(), 513, 0) == -1)					//flags?
-		{
-			std::cout << "Error Send faild class Channel sendMsgToChannel" << std::endl;
-			std::exit(EXIT_FAILURE);													// should it exit ? I don't think so
-		}
+		sendNonBlock(sender->getFd(), msg);
 	}
 }
 
-//does not rm client from clients._channels
-void Channel::rmClientFromChannel(const Client *executor, Client *rm_client)
+// need to rework !!! ???
+void Channel::sendNonBlock(const int &fd, const std::string &msg)
 {
-	(void)executor;
-	(void)rm_client;
-	/* members_itr member;		// member that will be kicked
-
-	(void)executor;			// ? check if executer has the rights
-	if(_operators.find(kick_client.getUserName()) == _operators.end())
+	//need to check if msg is not bigger than 512
+	while(send(fd, msg.c_str(), msg.size(), 0) == -1)
 	{
-		std::cout << ">>? kickFromChannel() executor is not a operator" << std::endl;
+		if (errno == EAGAIN || errno == EWOULDBLOCK)
+			continue ;
+		std::cerr << "send faild in channel.cpp" << std::endl;
+		strerror(errno);
+		std::exit(EXIT_FAILURE);
+	}
+}
+
+//does not rm client from clients._channels or the other maps in server
+void Channel::rmClient(const Client *executor, const Client *rm_client)
+{
+	clients_itr itr;
+
+	if(!executor || !rm_client)
+		return ;
+	itr = getClient(executor);
+	if( itr == _clients.end())			// need to send a msg to the client ?
+	{
+		std::cout << "Placeholder in rmClient() in channel.hpp" << std::endl << "Executor is not a in this channel!" << std::endl;
 		return ;
 	}
-	member = _members.find(kick_client.getUserName());
-	if(member == _members.end())
-		std::cout << ">>? kickFromChannel() did not find the clinet to kick from channel: " << _name << std::endl;		// should we send a msg back that the client was not found to kick
-	else
-		_members.erase(member); */
-}
-
-//add clinet checks if clinet exists and add him to operator if wanted
-void	Channel::addMember(Client *new_client)
-{
-	(void)new_client;
-	/* if(_members.find(new_client->getUserName()) == _members.end())
-		_members.insert(std::pair<std::string, Client *>(new_client->getNickName(), new_client));
-	else
-		std::cout << "? could not add clinet it is already a member" << std::endl; */
-}
-
-void	Channel::addOperator(Client *new_operator)
-{
-	(void)new_operator;
-	/* if(is_operator == true && _operators.find(new_client->getUserName()) == _operators.end())
-		_operators.insert(std::pair<std::string, Client *>(new_client->getNickName(), new_client));
-	else
-		std::cout << "? could not add clinet it is already a operator" << std::endl; */
-}
-
-bool Channel::isOperator(const Client *client)
-{
-	(void)client;
-/* 	
-	for(clients_itr itr_client; itr_client != _operators.end(); itr_client++)
+	if(itr->is_operator == false)		// need to send a msg to the client ?
 	{
-		if(itr)
+		std::cout << "Placeholder in rmClient() in channel.hpp" << std::endl << "Executor is not a operator this channel!" << std::endl;
+		return ;
 	}
-	return true; 
-*/
-	return true;
+	rmClient(rm_client);
+	//need to  send a msg to the executor?
 }
 
-//			seter
-void	Channel::setName(const std::string &name) { _name = name; }
-void	Channel::setPassword( const std::string &password ) { _password = password; }
+void Channel::rmClient(const Client *rm_client)
+{
+	clients_itr itr;
 
-//			geter
+	if(!rm_client)
+		return ;
+	itr = getClient(rm_client);
+	if(itr == _clients.end())			// need to send a msg to the client ?
+	{
+		std::cout << "Placeholder in rmClient() in channel.hpp" << std::endl << "rm_client is not in channel!" << std::endl;
+		return ;
+	}
+	_clients.erase(itr);
+}
+
+void	Channel::addClient(Client *new_client, bool is_operator)
+{
+	if(new_client == NULL)
+	{
+		std::cerr << "Error addMember(): new_client is NULL" << std::endl;
+		return ;
+	}
+	if(size() >= _max_clients)
+	{
+		std::cerr << "Error channel" << _name << " is full" << std::endl;
+		return ;
+	}
+	if(getClient(new_client) == _clients.end())
+	{
+		std::cerr << "Error client" << new_client->getUsername() << " is already in this channel." << std::endl;
+		return ;
+	}
+	//	need to send a msg to the client ?
+	_clients.push_back((Member_t){new_client, is_operator});
+}
+
+bool	Channel::isOperator(const Client *client)
+{
+	if(getClient(client)->is_operator == true)
+		return true;
+	return false;
+}
+
+//			setter
+void	Channel::setName(const std::string &name) { _name = name; }
+void	Channel::setMaxClients(const int &max_clients) { _max_clients = max_clients; }
+// ? should it respond to the client if it to big?
+void	Channel::setPassword(const std::string &password) { _password = password; }
+
+//			getter
+std::vector<Channel::Member_t>::iterator Channel::getClient(const Client *client)
+{
+	for(clients_itr itr = _clients.begin(); itr != _clients.end(); itr++)
+		if(itr->members == client)
+			return itr;
+	return _clients.end();
+}
+
 const std::string &Channel::getPassword() const { return _password; }
 const std::string &Channel::getName() const { return _name; }
+int Channel::size() const { return _clients.size(); }

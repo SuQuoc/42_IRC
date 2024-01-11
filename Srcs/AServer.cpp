@@ -1,7 +1,8 @@
 #include "../Includes/AServer.hpp"
 
 //con- and destructer
-AServer::AServer(): _epoll_fd(-1), _sock_fd(-1) {}
+AServer::AServer(): _password(""), _epoll_fd(-1), _sock_fd(-1) {}
+AServer::AServer(std::string password): _password(password), _epoll_fd(-1), _sock_fd(-1) {}
 /* AServer::AServer(const AServer& S)
 {
 	for (int i = 0; i < S._channels.size(); i++)
@@ -23,6 +24,12 @@ AServer AServer::operator=(const AServer& S)
 } */
 AServer::~AServer()
 {
+	for (channel_map_iter_t it = _channels.begin(); it != _channels.end(); it++)
+		delete it->second;
+	for (client_name_map_iter_t it = _client_names.begin(); it != _client_names.end(); it++)
+		delete it->second;
+	for (client_fd_map_iter_t it = _client_fds.begin(); it != _client_fds.end(); it++)
+		delete it->second;
 	if (_epoll_fd != -1)
 		close(_epoll_fd);
 	if (_sock_fd != -1)
@@ -79,7 +86,7 @@ void	AServer::process_event(const int& client_fd)
 				return ;
 			default:
 				std::cout << buf << std::endl;
-				command_switch(buf);
+				command_switch(/* buf */);
 				return ;
 		}
 	}
@@ -146,7 +153,7 @@ void	AServer::epollLoop()
 			failure_exit("epoll_wait failed"); //exits?
 		for (int i = 0; i < ev_cnt; i++)
 		{
-			std::cout << events[i].data.fd << std::endl;
+			std::cout << "fd: " << events[i].data.fd << std::endl;
 			if (events[i].data.fd == _sock_fd)
 			{
 				std::cout << "accept connection" << std::endl;
