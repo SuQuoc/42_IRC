@@ -8,7 +8,7 @@ Irc::Irc operator=(const Irc& I); */
 Irc::~Irc() {}
 
 //private methods 
-void command_switch(Client *sender, const std::string& message) //request better name? for us to discern
+void Irc::command_switch(Client *sender, const std::string& message) //request better name? for us to discern
 {
     sstream(string)
     std::string cmd  = getline();
