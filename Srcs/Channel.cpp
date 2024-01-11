@@ -94,7 +94,10 @@ void	Channel::addClient(Client *new_client, bool is_operator)
 		return ;
 	}
 	//	need to send a msg to the client ?
-	_clients.push_back((Member_t){new_client, is_operator});
+	struct Member_t member;
+	member.is_operator = is_operator;
+	member.members = new_client;
+	_clients.push_back(member);
 }
 
 bool	Channel::isOperator(const Client *client)

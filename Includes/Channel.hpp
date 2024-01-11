@@ -17,7 +17,7 @@ class Channel
 {
 	private:
 
-		typedef struct Member_t
+		struct Member_t
 		{
 			Client *members;
 			bool is_operator;
@@ -32,7 +32,6 @@ class Channel
 		Channel();
 
 		void	sendNonBlock(const int &fd, const std::string &msg);
-		void	addClient(Client *new_client, bool is_operator);
 		
 		typedef	std::vector<Channel::Member_t>::iterator clients_itr;
 
@@ -42,20 +41,20 @@ class Channel
 		Channel(const Channel &C);
 		~Channel();
 
-		void	sendMsg(const Client *sender, const std::string &msg);
 
 		void	rmClient(const Client *executor, const Client *rm_client);
+		void	sendMsg(const Client *sender, const std::string &msg);
+		void	addClient(Client *new_client, bool is_operator);
 		void	rmClient(const Client *rm_client);
-		void	addMember(Client *new_member);
-		void	addOperator(Client *new_operator);		// maybe we can do this in one funktion but it is one if less in non operatotr case
 		bool	isOperator(const Client *client);
 
 		void	setPassword(const std::string &password);
 		void	setMaxClients(const int &max_clients);
 		void	setName(const std::string &name);
 
-		std::vector<Member_t>::iterator Channel::getClient(const Client *client);
+		clients_itr getClient(const Client *client);
 		const std::string	&getPassword() const;
 		const std::string	&getName() const;
 		int size() const;
+
 };
