@@ -22,10 +22,14 @@ private:
 	std::string _nickname; // values are change-able so not const take a look what can be changed
 	std::string _username;
 	std::string _hostname;
+	std::string _servername;
 	std::string _realname;
 	std::string _prefix;
 
 	std::vector<Channel *> _channels;
+
+	bool _is_registered;
+	bool _is_authenticated; //not needed i think
 
 	Client(const Client&); //
     Client& operator=(const Client&); //
@@ -36,12 +40,12 @@ public:
 	bool isRegistered() const;
 	// bool isAuthenticated() const; //für PASS command
 
+
+
 	void setNickname(const std::string& name);
-	void setUser(const std::string& Uname, const std::string& Hname, const std::string& Rname);
+	void setUser(const std::string& uname, const std::string& hname, const std::string& sname, const std::string& rname);
 	//void setClientInfo(const std::string& nName, const std::string& uName, const std::string& hName, const std::string& rName);
-	// void setUserName(const std::string& name);
-	// void setHostName(const std::string& name);
-	// void setRealName(const std::string& name);
+	void setToAuthenticated(); //write it
 
 
 	// const std::string& getHostname() const;
