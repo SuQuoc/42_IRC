@@ -43,6 +43,9 @@ void	process_event(const	int& client_sock);
 void	failure_exit(const std::string& error_msg); //exits?
 virtual void	command_switch(/* std::string command */) = 0;
 
+void	addNewPair(Client *owner, const std::string& channel_name);
+void	addNewPair(std::string user_name, const int& client_fd); //add more?
+void	addNewPair(const int& client_fd);
 
 public:
 //con- and destructer

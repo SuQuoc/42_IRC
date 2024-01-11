@@ -49,7 +49,7 @@ void	AServer::accept_connection()
 		client_fd = accept(_sock_fd, reinterpret_cast<struct sockaddr*>(&client_addr), &client_addr_len);
 		if (client_fd == -1)
 		{
-			if (errno != EAGAIN && errno != EWOULDBLOCK)
+			if (errno != EAGAIN && errno != EWOULDBLOCK) //if not
 				std::cerr << "Error: accept failed" << std::endl;
 			return ;
 		}
@@ -61,10 +61,10 @@ void	AServer::accept_connection()
 			std::cerr << "Error: epoll_ctl failed in accept_connection" << std::endl;
 			return ;
 		}
+		addNewPair(client_fd);	
 	}
 }
 
-//what happens if client presses ctrl-D? -> Subject!!!
 void	AServer::process_event(const int& client_fd)
 {
 	char	buf[513]; //13?	
@@ -72,20 +72,21 @@ void	AServer::process_event(const int& client_fd)
 
 	while (1)
 	{
+		memset(buf, '\0', 513);
 		bytes_recieved = recv(client_fd, buf, sizeof(buf), 0);
 		switch (bytes_recieved)
 		{
 			case (-1):
+				/* if (errno == EAGAIN || errno == EWOULDBLOCK) //leave it in? //potential endless-loop?
+					break ; */ 			//loops when ctrl-D is pressed and waits for enter from same client
 				std::cerr << "Error: couldn't recieve data :" << std::strerror(errno) << std::endl;
-				if (errno == EAGAIN || errno == EWOULDBLOCK) //leave it in? //potential endless-loop?
-					break ;
 				return ;
 			case (0):
 				//disconnect_client(); !!!!
 				close(client_fd);
 				return ;
 			default:
-				std::cout << buf << std::endl;
+				std::cout << "buf: " << buf << "&" << std::endl << std::endl;
 				command_switch(/* buf */);
 				return ;
 		}
@@ -97,6 +98,26 @@ void	AServer::failure_exit(const std::string& error_msg)
 	std::cerr << "Error: " << error_msg << ": " << std::strerror(errno) << std::endl;
 	std::exit(errno); //errno?
 }
+
+void	AServer::addNewPair(Client *owner, const std::string& channel_name)
+{
+	Channel	*temp_channel = new Channel(owner, channel_name); //protect new?
+	std::pair<std::string, Channel*>	pair(channel_name, temp_channel);
+	_channels.insert(pair);
+}
+void	AServer::addNewPair(std::string user_name, const int& client_fd) //add more?
+{
+	Client	*temp_client = new Client(client_fd); //protect new?
+	std::pair<std::string, Client*>	pair(user_name, temp_client);
+	_client_names.insert(pair);
+}
+void	AServer::addNewPair(const int& client_fd)
+{
+	Client	*temp_client = new Client(client_fd); //protect new?
+	std::pair<int, Client*>	pair(client_fd, temp_client);
+	_client_fds.insert(pair);
+}
+
 
 //public methods
 void	AServer::createTcpSocket(const std::string& ip, const int& port) //exits?
@@ -159,7 +180,7 @@ void	AServer::epollLoop()
 				std::cout << "accept connection" << std::endl;
 				accept_connection();
 			}
-			else if (events[i].data.fd == STDIN_FILENO) //fileno not allowed!!
+			else if (events[i].data.fd == STDIN_FILENO)
 			{
 				std::string	str;
 				std::cout << "stdin: ";
