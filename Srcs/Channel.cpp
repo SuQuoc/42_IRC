@@ -7,9 +7,9 @@ Channel::Channel(Client *owner, const std::string &channel_name) : _name(channel
 		std::cerr << "Channel constructor owner is NULL!" << std::endl;
 		return ;
 	}
-	_operators.push_back(owner);
+	addClient(owner, true);
 }
-Channel::Channel(const Channel &C) : _operators(C._operators), _members(C._members), _password(C._password), _topic(C._topic), _name(C._name)
+Channel::Channel(const Channel &C) : _clients(C._clients), _password(C._password), _topic(C._topic), _name(C._name)
 {
 	
 }
@@ -17,14 +17,15 @@ Channel::~Channel() {}
 
 void Channel::sendMsg(const Client *sender, const std::string &msg)
 {
-	for(clients_itr member = _members.begin(); member != _members.end(); member++)
+	for(clients_itr itr = _clients.begin(); itr != _clients.end(); itr++)
 	{
-		if((*member)->getUsername() == sender->getUsername())
+		if(itr->members == sender)
 			continue ;
 		sendNonBlock(sender->getFd(), msg);
 	}
 }
 
+// need to rework !!! ???
 void Channel::sendNonBlock(const int &fd, const std::string &msg)
 {
 	//need to check if msg is not bigger than 512
@@ -38,32 +39,44 @@ void Channel::sendNonBlock(const int &fd, const std::string &msg)
 	}
 }
 
-//does not rm client from clients._channels
-void Channel::rmClient(const Client *executor, Client *rm_client)
+//does not rm client from clients._channels or the other maps in server
+void Channel::rmClient(const Client *executor, const Client *rm_client)
 {
-	if(isOperator(executor))
-		rmClient(rm_client);
-	else
-		std::cout << "Placeholder in rmClient() in channel.hpp" << std::endl << "Executor is not a operator in this channel!" << std::endl;
+	clients_itr itr;
+
+	if(!executor || !rm_client)
+		return ;
+	itr = getClient(executor);
+	if( itr == _clients.end())			// need to send a msg to the client ?
+	{
+		std::cout << "Placeholder in rmClient() in channel.hpp" << std::endl << "Executor is not a in this channel!" << std::endl;
+		return ;
+	}
+	if(itr->is_operator == false)		// need to send a msg to the client ?
+	{
+		std::cout << "Placeholder in rmClient() in channel.hpp" << std::endl << "Executor is not a operator this channel!" << std::endl;
+		return ;
+	}
+	rmClient(rm_client);
 	//need to  send a msg to the executor?
 }
 
-void Channel::rmClient(Client *rm_client)
+void Channel::rmClient(const Client *rm_client)
 {
-	clients_itr client_itr;		// member that will be kicked
+	clients_itr itr;
 
-	client_itr = getOperator(rm_client->getUsername());
-	if(client_itr != _members.end())
+	if(!rm_client)
+		return ;
+	itr = getClient(rm_client);
+	if(itr == _clients.end())			// need to send a msg to the client ?
 	{
-		_operators.erase(client_itr);
+		std::cout << "Placeholder in rmClient() in channel.hpp" << std::endl << "rm_client is not in channel!" << std::endl;
 		return ;
 	}
-	client_itr = getMember(rm_client->getUsername());
-	if(client_itr != _members.end())
-		_members.erase(client_itr);
+	_clients.erase(itr);
 }
 
-void	Channel::addClient(std::vector<Client *> &vector, Client *new_client)
+void	Channel::addClient(Client *new_client, bool is_operator)
 {
 	if(new_client == NULL)
 	{
@@ -74,26 +87,21 @@ void	Channel::addClient(std::vector<Client *> &vector, Client *new_client)
 	{
 		std::cerr << "Error channel" << _name << " is full" << std::endl;
 		return ;
-	}	
-	vector.push_back(new_client);
+	}
+	if(getClient(new_client) == _clients.end())
+	{
+		std::cerr << "Error client" << new_client->getUsername() << " is already in this channel." << std::endl;
+		return ;
+	}
+	//	need to send a msg to the client ?
+	_clients.push_back((Member_t){new_client, is_operator});
 }
 
-void	Channel::addMember(Client *new_client)
+bool	Channel::isOperator(const Client *client)
 {
-	addClient(_members, new_client);
-}
-
-void	Channel::addOperator(Client *new_operator)
-{
-	addClient(_operators, new_operator);
-}
-
-bool Channel::isOperator(const Client *client)
-{
-	for(size_t i = 0; i < _operators.size(); i++)
-		if(_operators[i]->getUsername() == client->getUsername())
-			return false;
-	return true; 
+	if(getClient(client)->is_operator == true)
+		return true;
+	return false;
 }
 
 //			setter
@@ -103,22 +111,14 @@ void	Channel::setMaxClients(const int &max_clients) { _max_clients = max_clients
 void	Channel::setPassword(const std::string &password) { _password = password; }
 
 //			getter
-std::vector<Client *>::iterator Channel::getOperator(const std::string &name)
+std::vector<Channel::Member_t>::iterator Channel::getClient(const Client *client)
 {
-	for(clients_itr itr = _operators.begin(); itr != _operators.end(); itr++)
-		if((*itr)->getUsername() == name)
+	for(clients_itr itr = _clients.begin(); itr != _clients.end(); itr++)
+		if(itr->members == client)
 			return itr;
-	return _operators.end();
-}
-
-std::vector<Client *>::iterator Channel::getMember(const std::string &name)
-{
-	for(clients_itr itr = _members.begin(); itr != _members.end(); itr++)
-		if((*itr)->getUsername() == name)
-			return itr;
-	return _members.end();
+	return _clients.end();
 }
 
 const std::string &Channel::getPassword() const { return _password; }
 const std::string &Channel::getName() const { return _name; }
-int Channel::size() const { return _operators.size() + _members.size(); }
+int Channel::size() const { return _clients.size(); }

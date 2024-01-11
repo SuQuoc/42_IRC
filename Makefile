@@ -1,5 +1,5 @@
 NAME		= ircserv
-ARGS 		= localhost 8080
+ARGS 		= 127.0.0.1 8080
 CXX			= c++
 CXXFLAGS	= -Wall -Wextra -Werror -MMD -MP -pedantic -g -std=c++98
  
