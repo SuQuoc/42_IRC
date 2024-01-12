@@ -61,7 +61,9 @@ void	AServer::accept_connection()
 			std::cerr << "Error: epoll_ctl failed in accept_connection" << std::endl;
 			return ;
 		}
-		addNewPair(client_fd);	
+		if (_client_fds.find(client_fd) != _client_fds.end())
+			std::cerr << "* Error: new fd already in map" << std::endl;
+		_client_fds[client_fd] = NULL;
 	}
 }
 
@@ -87,7 +89,7 @@ void	AServer::process_event(const int& client_fd)
 				return ;
 			default:
 				std::cout << "buf: " << buf << "&" << std::endl << std::endl;
-				command_switch(/* buf */);
+				command_switch(_client_fds.find(client_fd)->second, buf); //what if fd is not in map?
 				return ;
 		}
 	}
@@ -99,9 +101,9 @@ void	AServer::failure_exit(const std::string& error_msg)
 	std::exit(errno); //errno?
 }
 
-void	AServer::addNewPair(Client *owner, const std::string& channel_name)
+void	AServer::addNewPair(Client *sender, const std::string& channel_name)
 {
-	Channel	*temp_channel = new Channel(owner, channel_name); //protect new?
+	Channel	*temp_channel = new Channel(sender, channel_name); //protect new?
 	std::pair<std::string, Channel*>	pair(channel_name, temp_channel);
 	_channels.insert(pair);
 }
