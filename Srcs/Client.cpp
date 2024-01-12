@@ -71,3 +71,13 @@ void Client::sendTo(const std::string& msg, Client* recipient) const
 	if (send(recipient->getFd(), message.c_str(), message.size(), 0) == -1)
 		std::cerr << "send() failed" << std::endl;
 }
+
+
+void Client::sendTo(const std::string& msg, Channel* recipient) const //???????????
+{
+	const std::string message = this->getPrefix() + msg;
+	// std::cout << "SEND FUNCTION NOT COMPLETED YET" << std::endl;
+	// if (send(recipient->getFd(), message.c_str(), message.size(), 0) == -1)
+		// std::cerr << "send() failed" << std::endl;
+	(void)(recipient);
+}

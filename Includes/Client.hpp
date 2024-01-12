@@ -60,8 +60,8 @@ public:
 
 	void joinChannel(Channel *channel); // i or fiona(const) could call then nikis function
 	void leaveChannel(Channel *channel); // i or fiona(const) could call then nikis function 
-	void sendTo(const std::string& msg, Client* recipient) const
-
+	void sendTo(const std::string& msg, Client* recipient) const;
+	void sendTo(const std::string& msg, Channel* recipient) const;
 };
 
 

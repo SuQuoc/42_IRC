@@ -1,7 +1,7 @@
 #include "../Includes/AServer.hpp"
 
 //con- and destructer
-AServer::AServer(): _password(""), _epoll_fd(-1), _sock_fd(-1) {}
+AServer::AServer(): _password("pw"), _epoll_fd(-1), _sock_fd(-1) {}
 AServer::AServer(std::string password): _password(password), _epoll_fd(-1), _sock_fd(-1) {}
 /* AServer::AServer(const AServer& S)
 {
