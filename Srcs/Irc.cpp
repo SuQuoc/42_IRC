@@ -18,8 +18,8 @@ void	Irc::command_switch(Client *sender, const std::string message) //message-> 
 	std::cout << "cmd: " << cmd << "$" << std::endl;
 	if (sender == NULL) //doesn't protect when sender is not in map?
 	{
-		std::getline(sstream, cmd);
-		std::getline(sstream, cmd, ' ');
+		std::getline(sstream, cmd); //?
+		std::getline(sstream, cmd, ' '); //?
 		//std::cout << "cmd2: " << cmd << "$" << std::endl;
 		if (cmd == "PASS")
 			std::cout << "PASS()" << std::endl; //PASS(); // client can always try PASS although not registered ?
