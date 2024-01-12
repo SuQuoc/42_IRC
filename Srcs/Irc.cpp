@@ -10,6 +10,7 @@ Irc::~Irc() {}
 //private methods 
 void Irc::command_switch(Client *sender, const std::string& message) //request better name? for us to discern
 {
+	//fd muss weiter gesendet werden
     sstream(string)
     std::string cmd  = getline();
 
@@ -30,10 +31,14 @@ void Irc::command_switch(Client *sender, const std::string& message) //request b
 
 
 //methods (commands)
-/* void	JOIN(Client *sender, std::stringstream &sstream)
+/* void Irc::JOIN(Client *sender, std::stringstream &sstream)
 {
 	std::string	channel_name;
-	std::getline(sstream, channel_name, ' ');
+	std::getline(sstream, channel_name, ' '); //rest is being ignored bc u cant change the join message
+	
+	
+	
+	 _channels.find(channel_name);
 	
 }
 std::string	make_message(sender, msg, default)
@@ -47,7 +52,7 @@ std::string	make_message(sender, msg, default)
 	return (message);
 }
 
-void	PART(Client *sender, std::stringstream &sstream)
+void Irc::PART(Client *sender, std::stringstream &sstream)
 {
 	//PART #channnel-name msg
 	Channel		*channel;
@@ -66,7 +71,7 @@ void	PART(Client *sender, std::stringstream &sstream)
 	sender->leaveChannel();
 	channel.sendMsg(sender, make_message(sender, msg, default));
 }
-void	QUIT(Client *sender, std::stringstream &sstream)
+void Irc::QUIT(Client *sender, std::stringstream &sstream)
 {
 	std::string	channel_name;
 	std::string	msg;
@@ -84,18 +89,20 @@ void	QUIT(Client *sender, std::stringstream &sstream)
 	delete client-object (sender)
 	erase client from name_client-map (name)
 }
-void	KICK(Client *sender, std::stringstream &sstream);
+void Irc::KICK(Client *sender, std::stringstream &sstream);
+{
 
+}
 
 
 //WIR NEHMEN AN DAS wir immer PASS NICK USER bekommen 
 //dh ich kann das bissi ändern
-void	PASS(Client *sender, std::stringstream &sstream)
+void Irc::PASS(Client *sender, std::stringstream &sstream, )
 {
     std::string password;
-    std::getline(sstream, password); //until newline default
+    std::getline(sstream, password); //until newline defaul, according to chatGPT the server takes in the entire string with spaces
 
-    if (password.empty())
+    if (password.empty()) //wont be triggered through HexChat it would only send NICK and USER
         sendError(ERR_);
     else if (sender->isRegistered())
         sendError(ERR_); //already registered
@@ -110,7 +117,7 @@ void	PASS(Client *sender, std::stringstream &sstream)
 }
 
 //should we even check for the order or trust Hexchat --> trust Hexchat
-void	NICK(Client *sender, std::stringstream &sstream)
+void Irc::NICK(Client *sender, std::stringstream &sstream)
 {
     std::string nickname;
     std::getline(sstream, nickname); //until newline default
@@ -128,7 +135,7 @@ void	NICK(Client *sender, std::stringstream &sstream)
         sender.setNickname();
 }
 
-void	USER(Client *sender, std::stringstream &sstream)
+void Irc::USER(Client *sender, std::stringstream &sstream)
 {
     std::vector<std::string> info(4);
 
@@ -148,8 +155,30 @@ void	USER(Client *sender, std::stringstream &sstream)
 	sender->registrationAccepted(); //setter i guess ? should also sendMsg(RPL_WELCOME); --> in 
 	//add Client to map //server job
 }
-void	PRIVMSG(Client *sender, std::stringstream &sstream);
+void Irc::PRIVMSG(Client *sender, std::stringstream &sstream);
+{
+	std::string recipient;
+	std::string message;
+    std::getline(sstream, recipient, ' '); //space 
+    std::getline(sstream, message);
 
-void	MODE(Client *sender, std::stringstream &sstream);
-void	TOPIC(Client *sender, std::stringstream &sstream);
-void	INVITE(Client *sender, std::stringstream &sstream); */
+
+	SHOULD WE CHECK FOR:
+		- ':' ?? -> hexchat doesnt let u write /PRIVMSG
+		- if recpient == sender.getNickname()? -> u can write yourself a message in hexchat with /PRIVMSG
+		- /PRIVMSG for channels didnt work in Hexchat
+
+	if (recipient->empty()) 
+		sendError(ERR_); //need more params
+	if (recipient[0] == '#')
+		_channels.find(recipient)->second->NiksFunctionToRelay(sender, message) 
+		//if message is being concatinated in channel it maybe has to know what IRC CMD was triggered
+		//then u can use the NiksFunctionToRelay(sender, message) only for one specific IRC CMD and not for e.g. both PRIVMSG and JOIN
+	else
+		_usersNickname.find(recipient)->second->ClientMemberFunction(message)?
+}
+
+
+void Irc::MODE(Client *sender, std::stringstream &sstream);
+void Irc::TOPIC(Client *sender, std::stringstream &sstream);
+void Irc::INVITE(Client *sender, std::stringstream &sstream); */
