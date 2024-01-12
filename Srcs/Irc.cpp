@@ -8,24 +8,38 @@ Irc::Irc operator=(const Irc& I); */
 Irc::~Irc() {}
 
 //private methods 
-void Irc::command_switch(Client *sender, const std::string& message) //request better name? for us to discern
+void	Irc::command_switch(Client *sender, const std::string message) //message-> 'request' better name? for us to discern
 {
-    sstream(string)
-    std::string cmd  = getline();
+    std::stringstream	sstream(message); //message can't be empty
+    std::string	cmd;
 
-    if (cmd == "PASS") PASS() // client can always can try PASS although not registered
-	//else if (sender->isRegistered() == false) sendError(ERR_);
-    else if (cmd == "NICK") NICK()
-    else if (cmd == "USER") USER()
-    else if (cmd =="PRIVMSG") PRIVMSG()
-    else if (cmd =="JOIN") JOIN()
-    else if (cmd =="PART") PART()
-    else if (cmd =="QUIT") QUIT()
-    else if (cmd =="KICK") KICK()
-    else if (cmd =="INVITE") INVITE()
-    else if (cmd =="MODE") MODE()
-    else if (cmd =="TOPIC") TOPIC()
-    else sendError(ERR_UNKNOWNCOMMAND)
+	std::getline(sstream, cmd, ' ');
+
+	std::cout << "cmd: " << cmd << "$" << std::endl;
+	if (sender == NULL) //doesn't protect when sender is not in map?
+	{
+		std::getline(sstream, cmd); //?
+		std::getline(sstream, cmd, ' '); //?
+		//std::cout << "cmd2: " << cmd << "$" << std::endl;
+		if (cmd == "PASS")
+			std::cout << "PASS()" << std::endl; //PASS(); // client can always try PASS although not registered ?
+		//else if (sender->isRegistered() == false) sendError(ERR_); ?
+		else
+			std::cerr << "* Error: sender is NULL (in command_switch)" << std::endl;
+		return ;
+	}
+	//else if (sender->isRegistered() == false) sendError(ERR_); ?
+	else if (cmd == "NICK") std::cout << "NICK()" << std::endl; //NICK();
+	else if (cmd == "USER") std::cout << "USER()" << std::endl; //USER();
+	else if (cmd == "PRIVMSG") std::cout << "PRIVMSG()" << std::endl; //PRIVMSG();
+	else if (cmd == "JOIN") std::cout << "JOIN()" << std::endl; //JOIN();
+	else if (cmd == "PART") std::cout << "PART()" << std::endl; //PART();
+	else if (cmd == "QUIT") std::cout << "QUIT()" << std::endl; //QUIT();
+	else if (cmd == "KICK") std::cout << "KICK()" << std::endl; //KICK();
+	else if (cmd == "INVITE") std::cout << "INVITE()" << std::endl; //INVITE();
+	else if (cmd == "MODE") std::cout << "MODE()" << std::endl; //MODE();
+	else if (cmd == "TOPIC") std::cout << "TOPIC()" << std::endl; //TOPIC();
+	else std::cout << "sendError(ERR_UNKNOWNCOMMAND)" << std::endl; //sendError(ERR_UNKNOWNCOMMAND);
 }
 
 
