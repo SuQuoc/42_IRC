@@ -41,10 +41,10 @@ class Channel
 		Channel(const Channel &C);
 		~Channel();
 
-
 		void	rmClient(const Client *executor, const Client *rm_client);
 		void	sendMsg(const Client *sender, const std::string &msg);
-		void	addClient(Client *new_client, bool is_operator);
+		void	addClient(Client *new_client, const std::string &password);
+		void	addClient(Client *new_client);
 		void	rmClient(const Client *rm_client);
 		bool	isInChannel(const Client *client);
 		bool	isOperator(const Client *client);
