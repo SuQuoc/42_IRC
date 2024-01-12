@@ -17,9 +17,9 @@ class Channel
 {
 	private:
 
-		struct Member_t
+		struct Member_t 
 		{
-			Client *members;
+			Client *members; 
 			bool is_operator;
 		};
 
@@ -29,11 +29,11 @@ class Channel
 		std::string	_name;
 		int	_max_clients;
 
-		Channel();
+		typedef	std::vector<Channel::Member_t>::iterator clients_itr;
 
 		void	sendNonBlock(const int &fd, const std::string &msg);
-		
-		typedef	std::vector<Channel::Member_t>::iterator clients_itr;
+		clients_itr getClient(const Client *client);
+		Channel();
 
 	public:
 
@@ -46,13 +46,13 @@ class Channel
 		void	sendMsg(const Client *sender, const std::string &msg);
 		void	addClient(Client *new_client, bool is_operator);
 		void	rmClient(const Client *rm_client);
+		bool	isInChannel(const Client *client);
 		bool	isOperator(const Client *client);
 
 		void	setPassword(const std::string &password);
 		void	setMaxClients(const int &max_clients);
 		void	setName(const std::string &name);
 
-		clients_itr getClient(const Client *client);
 		const std::string	&getPassword() const;
 		const std::string	&getName() const;
 		int size() const;
