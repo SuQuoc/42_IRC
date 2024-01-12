@@ -1,4 +1,7 @@
 
+#include <string>
+#include <vector>
+#include <iterator>
 
 enum IRC_ERR
 {
@@ -20,26 +23,6 @@ enum IRC_ERR
     ERR_USERSDONTMATCH = 502 //?
 };
 
-void IRC_Commands(const std::string& message) //request better name? for us to discern
-{
-
-    sstream(string)
-    std::string cmd  = getline();
-
-
-    if (cmd == "PASS") PASS()
-    else if (cmd == "NICK") NICK()
-    else if (cmd == "USER") USER()
-    else if (cmd =="PRIVMSG") PRIVMSG()
-    else if (cmd =="JOIN") JOIN()
-    else if (cmd =="PART") PART()
-    else if (cmd =="QUIT") QUIT()
-    else if (cmd =="KICK") KICK()
-    else if (cmd =="INVITE") INVITE()
-    else if (cmd =="MODE") MODE()
-    else if (cmd =="TOPIC") TOPIC()
-    else sendError(ERR_UNKNOWNCOMMAND) //enum, dummer name
-}
 
 
 
@@ -50,43 +33,12 @@ void IRC_Commands(const std::string& message) //request better name? for us to d
 
 
 
-void PASS(client, stream)
-{
-    std::string password = getline(stream);
-
-
-    if (password == _serverPW) //gehört noch in Abstract Server
-        client.setToAuthenticated(); //bissi blöder name
-    else
-        sendError(ERR_);
-        // delete the user von server already?
 
 
 
-}
+//USER username hostname servername :realname
+//USER JohnDoe localhost irc.example.com :John Doe
 
-void NICK(client, stream)
-{
-    std::string nickname = getline(stream);
-    
-    if (client.isAuthenticated() == false)
-         sendError(ERR_); //or return 
-    if (!isNormed(nickname))
-        sendError(ERR_); //or return 
-
-    find user by nickname in map
-    if (it == map.end()) //no one has the nickname
-        
-
-}
-
-
-void USER(client, stream)
-{
-    std::
-
-
-}
 
 
 

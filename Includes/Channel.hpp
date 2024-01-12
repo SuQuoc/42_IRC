@@ -4,10 +4,12 @@
 #include <iostream>
 #include <cstdlib>			// exit
 #include <vector>
+#include <cerrno>
 
 #include "../Includes/Client.hpp"
 
 #define EXIT_FAILURE 1
+#define MAX_CLIENTS 100 // How high should it be?
 
 class Client;
 
@@ -15,16 +17,23 @@ class Channel
 {
 	private:
 
-		std::vector<Client *> _operators;
-		std::vector<Client *> _members;
-		std::string _password;
-		std::string _topic;
-		std::string _name;
-		int _client_limit;
+		struct Member_t
+		{
+			Client *members;
+			bool is_operator;
+		};
+
+		std::vector<Member_t> _clients;
+		std::string	_password;
+		std::string	_topic;
+		std::string	_name;
+		int	_max_clients;
 
 		Channel();
 
-		typedef std::vector<Client *>::iterator clients_itr;
+		void	sendNonBlock(const int &fd, const std::string &msg);
+		
+		typedef	std::vector<Channel::Member_t>::iterator clients_itr;
 
 	public:
 
@@ -32,18 +41,20 @@ class Channel
 		Channel(const Channel &C);
 		~Channel();
 
-		void sendMsgToChannel(const Client *sender, const std::string &msg);
-		void rmClientFromChannel(const Client *executor, Client *rm_client);
-		void rmClientFromChannel(Client *rm_client);
 
-		void addMember(Client *new_member);
-		void addOperator(Client *new_operator);		// maybe we can do this in one funktion but it is one if less in non operatotr case
-		bool isOperator(const Client *client);
+		void	rmClient(const Client *executor, const Client *rm_client);
+		void	sendMsg(const Client *sender, const std::string &msg);
+		void	addClient(Client *new_client, bool is_operator);
+		void	rmClient(const Client *rm_client);
+		bool	isOperator(const Client *client);
 
-		void setName(const std::string &name);
-		void setPassword(const std::string &password);
+		void	setPassword(const std::string &password);
+		void	setMaxClients(const int &max_clients);
+		void	setName(const std::string &name);
 
-		const std::string &getPassword() const;
-		const std::string &getName() const;
-		const std::vector<Client *> &getMembers() const;
+		clients_itr getClient(const Client *client);
+		const std::string	&getPassword() const;
+		const std::string	&getName() const;
+		int size() const;
+
 };
