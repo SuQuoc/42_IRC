@@ -3,6 +3,8 @@
 #include "AServer.hpp"
 
 #include <sstream>
+#include "Irc_error.hpp"
+
 class AServer;
 
 class Irc : public AServer

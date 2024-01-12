@@ -16,7 +16,7 @@ Client::~Client()
 
 bool Client::isRegistered() const
 {
-	if (!_nickname.empty() && !_username.empty() && _is_authenticated)
+	if (!_nickname.empty() && !_username.empty())
 		return true;
 	return false;
 }
@@ -62,4 +62,12 @@ void Client::joinChannel(Channel *channel)
 void Client::leaveChannel(Channel *channel)
 {
 	_channels.erase(std::find(_channels.begin(), _channels.end(), channel));
+}
+
+void Client::sendTo(const std::string& msg, Client* recipient) const
+{
+	const std::string message = this->getPrefix() + msg;
+	// std::cout << "SEND FUNCTION NOT COMPLETED YET" << std::endl;
+	if (send(recipient->getFd(), message.c_str(), message.size(), 0) == -1)
+		std::cerr << "send() failed" << std::endl;
 }

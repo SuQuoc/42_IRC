@@ -23,7 +23,7 @@
 
 class AServer
 {
-private: //protected?
+protected: //protected? -> yes, if not i would need a getter for everything
 	std::map<std::string, Channel*>	_channels;
 	std::map<std::string, Client*>	_client_names;
 	std::map<int, Client*>			_client_fds;
