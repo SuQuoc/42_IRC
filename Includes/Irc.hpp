@@ -9,7 +9,7 @@ class Irc : public AServer
 {
 private:
 //methods
-	void	command_switch(/* std::string	command */);
+	void	command_switch(Client *sender, const std::string message);
 
 
 public:
