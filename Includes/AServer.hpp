@@ -41,7 +41,7 @@ protected: //protected? -> yes, if not i would need a getter for everything
 void	accept_connection();
 void	process_event(const int& client_sock);
 void	failure_exit(const std::string& error_msg); //exits?
-virtual void	command_switch(Client *sender, const std::string message) = 0;
+virtual void	command_switch(Client *sender, const std::string message, const int& new_client_fd) = 0;
 
 void	addNewPair(Client *sender, const std::string& channel_name);
 void	addNewPair(std::string user_name, const int& client_fd); //add more?

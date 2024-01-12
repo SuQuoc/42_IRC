@@ -51,7 +51,7 @@ void Irc::sendError(IRC_ERR error, Client* sender)
 
 
 //private methods 
-void	Irc::command_switch(Client *sender, const std::string message) //message-> 'request' better name? for us to discern
+void	Irc::command_switch(Client *sender, const std::string message, const int& new_client_fd) //message-> 'request' better name? for us to discern
 {
     std::stringstream	sstream(message); //message can't be empty
     std::string	cmd;
@@ -65,15 +65,14 @@ void	Irc::command_switch(Client *sender, const std::string message) //message-> 
 		std::getline(sstream, cmd, ' '); //?
 		//std::cout << "cmd2: " << cmd << "$" << std::endl;
 		if (cmd == "PASS")
-			std::cout << "PASS()" << std::endl; //PASS(); // client can always try PASS although not registered ?
-		//else if (sender->isRegistered() == false) sendError(1, sender); ?
+			std::cout << "PASS()" << new_client_fd << std::endl; //PASS(new_client_fd); // client can always try PASS although not registered ?
 		else
-			std::cerr << "* Error: sender is NULL (in command_switch)" << std::endl;
+			std::cerr << "* Error: sender is NULL (in command_switch)" << std::endl; //ERR_NOTREGISTERED !
 		return ;
 	}
-	//else if (sender->isRegistered() == false) sendError(1, sender); ?
 	else if (cmd == "NICK") std::cout << "NICK()" << std::endl; //NICK();
 	else if (cmd == "USER") std::cout << "USER()" << std::endl; //USER();
+	//else if (sender->isRegistered() == false) sendError(ERR_); ?
 	else if (cmd == "PRIVMSG") std::cout << "PRIVMSG()" << std::endl; //PRIVMSG();
 	else if (cmd == "JOIN") std::cout << "JOIN()" << std::endl; //JOIN();
 	else if (cmd == "PART") std::cout << "PART()" << std::endl; //PART();
@@ -84,71 +83,83 @@ void	Irc::command_switch(Client *sender, const std::string message) //message-> 
 	else if (cmd == "TOPIC") std::cout << "TOPIC()" << std::endl; //TOPIC();
 	else std::cout << "sendError(ERR_UNKNOWNCOMMAND)" << std::endl; //sendError(ERR_UNKNOWNCOMMAND);
 }
+std::string	getWord(std::stringstream& sstream)
+{
+	std::string	str;
+	
+	std::getline(sstream, str, ' ');
+	while (str.empty() && !sstream.eof())
+		std::getline(sstream, str, ' ');
+	return (str);
+}
 
 
 //methods (commands)
-void Irc::JOIN(Client *sender, std::stringstream &sstream)
-{
-	std::string	channel_name;
-	std::getline(sstream, channel_name, ' '); //rest is being ignored bc u cant change the join message
+// void	Irc::JOIN(Client *sender, std::stringstream &sstream)
+// {
+// 	std::string	channel_name = getWord(sstream);
 	
-	
-	
-	_channels.find(channel_name);
-	
-}
-std::string	make_message(sender, msg, default)
-{
-	std::string	message;
+// 	check if channel exists
+// 		if not, check if channel_name is valid
+// 		if yes, make channel //addNewPair(sender, channel_name);
+// 		if not, error
+// 	check if client is in channel
+// 		if yes, error
+// 	if not, try adding client to channel
+// 		error ?
+// 	add channel to channel vector in user
+// }
+// std::string	make_message(sender, msg, default)
+// {
+// 	std::string	message;
 
-	give message sender info
-	if (msg.empty())
-		message + default
-	message + msg;
-	return (message);
-}
+// 	give message sender info
+// 	if (msg.empty())
+// 		message + default
+// 	message + msg;
+// 	return (message);
+// }
 
-void Irc::PART(Client *sender, std::stringstream &sstream)
-{
-	//PART #channnel-name msg
-	Channel		*channel;
-	std::string	channel_name;
-	std::string	msg;
+// void	Irc::PART(Client *sender, std::stringstream &sstream)
+// {
+// 	//PART #channnel-name msg
+// 	Channel		*channel;
+// 	std::string	channel_name;
+// 	std::string	msg;
 
-	std::getline(sstream, channel_name);
-	std::getline(sstream, msg); //make message! //or do it in channel-object?
-	channel = sender.getChannel(channel_name)
-	if (channel == std::nullptr)
-		//send error to sender //or return if send is in client-class
-	if (channel_map.find(channel_name)->removeClient(sender, msg) == CHANNEL_DEAD); //delete channel when empty()
-			//get channel_name from channel-vector[i] //not needed here
-			delete channel through channel-map (channel_name);
-			erase channel from channel-map
-	sender->leaveChannel();
-	channel.sendMsg(sender, make_message(sender, msg, default));
-}
-void Irc::QUIT(Client *sender, std::stringstream &sstream)
-{
-	std::string	channel_name;
-	std::string	msg;
-	std::getline(sstream, msg); //make message! //or do it in channel-object?
+// 	std::getline(sstream, channel_name);
+// 	std::getline(sstream, msg); //make message! //or do it in channel-object?
+// 	channel = sender.getChannel(channel_name)
+// 	if (channel == std::nullptr)
+// 		//send error to sender //or return if send is in client-class
+// 	if (channel_map.find(channel_name)->removeClient(sender, msg) == CHANNEL_DEAD); //delete channel when empty()
+// 			//get channel_name from channel-vector[i] //not needed here
+// 			delete channel through channel-map (channel_name);
+// 			erase channel from channel-map
+// 	sender->leaveChannel();
+// 	channel.sendMsg(sender, make_message(sender, msg, default));
+// }
+// void	QUIT(Client *sender, std::stringstream &sstream)
+// {
+// 	std::string	channel_name;
+// 	std::string	msg;
+// 	std::getline(sstream, msg); //make message! //or do it in channel-object?
 
-	get const channel-vector reference from client-map(?)
-	loop through channel-vector
-		if (channel-vector[i]->removeClient(sender, msg) == CHANNEL_DEAD); //delete channel when empty()
-			get channel_name from channel-vector[i]
-			delete channel through channel-map (channel_name);
-			erase channel from channel-map
-		sender->leaveChannel(channel-vector[i]);
-	erase client from fd_client-map
-	get client_name (-> channel_name variable?)
-	delete client-object (sender)
-	erase client from name_client-map (name)
-}
-void Irc::KICK(Client *sender, std::stringstream &sstream);
-{
-
-}
+// 	get const channel-vector reference from client-map(?)
+// 	loop through channel-vector
+// 		if (channel-vector[i]->removeClient(sender, msg) == CHANNEL_DEAD); //delete channel when empty()
+// 			get channel_name from channel-vector[i]
+// 			delete channel through channel-map (channel_name);
+// 			erase channel from channel-map
+// 		sender->leaveChannel(channel-vector[i]);
+// 	erase client from fd_client-map
+// 	get client_name (-> channel_name variable?)
+// 	delete client-object (sender)
+// 	erase client from name_client-map (name)
+// }
+// void	Irc::KICK(Client *sender, std::stringstream &sstream);
+//
+//}
 
 
 //WIR NEHMEN AN DAS wir immer PASS NICK USER bekommen 
@@ -191,9 +202,9 @@ void Irc::NICK(Client *sender, std::stringstream &sstream)
 		this->addNewPair(sender->getNickname(), sender->getFd());
 }
 
-void Irc::USER(Client *sender, std::stringstream &sstream)
-{
-    std::vector<std::string> info(4);
+// void	Irc::USER(Client *sender, std::stringstream &sstream)
+// {
+//     std::vector<std::string> info(4);
 
 	if (sender->isRegistered())
 		sendError(1, sender); //already registered
