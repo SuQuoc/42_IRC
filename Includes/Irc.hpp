@@ -9,7 +9,8 @@ class Irc : public AServer
 {
 private:
 //methods
-	void	command_switch(Client *sender, const std::string message);
+	void	command_switch(Client *sender, const std::string message, const int& new_client_fd);
+	std::string	getWord(std::stringstream& sstream);
 
 
 public:
@@ -26,7 +27,7 @@ public:
 	void	QUIT(Client *sender, std::stringstream& sstream);
 	void	KICK(Client *sender, std::stringstream& sstream);
 
-	void	PASS(Client *sender, std::stringstream& sstream);
+	void	PASS(Client *sender, std::stringstream& sstream, const int& new_client_fd);
 	void	NICK(Client *sender, std::stringstream& sstream);
 	void	USER(Client *sender, std::stringstream& sstream);
 	void	PRIVMSG(Client *sender, std::stringstream& sstream);
