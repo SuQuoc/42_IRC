@@ -4,7 +4,7 @@ Channel::Channel(Client *owner, const std::string &channel_name) : _name(channel
 {
 	if(owner == NULL)
 	{
-		std::cerr << "Channel constructor owner is NULL!" << std::endl;
+		std::cerr << "* Error: owner is NULL (in channel constructor)" << std::endl;
 		return ;
 	}
 	addClient(owner, true);
@@ -17,6 +17,11 @@ Channel::~Channel() {}
 
 void Channel::sendMsg(const Client *sender, const std::string &msg)
 {
+	if(!sender)
+	{
+		std::cerr << "* Error: sender is NULL (in sendMsg)" << std::endl;
+		return ;
+	}
 	for(clients_itr itr = _clients.begin(); itr != _clients.end(); itr++)
 	{
 		if(itr->members == sender)
@@ -105,6 +110,14 @@ bool	Channel::isOperator(const Client *client)
 	if(getClient(client)->is_operator == true)
 		return true;
 	return false;
+}
+
+//return true if user is member of this channel
+bool Channel::isInChannel(const Client *client)
+{
+	if(getClient(client) == _clients.end())
+		return false;
+	return true;
 }
 
 //			setter
