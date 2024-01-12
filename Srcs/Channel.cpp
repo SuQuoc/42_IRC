@@ -7,8 +7,7 @@ Channel::Channel(Client *owner, const std::string &channel_name) : _name(channel
 		std::cerr << "* Error: owner is NULL (in channel constructor)" << std::endl;
 		return ;
 	}
-	addClient(owner);
-	_clients.begin()->is_operator = true;
+	addClient(owner, true);
 }
 Channel::Channel(const Channel &C) : _clients(C._clients), _password(C._password), _topic(C._topic), _name(C._name)
 {
@@ -82,15 +81,7 @@ void Channel::rmClient(const Client *rm_client)
 	_clients.erase(itr);
 }
 
-void	Channel::addClient(Client *new_client, const std::string &password)
-{
-	if(password == _password)
-		addClient(new_client);
-	else
-		std::cerr << "Error: could not join channel password is wrong" << std::endl;
-}
-
-void	Channel::addClient(Client *new_client)
+void	Channel::addClient(Client *new_client, bool is_operator)
 {
 	if(new_client == NULL)
 	{
@@ -102,29 +93,29 @@ void	Channel::addClient(Client *new_client)
 		std::cerr << "Error channel" << _name << " is full" << std::endl;
 		return ;
 	}
-	if(getClient(new_client) != _clients.end())
+	if(getClient(new_client) == _clients.end())
 	{
 		std::cerr << "Error client" << new_client->getUsername() << " is already in this channel." << std::endl;
 		return ;
 	}
 	//	need to send a msg to the client ?
 	struct Member_t member;
-	member.is_operator = false;
+	member.is_operator = is_operator;
 	member.members = new_client;
 	_clients.push_back(member);
 }
 
 bool	Channel::isOperator(const Client *client)
 {
-	if(!client)
-		return false;
-	return getClient(client)->is_operator;
+	if(getClient(client)->is_operator == true)
+		return true;
+	return false;
 }
 
 //return true if user is member of this channel
 bool Channel::isInChannel(const Client *client)
 {
-	if(!client || getClient(client) == _clients.end())
+	if(getClient(client) == _clients.end())
 		return false;
 	return true;
 }
@@ -138,10 +129,16 @@ void	Channel::setPassword(const std::string &password) { _password = password; }
 //			getter
 std::vector<Channel::Member_t>::iterator Channel::getClient(const Client *client)
 {
-	if(!client)
-		_clients.end();
 	for(clients_itr itr = _clients.begin(); itr != _clients.end(); itr++)
 		if(itr->members == client)
+			return itr;
+	return _clients.end();
+}
+
+std::vector<Channel::Member_t>::iterator Channel::getClient(const std::string _name)
+{
+	for(clients_itr itr = _clients.begin(); itr != _clients.end(); itr++)
+		if(itr->members->getNickname() == _name)
 			return itr;
 	return _clients.end();
 }
@@ -149,3 +146,33 @@ std::vector<Channel::Member_t>::iterator Channel::getClient(const Client *client
 const std::string &Channel::getPassword() const { return _password; }
 const std::string &Channel::getName() const { return _name; }
 int Channel::size() const { return _clients.size(); }
+
+void Channel::changeMode( bool &mode, char &rmOrAdd )
+{
+	if(rmOrAdd == '+')
+		mode = true;
+	else if(rmOrAdd == '-')
+		mode == false;
+	std::cout << "error just + or -" << std::endl;
+}
+
+//multible modes a possilbe like +adasd
+// ervery char needs to be handelt
+//multible arguments are possible
+void Channel::changeChannelMode(Client *executor, const std::string &mode, const std::string &argument)
+{
+	clients_itr itr;
+
+	if(mode == 'i')
+		changeMode(_invite_only, mode.front());
+	else if(mode == 't')
+		changeMode(_restrict_topic, mode.front());
+	else if(mode == 'k')
+		password == argument;
+	else if(mode == 'o' && (itr = getClient(argument)) != _clients.end())
+		itr->is_operator == true;
+	else if()
+
+	else
+		//send error to client
+}
