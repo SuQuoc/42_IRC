@@ -52,7 +52,7 @@ std::string	getWord(std::stringstream& sstream)
 
 
 //methods (commands)
-// void	JOIN(Client *sender, std::stringstream &sstream)
+// void	Irc::JOIN(Client *sender, std::stringstream &sstream)
 // {
 // 	std::string	channel_name = getWord(sstream);
 	
@@ -77,7 +77,7 @@ std::string	getWord(std::stringstream& sstream)
 // 	return (message);
 // }
 
-// void	PART(Client *sender, std::stringstream &sstream)
+// void	Irc::PART(Client *sender, std::stringstream &sstream)
 // {
 // 	//PART #channnel-name msg
 // 	Channel		*channel;
@@ -114,36 +114,46 @@ std::string	getWord(std::stringstream& sstream)
 // 	delete client-object (sender)
 // 	erase client from name_client-map (name)
 // }
-// void	KICK(Client *sender, std::stringstream &sstream);
-
+// void	Irc::KICK(Client *sender, std::stringstream &sstream);
+//
+//}
 
 
 // //WIR NEHMEN AN DAS wir immer PASS NICK USER bekommen 
 // //dh ich kann das bissi ändern
-// void	PASS(Client *sender, std::stringstream &sstream)
+// void	Irc::PASS(Client *sender, std::stringstream &sstream)
 // {
-//     std::string password;
-//     std::getline(sstream, password); //until newline default
+// std::string password;
+// std::getline(sstream, password); //until newline default
 
-//     if (password.empty())
-//         sendError(ERR_);
-//     else if (sender->isRegistered())
-//         sendError(ERR_); //already registered
-//     else if (password == _serverPW) //gehört noch in Abstract Server
-//         sender->setToAuthenticated(); //bissi blöder name
-//     else
-//         sendError(ERR_);
-//         // delete the user von server already?
+// if (password.empty())
+//     sendError(ERR_);
+// else if (sender->isRegistered())
+//     sendError(ERR_); //already registered
+//	else if (password == _serverPW) //gehört noch in Abstract Server
+//		sender->setToAuthenticated(); //bissi blöder name
+//	else
+//		sendError(ERR_);
+//	// delete the user von server already?
+//	 if (password.empty()) //wont be triggered through HexChat it would only send NICK and USER
+//	     sendError(ERR_);
+//	 else if (sender->isRegistered())
+//	     sendError(ERR_); //already registered
+//	 else if (password == _serverPW) //gehört noch in Abstract Server
+//	     sender->setToAuthenticated(); //bissi blöder name
+//	 else
+//		sendError(ERR_);
+//		// delete the user von server already?
 
 // 	NICK(sender, sstream);
 // 	USER(sender, sstream);
 // }
 
 // //should we even check for the order or trust Hexchat --> trust Hexchat
-// void	NICK(Client *sender, std::stringstream &sstream)
+// void	Irc::NICK(Client *sender, std::stringstream &sstream)
 // {
-//     std::string nickname;
-//     std::getline(sstream, nickname); //until newline default
+//		std::string nickname;
+//		std::getline(sstream, nickname); //until newline default
 // 	//what if nick has space is it being ignored are is space not allowed?
     
 //     if (nickanme.empty())
@@ -158,7 +168,7 @@ std::string	getWord(std::stringstream& sstream)
 //         sender.setNickname();
 // }
 
-// void	USER(Client *sender, std::stringstream &sstream)
+// void	Irc::USER(Client *sender, std::stringstream &sstream)
 // {
 //     std::vector<std::string> info(4);
 
@@ -182,17 +192,17 @@ std::string	getWord(std::stringstream& sstream)
 
 // void	MODE(Client *sender, std::stringstream &sstream);
 // void	TOPIC(Client *sender, std::stringstream &sstream);
-/* void	INVITE(Client *sender, std::stringstream &sstream)
-{
-	std::string	client_name = getWord(sstream);
-	std::string	channel_name = getWord(sstream);
+// void	INVITE(Client *sender, std::stringstream &sstream)
+// {
+// 	std::string	client_name = getWord(sstream);
+// 	std::string	channel_name = getWord(sstream);
 
-	if (client_name.empty() || channel_name.empty())
-		error not enough arguments
-	check if client exists
-		if not, error client does not exist
-	check if channel exists
-		if not, error channel deos not exist
-	add client to invite vector in channel
-	send invite message to client
-} */
+// 	if (client_name.empty() || channel_name.empty())
+// 		error not enough arguments
+// 	check if client exists
+// 		if not, error client does not exist
+// 	check if channel exists
+// 		if not, error channel deos not exist
+// 	add client to invite vector in channel
+// 	send invite message to client
+// }
