@@ -1,7 +1,7 @@
 #include "../Includes/AServer.hpp"
 
 //con- and destructer
-AServer::AServer(): _password(""), _epoll_fd(-1), _sock_fd(-1) {}
+AServer::AServer(): _password("pw"), _epoll_fd(-1), _sock_fd(-1) {}
 AServer::AServer(std::string password): _password(password), _epoll_fd(-1), _sock_fd(-1) {}
 /* AServer::AServer(const AServer& S)
 {
@@ -47,7 +47,7 @@ void	AServer::accept_connection()
 	while (1)
 	{
 		client_fd = accept(_sock_fd, reinterpret_cast<struct sockaddr*>(&client_addr), &client_addr_len);
-		if (client_fd == -1)
+		if (client_fd == -1) //better protection? //should we exit?
 		{
 			if (errno != EAGAIN && errno != EWOULDBLOCK) //if not
 				std::cerr << "Error: accept failed" << std::endl;
@@ -89,7 +89,7 @@ void	AServer::process_event(const int& client_fd)
 				return ;
 			default:
 				std::cout << "buf: " << buf << "&" << std::endl << std::endl;
-				command_switch(_client_fds.find(client_fd)->second, buf); //what if fd is not in map?
+				command_switch(_client_fds.find(client_fd)->second, buf, client_fd); //what if fd is not in map?
 				return ;
 		}
 	}

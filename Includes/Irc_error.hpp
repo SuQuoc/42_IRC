@@ -1,5 +1,5 @@
 
-#include "irc.hpp"
+# pragma once
 
 enum IRC_ERR
 {
@@ -20,24 +20,3 @@ enum IRC_ERR
     ERR_USERMODEUNKNOWNFLAG = 501, //?
     ERR_USERSDONTMATCH = 502 //?
 };
-
-
-void sendErrorToClient(IRC_ERR error, Client* sender)
-{
-	std::string error_message;
-	error_message = sender.getPrefix() 
-	switch (error)
-	{
-		case ERR_NOSUCHCHANNEL:
-			error_message += "LOOK AT IRC PROTOCOLL";
-			break;
-		case ERR_ERRONEUSNICKNAME:
-			error_message += "LOOK AT IRC PROTOCOLL";
-			break;
-		case ERR_NICKNAMEINUSE:
-			break;
-		default:
-			throw smth;
-	}
-	sender.sendMsg();
-}

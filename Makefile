@@ -1,5 +1,6 @@
 NAME		= ircserv
-ARGS 		= 192.168.0.75 8080
+ARGS 		= 192.168.0.159 8080
+#ARGS 		= 192.168.0.75 8080
 CXX			= c++
 CXXFLAGS	= -Wall -Wextra -Werror -MMD -MP -pedantic -g -std=c++98
  

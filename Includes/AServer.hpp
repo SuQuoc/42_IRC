@@ -23,12 +23,12 @@
 
 class AServer
 {
-private: //protected?
+protected: //protected? -> yes, if not i would need a getter for everything
 	std::map<std::string, Channel*>	_channels;
 	std::map<std::string, Client*>	_client_names;
 	std::map<int, Client*>			_client_fds;
 	struct epoll_event	_ev;
-	std::string			_password;
+	const std::string	_password;
 	int		_epoll_fd;
 	int		_sock_fd;
 
@@ -38,14 +38,14 @@ private: //protected?
 
 
 //methods
-void	accept_connection();
-void	process_event(const int& client_sock);
-void	failure_exit(const std::string& error_msg); //exits?
-virtual void	command_switch(Client *sender, const std::string message) = 0;
+	void	accept_connection();
+	void	process_event(const int& client_sock);
+	void	failure_exit(const std::string& error_msg); //exits?
+	virtual void	command_switch(Client *sender, const std::string message, const int& new_client_fd) = 0;
 
-void	addNewPair(Client *sender, const std::string& channel_name);
-void	addNewPair(std::string user_name, const int& client_fd); //add more?
-void	addNewPair(const int& client_fd);
+	void	addNewPair(Client *sender, const std::string& channel_name);
+	void	addNewPair(std::string user_name, const int& client_fd); //add more?
+	void	addNewPair(const int& client_fd);
 
 public:
 //con- and destructer
