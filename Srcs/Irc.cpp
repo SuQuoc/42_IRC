@@ -271,7 +271,7 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 // void Irc::MODE(Client *sender, std::stringstream &sstream);
 // void Irc::TOPIC(Client *sender, std::stringstream &sstream);
 // void Irc::INVITE(Client *sender, std::stringstream &sstream);
-
+/*
 void Irc::PRIVMSG(Client *sender, std::stringstream &sstream);
 {
 	std::string recipient;
@@ -302,9 +302,9 @@ void Irc::INVITE(Client *sender, std::stringstream &sstream); */
 
 void Irc::MODE(Client *sender, std::stringstream &sstream)
 {
+	std::string channel_name;
 	std::string mode;
 	std::string str;
-	std::string channel_name;
 
 	getline(sstream, str, ' ');
 	while(str.empty() == true && sstream.eof() == true)			//loop until #
