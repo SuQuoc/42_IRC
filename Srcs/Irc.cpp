@@ -13,13 +13,13 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
     std::stringstream	sstream(message); //message can't be empty
     std::string	cmd;
 
-	std::getline(sstream, cmd, ' ');
+	std::getline(sstream >> std::ws, cmd, ' ');
 
 	std::cout << "cmd: " << cmd << "$" << std::endl;
 	if (sender == NULL) //doesn't protect when sender is not in map?
 	{
 		std::getline(sstream, cmd); //?
-		std::getline(sstream, cmd, ' '); //?
+		std::getline(sstream >> std::ws, cmd, ' '); //?
 		//std::cout << "cmd2: " << cmd << "$" << std::endl;
 		if (cmd == "PASS")
 			std::cout << "PASS()" << new_client_fd << std::endl; //PASS(new_client_fd); // client can always try PASS although not registered ?
@@ -39,15 +39,6 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 	else if (cmd == "MODE") std::cout << "MODE()" << std::endl; //MODE();
 	else if (cmd == "TOPIC") std::cout << "TOPIC()" << std::endl; //TOPIC();
 	else std::cout << "sendError(ERR_UNKNOWNCOMMAND)" << std::endl; //sendError(ERR_UNKNOWNCOMMAND);
-}
-std::string	getWord(std::stringstream& sstream)
-{
-	std::string	str;
-	
-	std::getline(sstream, str, ' ');
-	while (str.empty() && !sstream.eof())
-		std::getline(sstream, str, ' ');
-	return (str);
 }
 
 

@@ -2,7 +2,7 @@
 
 #include "AServer.hpp"
 
-#include <sstream>
+
 class AServer;
 
 class Irc : public AServer
@@ -10,7 +10,6 @@ class Irc : public AServer
 private:
 //methods
 	void	command_switch(Client *sender, const std::string message, const int& new_client_fd);
-	std::string	getWord(std::stringstream& sstream);
 
 
 public:
