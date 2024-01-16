@@ -93,7 +93,7 @@ void	Channel::addClient(Client *new_client, bool is_operator)
 		std::cerr << "Error channel" << _name << " is full" << std::endl;
 		return ;
 	}
-	if(getClient(new_client) == _clients.end())
+	if(getClient(new_client) != _clients.end())
 	{
 		std::cerr << "Error client" << new_client->getUsername() << " is already in this channel." << std::endl;
 		return ;
@@ -114,17 +114,54 @@ bool	Channel::isOperator(const Client *client)
 
 //return true if user is member of this channel
 bool Channel::isInChannel(const Client *client)
-{
+{	
+	if(client == NULL)
+	{
+		std::cout << "Error client is NULL isInChannel()" << std::endl;
+		return false;
+	}
 	if(getClient(client) == _clients.end())
 		return false;
 	return true;
 }
 
 //			setter
-void	Channel::setName(const std::string &name) { _name = name; }
 void	Channel::setMaxClients(const int &max_clients) { _max_clients = max_clients; }
-// ? should it respond to the client if it to big?
-void	Channel::setPassword(const std::string &password) { _password = password; }
+void	Channel::setName(const std::string &name) { _name = name; }
+// ? should it respond to the client if it to big? 
+int	Channel::setPassword(Client *executor,const std::string &password, const char &add)
+{
+	clients_itr client;
+
+	client = getClient(executor);
+	// send msg ???? youre not a channel operator
+	if(client == _clients.end() || client->is_operator == false)
+		return 2; // = yore not an operator!
+	if(add == '+' && _password.empty() == true) // send msg if already set
+	{
+		_password = password;
+		return 0;
+	}
+	if(add == '-' && password == _password)
+	{
+		_password.clear();
+		return 0;
+	}
+	return 1; // = channel key is already set!
+}
+//also checks if name is in clients and if oper if restricted
+void	Channel::setTopic(const std::string &name, const std::string &topic)
+{
+	clients_itr client;
+
+	client = getClient(name);
+	if(client == _clients.end())
+		return ; // send msg ???????????? to client ????????
+	if(_restrict_topic == false)
+		_topic = topic;
+	else if(_restrict_topic == true && client->is_operator == true)
+		_topic = topic;
+}
 
 //			getter
 std::vector<Channel::Member_t>::iterator Channel::getClient(const Client *client)
@@ -147,32 +184,33 @@ const std::string &Channel::getPassword() const { return _password; }
 const std::string &Channel::getName() const { return _name; }
 int Channel::size() const { return _clients.size(); }
 
-void Channel::changeMode( bool &mode, char &rmOrAdd )
+void Channel::changeMode( bool &modes, const char &add )
 {
-	if(rmOrAdd == '+')
-		mode = true;
-	else if(rmOrAdd == '-')
-		mode == false;
-	std::cout << "error just + or -" << std::endl;
+	if(add == '+')
+		modes = true;
+	else if(add == '-')
+		modes = false;
+	else
+		std::cout << "error just + or -" << std::endl;
 }
 
 //multible modes a possilbe like +adasd
-// ervery char needs to be handelt
+//ervery char needs to be handelt
 //multible arguments are possible
-void Channel::changeChannelMode(Client *executor, const std::string &mode, const std::string &argument)
+void Channel::changeChannelMode(Client *executor, const char &add, const char &mode, const std::string &argument)
 {
-	clients_itr itr;
+	/* clients_itr itr;
 
 	if(mode == 'i')
-		changeMode(_invite_only, mode.front());
+		changeMode(_invite_only, add);
 	else if(mode == 't')
-		changeMode(_restrict_topic, mode.front());
+		changeMode(_restrict_topic, add);
 	else if(mode == 'k')
-		password == argument;
+		setPassword(executor, argument, add);
 	else if(mode == 'o' && (itr = getClient(argument)) != _clients.end())
 		itr->is_operator == true;
 	else if()
 
 	else
-		//send error to client
+		//send error to client */
 }

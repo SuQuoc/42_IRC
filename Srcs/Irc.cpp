@@ -305,7 +305,7 @@ void Irc::MODE(Client *sender, std::stringstream &sstream)
 	std::string channel_name;
 	std::string mode;
 	std::string str;
-
+	
 	getline(sstream, str, ' ');
 	while(str.empty() == true && sstream.eof() == true)			//loop until #
 		getline(sstream, str, ' ');
