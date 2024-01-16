@@ -7,8 +7,6 @@ Irc::Irc(std::string password): AServer(password) {}
 Irc::Irc operator=(const Irc& I); */
 Irc::~Irc() {}
 
-
-
 void	Irc::sendError(IRC_ERR error, Client* sender) const
 {
 	std::string error_message;
@@ -226,7 +224,8 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
     std::getline(sstream, recipient, ' '); //space 
     std::getline(sstream, message); //semicolon ignored at the moment
 
-
+	message = "PRIVMSG " + recipient + " " + message;
+	
 	// SHOULD WE CHECK FOR:
 		// - ':' ?? -> hexchat doesnt let u write /PRIVMSG
 		// - if recpient == sender.getNickname()? -> u can write yourself a message in hexchat with /PRIVMSG

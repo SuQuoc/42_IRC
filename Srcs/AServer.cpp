@@ -1,7 +1,8 @@
 #include "../Includes/AServer.hpp"
 
 //con- and destructer
-AServer::AServer(): _password("pw"), _epoll_fd(-1), _sock_fd(-1) {}
+AServer::AServer(): _epoll_fd(-1), _sock_fd(-1){}
+
 AServer::AServer(std::string password): _password(password), _epoll_fd(-1), _sock_fd(-1) {}
 /* AServer::AServer(const AServer& S)
 {
@@ -120,10 +121,42 @@ void	AServer::addNewPair(const int& client_fd)
 	_client_fds.insert(pair);
 }
 
+struct addrinfo* AServer::getIpAdressToBind(const int& port)
+{
+	struct addrinfo hints, *result, *ptr;
+	int status;
+	char ipstr[INET_ADDRSTRLEN];
+
+	std::stringstream ss;
+	ss << port;
+	std::string portSTR = ss.str();
+
+	std::memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_INET; // AF_INET or AF_INET6 to force version
+	hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE; // to return a socket suitable for binding a socket for accepting 
+	if ((status = getaddrinfo(NULL, portSTR.c_str(), &hints, &result)) != 0)
+    {
+		// std::cerr << "getaddrinfo: " << gai_strerror(status) << std::endl; // not allowed i think
+		failure_exit("failed to get addrinfo");
+	}
+    
+	for (ptr = result; ptr != NULL; ptr = ptr->ai_next) 
+	{
+        if (ptr->ai_family == AF_INET) //Only process IPv4 addresses
+		{ 
+            struct sockaddr_in *ipv4 = reinterpret_cast<struct sockaddr_in*>(ptr->ai_addr);
+            inet_ntop(ptr->ai_family, &(ipv4->sin_addr), ipstr, sizeof(ipstr)); //Convert the IPv4 address to a human-readable form
+            std::cout << "IPv4 Address: " << ipstr << std::endl;
+        }
+    }
+	return result;
+}
 
 //public methods
 void	AServer::createTcpSocket(const std::string& ip, const int& port) //exits?
 {
+	struct addrinfo *result;
 	struct sockaddr_in saddr;
 	int	optval = 1;
 
@@ -136,8 +169,13 @@ void	AServer::createTcpSocket(const std::string& ip, const int& port) //exits?
 		failure_exit("couldn't create socket");
 	if (setsockopt(_sock_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1) //not necassery
 		failure_exit("couldn't set socket options");
-	if (bind(_sock_fd, reinterpret_cast<sockaddr*>(&saddr), sizeof(struct sockaddr_in)) == -1)
-		failure_exit("couldn't bind to socket");
+	result = getIpAdressToBind(port);
+	if (bind(_sock_fd, result->ai_addr, result->ai_addrlen) == -1)
+	{
+		freeaddrinfo(result); //
+		failure_exit("couldn't bind to socket");	
+	}
+	freeaddrinfo(result); // normal to free it immediatly after bind?
 	if (listen(_sock_fd, 1000) == -1) //1000?
 		failure_exit("couldn't listen(?) to socket");
 	if (fcntl(_sock_fd, F_SETFL, O_NONBLOCK) == -1)
@@ -147,7 +185,7 @@ void	AServer::createTcpSocket(const std::string& ip, const int& port) //exits?
 void	AServer::createEpoll()
 {
 	_ev.data.fd = _sock_fd;
-	_ev.events = EPOLLIN | EPOLLET; //ECOLLET sets Edge-Triggered mode
+	_ev.events = EPOLLIN | EPOLLET; //ECOLLET sets Edge-Triggered mode ?? whats the differnce again with level triggered write it down somewhere
 
 	_epoll_fd = epoll_create1(0); //can be set to EPOLL_NONBLOCK
 	if (_epoll_fd == -1)
