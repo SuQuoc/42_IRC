@@ -35,7 +35,7 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 {
 	// TESTING BLOCK
 	// (void)(sender);
-	// std::string msg = ":192.168.0.159 401 niki :No such nick/channel\r\n";
+	// std::string msg = ":X 401 niki :No such nick/channel\r\n";
 	// send(new_client_fd, msg.c_str(), msg.size(), 0);
 
     std::stringstream	sstream(message); //message can't be empty

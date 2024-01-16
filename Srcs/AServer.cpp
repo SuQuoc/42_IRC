@@ -121,7 +121,7 @@ void	AServer::addNewPair(const int& client_fd)
 	_client_fds.insert(pair);
 }
 
-struct addrinfo* AServer::getIpAdressToBind(const int& port)
+struct addrinfo* AServer::getIpAdressToBind(const int& port) // NOT needed CRY.... !!!???
 {
 	struct addrinfo hints, *result, *ptr;
 	int status;
@@ -157,26 +157,20 @@ struct addrinfo* AServer::getIpAdressToBind(const int& port)
 //public methods
 void	AServer::createTcpSocket(const int& port) //exits?
 {
-	struct addrinfo *result;
 	int	optval = 1;
 
-	//	struct sockaddr_in saddr; DEPRECEATED, used ip address as input which is not given
-	// saddr.sin_family = AF_INET; 
-	// saddr.sin_port = htons(port);
-	// saddr.sin_addr.s_addr = inet_addr(ip.c_str());
+	struct sockaddr_in saddr;
+	saddr.sin_family = AF_INET; 
+	saddr.sin_port = htons(port);
+	saddr.sin_addr.s_addr = INADDR_ANY;
 
 	_sock_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP); //IPPROTO_TCP?
 	if (_sock_fd == -1)
 		failure_exit("couldn't create socket");
 	if (setsockopt(_sock_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1) //not necassery
 		failure_exit("couldn't set socket options");
-	result = getIpAdressToBind(port);
-	if (bind(_sock_fd, result->ai_addr, result->ai_addrlen) == -1)
-	{
-		freeaddrinfo(result); //
+	if (bind(_sock_fd, reinterpret_cast<sockaddr*>(&saddr), sizeof(struct sockaddr_in)) == -1)
 		failure_exit("couldn't bind to socket");
-	}
-	// freeaddrinfo(result); // normal to free it immediatly after bind?
 	if (listen(_sock_fd, 1000) == -1) //1000?
 		failure_exit("couldn't listen(?) to socket");
 	if (fcntl(_sock_fd, F_SETFL, O_NONBLOCK) == -1)
