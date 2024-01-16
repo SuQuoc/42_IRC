@@ -8,8 +8,12 @@
 
 #include "../Includes/Client.hpp"
 
-#define EXIT_FAILURE 1
 #define MAX_CLIENTS 100 // How high should it be?
+#define EXIT_FAILURE 1
+#define CH_SUCCESS 0
+
+#define ERR_KEYSET			467
+#define ERR_NOPRIVILEGES	481
 
 class Client;
 
@@ -36,7 +40,7 @@ class Channel
 		typedef	std::vector<Channel::Member_t>::iterator clients_itr;
 
 		void	sendNonBlock(const int &fd, const std::string &msg);
-		void	changeMode( bool &mode, const char &add );
+		int		changeMode(Client *executor, const char &add, bool &modes);
 		clients_itr	getClient(const std::string _name);
 		clients_itr	getClient(const Client *client);
 		Channel();
@@ -63,5 +67,5 @@ class Channel
 		const std::string	&getName() const;
 		int size() const;
 
-		void changeChannelMode(Client *executor, const char &add, const char &mode, const std::string &argument);
+		int modesSwitch(Client *executor, const char &add, const char &mode, const std::string &argument);
 };

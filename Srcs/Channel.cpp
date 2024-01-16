@@ -129,25 +129,25 @@ bool Channel::isInChannel(const Client *client)
 void	Channel::setMaxClients(const int &max_clients) { _max_clients = max_clients; }
 void	Channel::setName(const std::string &name) { _name = name; }
 // ? should it respond to the client if it to big? 
-int	Channel::setPassword(Client *executor,const std::string &password, const char &add)
+int	Channel::setPassword(Client *executor, const std::string &password, const char &add)
 {
 	clients_itr client;
 
 	client = getClient(executor);
 	// send msg ???? youre not a channel operator
 	if(client == _clients.end() || client->is_operator == false)
-		return 2; // = yore not an operator!
+		return ERR_NOPRIVILEGES; // = 481 ERR_NOPRIVILEGES
 	if(add == '+' && _password.empty() == true) // send msg if already set
 	{
 		_password = password;
-		return 0;
+		return CH_SUCCESS;
 	}
 	if(add == '-' && password == _password)
 	{
 		_password.clear();
-		return 0;
+		return CH_SUCCESS;
 	}
-	return 1; // = channel key is already set!
+	return ERR_KEYSET; // 467 ERR_KEYSET
 }
 //also checks if name is in clients and if oper if restricted
 void	Channel::setTopic(const std::string &name, const std::string &topic)
@@ -184,33 +184,45 @@ const std::string &Channel::getPassword() const { return _password; }
 const std::string &Channel::getName() const { return _name; }
 int Channel::size() const { return _clients.size(); }
 
-void Channel::changeMode( bool &modes, const char &add )
+//returns -1 if not a + or - in add, otherwise error code if fails
+int Channel::changeMode(Client *executor, const char &add, bool &modes)
 {
+	if(getClient(executor)->is_operator == false)
+		return ERR_NOPRIVILEGES;     //ERR_NOPRIVILEGES
 	if(add == '+')
 		modes = true;
 	else if(add == '-')
 		modes = false;
 	else
+	{
 		std::cout << "error just + or -" << std::endl;
+		return -1;
+	}
+	return(0);
 }
 
 //multible modes a possilbe like +adasd
 //ervery char needs to be handelt
 //multible arguments are possible
-void Channel::changeChannelMode(Client *executor, const char &add, const char &mode, const std::string &argument)
+int Channel::modesSwitch(Client *executor, const char &add, const char &ch_modes, const std::string &argument)
 {
-	/* clients_itr itr;
+	enum color { SET_RESTRICT_TOPIC = 't', SET_INVITE_ONLY = 'i', SET_KEY = 'k', SET_OPERATOR ='o' };
+	clients_itr itr;
 
-	if(mode == 'i')
-		changeMode(_invite_only, add);
-	else if(mode == 't')
-		changeMode(_restrict_topic, add);
-	else if(mode == 'k')
-		setPassword(executor, argument, add);
-	else if(mode == 'o' && (itr = getClient(argument)) != _clients.end())
-		itr->is_operator == true;
-	else if()
-
-	else
-		//send error to client */
+	switch (ch_modes)
+	{
+	case SET_RESTRICT_TOPIC:
+		return changeMode(executor, add, _restrict_topic);
+	case SET_INVITE_ONLY:
+		return changeMode(executor, add, _invite_only);
+	case SET_OPERATOR:
+		break;	
+	case SET_KEY:
+		return setPassword(executor, argument, add);
+	default:
+		break;
+	}
+	/* else if(mode == 'o' && (itr = getClient(argument)) != _clients.end())
+		itr->is_operator = true; */
+	return 0;
 }

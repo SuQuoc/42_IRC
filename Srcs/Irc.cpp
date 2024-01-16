@@ -81,7 +81,7 @@ std::string	Irc::getWord(std::stringstream& sstream)
 	return (str);
 }
 
-std::string	Irc::getWord(std::stringstream& sstream)
+/* std::string	Irc::getWord(std::stringstream& sstream)
 {
 	std::string	str;
 	
@@ -89,7 +89,7 @@ std::string	Irc::getWord(std::stringstream& sstream)
 	while (str.empty() && !sstream.eof())
 		std::getline(sstream, str, ' ');
 	return (str);
-}
+} */
 
 
 //methods (commands)
@@ -300,7 +300,7 @@ void Irc::MODE(Client *sender, std::stringstream &sstream);
 void Irc::TOPIC(Client *sender, std::stringstream &sstream);
 void Irc::INVITE(Client *sender, std::stringstream &sstream); */
 
-void Irc::MODE(Client *sender, std::stringstream &sstream)
+/* void Irc::MODE(Client *sender, std::stringstream &sstream)
 {
 	std::string channel_name;
 	std::string mode;
@@ -318,4 +318,4 @@ void Irc::MODE(Client *sender, std::stringstream &sstream)
 		mode = str[0];
 		_channels[channel_name]->setMode(sender, mode);			//chatch error codes
 	}
-}
+} */
