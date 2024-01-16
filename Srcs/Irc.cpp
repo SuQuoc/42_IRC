@@ -175,7 +175,7 @@ void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client
 void Irc::NICK(Client *sender, std::stringstream &sstream)
 {
     std::string nickname = getWord(sstream);
-	//what if nick has space is it being ignored are is space not allowed? --> NO
+	//what if nick has space is it being ignored are is space not allowed? --> Not allowed
     
     if (nickname.empty())
 	{
@@ -185,6 +185,9 @@ void Irc::NICK(Client *sender, std::stringstream &sstream)
     //    sendError(ERR_NOSUCHCHANNEL, sender); //or return 
     // else if (!isNormed(nickname)) //
         // sendError(ERR_NOSUCHCHANNEL, sender); //or return 
+
+	// dont like that availabilty is checked before correctness but it solves problems
+	// if nickname was set before but is not available its bad to have the name in client object if client its not being deleted
 	client_name_map_iter_t it = _client_names.find(nickname); //key may not be used cuz it creates an entry --> actually good for us no?
 	if (it == _client_names.end()) //no one has the nickname
 		sender->setNickname(nickname); //should setter norm check and return?

@@ -65,7 +65,7 @@ int main(const int argc, const char *argv[])
 
 	Irc	server(argv[2]);
 	//check port and ip-adress!!! //not ip-adress but password!!!!!!!!!!!!!
-	server.createTcpSocket(argv[1], stoi_(argv[2]));
+	server.createTcpSocket(stoi_(argv[1]));
 	server.createEpoll();
 	server.epollLoop();
 }

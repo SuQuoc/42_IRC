@@ -40,3 +40,18 @@ std::vector<std::string> splitIrcCmd(const std::string& input, const std::string
     }
     return result;
 }
+
+
+bool containsForbiddenChars(const std::string& input, const std::string& forbiddenChars) 
+{
+    // Loop through each character in the input string
+    for (std::string::const_iterator it = input.begin(); it != input.end(); it++) 
+    {
+        // Check if the current character is in the forbidden set
+        if (forbiddenChars.find(*it) != std::string::npos) 
+        {
+            return true;  // Found a forbidden character
+        }
+    }
+    return false;
+}

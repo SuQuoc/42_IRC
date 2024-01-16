@@ -29,8 +29,12 @@ bool Client::isRegistered() const
 
 void Client::setNickname(const std::string& name)
 {
+	// checking if its empty? is 
+	if (name.size() > 9 || containsForbiddenChars(name, " ,*?!@$:.#"))
+		std::cout << "432 Erreonous nickname" << std::endl;
+
 	_nickname = name;
-	_prefix = ":" + _nickname + "!" + _username + "@" + _hostname; //bissi blöd but working
+	_prefix = ":" + _nickname + "!" + _username + "@" + _hostname; //a lil ick but working
 }
 
 void Client::setUser(const std::string& uname, const std::string& hname, const std::string& sname, const std::string& rname)

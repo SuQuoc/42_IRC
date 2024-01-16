@@ -7,9 +7,12 @@
 #include <algorithm>
 #include <unistd.h>
 #include <iostream>
+#include <algorithm>
+
 
 #include "Channel.hpp"
 #include "Irc_error.hpp"
+#include "utils.hpp"
 
 
 //git checkout -b quocsu

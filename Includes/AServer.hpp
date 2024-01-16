@@ -58,7 +58,7 @@ public:
 	virtual ~AServer();
 
 //methods
-	void	createTcpSocket(const std::string& ip, const int& port); //exits?
+	void	createTcpSocket(const int& port); //exits?
 	void	createEpoll(); //exits?
 	void	epollLoop(); //exits?
 };

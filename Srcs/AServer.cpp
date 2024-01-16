@@ -130,6 +130,7 @@ struct addrinfo* AServer::getIpAdressToBind(const int& port)
 	std::stringstream ss;
 	ss << port;
 	std::string portSTR = ss.str();
+	std::cout << "PORT: " << portSTR << std::endl;
 
 	std::memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_INET; // AF_INET or AF_INET6 to force version
@@ -154,15 +155,15 @@ struct addrinfo* AServer::getIpAdressToBind(const int& port)
 }
 
 //public methods
-void	AServer::createTcpSocket(const std::string& ip, const int& port) //exits?
+void	AServer::createTcpSocket(const int& port) //exits?
 {
 	struct addrinfo *result;
-	struct sockaddr_in saddr;
 	int	optval = 1;
 
-	saddr.sin_family = AF_INET;
-	saddr.sin_port = htons(port);
-	saddr.sin_addr.s_addr = inet_addr(ip.c_str());
+	//	struct sockaddr_in saddr; DEPRECEATED, used ip address as input which is not given
+	// saddr.sin_family = AF_INET; 
+	// saddr.sin_port = htons(port);
+	// saddr.sin_addr.s_addr = inet_addr(ip.c_str());
 
 	_sock_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP); //IPPROTO_TCP?
 	if (_sock_fd == -1)
@@ -173,9 +174,9 @@ void	AServer::createTcpSocket(const std::string& ip, const int& port) //exits?
 	if (bind(_sock_fd, result->ai_addr, result->ai_addrlen) == -1)
 	{
 		freeaddrinfo(result); //
-		failure_exit("couldn't bind to socket");	
+		failure_exit("couldn't bind to socket");
 	}
-	freeaddrinfo(result); // normal to free it immediatly after bind?
+	// freeaddrinfo(result); // normal to free it immediatly after bind?
 	if (listen(_sock_fd, 1000) == -1) //1000?
 		failure_exit("couldn't listen(?) to socket");
 	if (fcntl(_sock_fd, F_SETFL, O_NONBLOCK) == -1)
