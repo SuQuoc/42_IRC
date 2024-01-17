@@ -3,7 +3,7 @@
 
 Client::Client(int fd): _fd(fd) 
 {
-	std::cout << "Client with socket: " << _fd << "created" << std::endl;
+	/* std::cout << "Client with socket: " << _fd << "created" << std::endl; */
 }
 
 Client::~Client()

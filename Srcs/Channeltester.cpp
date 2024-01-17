@@ -94,6 +94,24 @@ void test_setPassword(Channel &after_life, Client *niki, Client *beni)
         std::cout << "ok ";
     else
         std::cout << "ko ";
+    std::cout << std::endl;
+}
+
+void test_multible_clients(int client_ammount)
+{
+    int name = 0;
+    Client *niki = addUser("niki");
+    Channel after_life(niki, "AfterLife");
+
+    for(int i = 0; i < client_ammount; i++)
+    {
+        Client *client = addUser(std::to_string(i));
+        test_addClient(after_life, client);
+        after_life.rmClient(client);
+        delete client;
+    }
+    after_life.rmClient(niki);
+    delete niki;
 }
 
 int main()
@@ -105,6 +123,7 @@ int main()
     test_isInChannel(after_life, niki, beni);
     test_rmClient(after_life, beni);
     test_setPassword(after_life, niki, beni);
+    test_multible_clients(10);
 
     delete niki;
     delete beni;

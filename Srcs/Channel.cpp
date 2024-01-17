@@ -55,12 +55,14 @@ void Channel::rmClient(const Client *executor, const Client *rm_client)
 	if( itr == _clients.end())			// need to send a msg to the client ?
 	{
 		std::cout << "Placeholder in rmClient() in channel.hpp" << std::endl << "Executor is not a in this channel!" << std::endl;
+		// 441 ERR_USERNOTINCHANNEL
 		return ;
 	}
 	if(itr->is_operator == false)		// need to send a msg to the client ?
 	{
 		std::cout << "Placeholder in rmClient() in channel.hpp" << std::endl << "Executor is not a operator this channel!" << std::endl;
 		return ;
+		// :server-name 482 your-nickname #channel :You're not channel operator ?
 	}
 	rmClient(rm_client);
 	//need to  send a msg to the executor?
@@ -76,9 +78,11 @@ void Channel::rmClient(const Client *rm_client)
 	if(itr == _clients.end())			// need to send a msg to the client ?
 	{
 		std::cout << "Placeholder in rmClient() in channel.hpp" << std::endl << "rm_client is not in channel!" << std::endl;
+		// 441 ERR_USERNOTINCHANNEL
 		return ;
 	}
 	_clients.erase(itr);
+	// send kick msg
 }
 
 void	Channel::addClient(Client *new_client, bool is_operator)
@@ -136,16 +140,16 @@ int	Channel::setPassword(Client *executor, const std::string &password, const ch
 	client = getClient(executor);
 	// send msg ???? youre not a channel operator
 	if(client == _clients.end() || client->is_operator == false)
-		return ERR_NOPRIVILEGES; // = 481 ERR_NOPRIVILEGES
+		return ERR_CHANOPRIVSNEEDED; // = 481 ERR_NOPRIVILEGES
 	if(add == '+' && _password.empty() == true) // send msg if already set
 	{
 		_password = password;
-		return CH_SUCCESS;
+		return RPL_CHANNELMODEIS;
 	}
 	if(add == '-' && password == _password)
 	{
 		_password.clear();
-		return CH_SUCCESS;
+		return RPL_CHANNELMODEIS;
 	}
 	return ERR_KEYSET; // 467 ERR_KEYSET
 }
@@ -189,16 +193,44 @@ int Channel::changeMode(Client *executor, const char &add, bool &modes)
 {
 	if(getClient(executor)->is_operator == false)
 		return ERR_NOPRIVILEGES;     //ERR_NOPRIVILEGES
-	if(add == '+')
-		modes = true;
-	else if(add == '-')
-		modes = false;
-	else
+	if(add == '+' && modes == false)
 	{
-		std::cout << "error just + or -" << std::endl;
-		return -1;
+		modes = true;	// 324     RPL_CHANNELMODEIS
+		return RPL_CHANNELMODEIS;
 	}
-	return(0);
+	else if(add == '-' && modes == true)
+	{
+		modes = false;	// 324     RPL_CHANNELMODEIS
+		return RPL_CHANNELMODEIS;
+	}
+	return(CH_SUCCESS);
+}
+
+int Channel::setOperator(Client *executor, const char &add, const std::string &name)
+{
+	clients_itr itr;
+
+	if(getClient(executor) == _clients.end())
+		return ERR_NOTONCHANNEL;		// :server-name 442 your-nickname #channel :You're not on that channel
+	if(getClient(executor)->is_operator == false)
+		return ERR_CHANOPRIVSNEEDED;     //ERR_NOPRIVILEGES
+	if(getClient(name) == _clients.end())
+		return ERR_USERNOTINCHANNEL;
+	if(add == '+')
+	{
+		if(itr->is_operator == true)
+			return 491; //:server-name 491 your-nickname #channel :You're already an operator
+		itr->is_operator = true;
+		return RPL_CHANNELMODEIS;
+	}
+	else if(add == '-')
+	{
+		if(itr->is_operator == false)
+			return 491; // :server-name 491 your-nickname #channel :They are not an operator
+		itr->is_operator = true;	// 324     RPL_CHANNELMODEIS
+		return RPL_CHANNELMODEIS;
+	}
+	return(CH_SUCCESS);
 }
 
 //multible modes a possilbe like +adasd
@@ -216,7 +248,7 @@ int Channel::modesSwitch(Client *executor, const char &add, const char &ch_modes
 	case SET_INVITE_ONLY:
 		return changeMode(executor, add, _invite_only);
 	case SET_OPERATOR:
-		break;	
+		return setOperator(executor, add, argument);
 	case SET_KEY:
 		return setPassword(executor, argument, add);
 	default:

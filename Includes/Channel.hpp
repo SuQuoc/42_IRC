@@ -12,9 +12,6 @@
 #define EXIT_FAILURE 1
 #define CH_SUCCESS 0
 
-#define ERR_KEYSET			467
-#define ERR_NOPRIVILEGES	481
-
 class Client;
 
 class Channel
@@ -39,8 +36,8 @@ class Channel
 
 		typedef	std::vector<Channel::Member_t>::iterator clients_itr;
 
-		void	sendNonBlock(const int &fd, const std::string &msg);
 		int		changeMode(Client *executor, const char &add, bool &modes);
+		void	sendNonBlock(const int &fd, const std::string &msg);
 		clients_itr	getClient(const std::string _name);
 		clients_itr	getClient(const Client *client);
 		Channel();
@@ -54,8 +51,8 @@ class Channel
 		void	rmClient(const Client *executor, const Client *rm_client);
 		void	sendMsg(const Client *sender, const std::string &msg);
 		void	addClient(Client *new_client, bool is_operator);
-		void	rmClient(const Client *rm_client);
 		bool	isInChannel(const Client *client);
+		void	rmClient(const Client *rm_client);
 		bool	isOperator(const Client *client);
 
 		void	setTopic(const std::string &name, const std::string &topic);
@@ -68,4 +65,6 @@ class Channel
 		int size() const;
 
 		int modesSwitch(Client *executor, const char &add, const char &mode, const std::string &argument);
+
+		int setOperator(Client *executor, const char &add, const std::string &name);
 };
