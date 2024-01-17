@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <netdb.h>
 
 #include <iostream>
 #include <iterator>
@@ -41,6 +42,7 @@ protected: //protected? -> yes, if not i would need a getter for everything
 	void	accept_connection();
 	void	process_event(const int& client_sock);
 	void	failure_exit(const std::string& error_msg); //exits?
+	struct addrinfo*	getIpAdressToBind(const int& port);
 	virtual void	command_switch(Client *sender, const std::string message, const int& new_client_fd) = 0;
 
 	void	addNewPair(Client *sender, const std::string& channel_name);
@@ -56,7 +58,7 @@ public:
 	virtual ~AServer();
 
 //methods
-	void	createTcpSocket(const std::string& ip, const int& port); //exits?
+	void	createTcpSocket(const int& port); //exits?
 	void	createEpoll(); //exits?
 	void	epollLoop(); //exits?
 };

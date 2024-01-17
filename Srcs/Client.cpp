@@ -29,8 +29,12 @@ bool Client::isRegistered() const
 
 void Client::setNickname(const std::string& name)
 {
+	// checking if its empty? is 
+	if (name.size() > 9 || containsForbiddenChars(name, " ,*?!@$:.#"))
+		std::cout << "432 Erreonous nickname" << std::endl;
+
 	_nickname = name;
-	_prefix = ":" + _nickname + "!" + _username + "@" + _hostname; //bissi blöd but working
+	_prefix = ":" + _nickname + "!" + _username + "@" + _hostname; //a lil ick but working
 }
 
 void Client::setUser(const std::string& uname, const std::string& hname, const std::string& sname, const std::string& rname)
@@ -75,7 +79,8 @@ void Client::sendTo(const std::string& msg, Client* recipient) const
 
 void Client::sendTo(const std::string& msg, Channel* recipient) const //???????????
 {
-	const std::string message = this->getPrefix() + msg;
+	const std::string message = this->getPrefix() + " " + msg;
+	std::cout << "--> Sending: " << message << std::endl;
 	// std::cout << "SEND FUNCTION NOT COMPLETED YET" << std::endl;
 	// if (send(recipient->getFd(), message.c_str(), message.size(), 0) == -1)
 		// std::cerr << "send() failed" << std::endl;
