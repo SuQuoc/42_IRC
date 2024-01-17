@@ -114,16 +114,54 @@ void test_multible_clients(int client_ammount)
     delete niki;
 }
 
+#include <sstream>
+
+void MODE(Channel &after_life, Client *sender, std::stringstream &sstream)
+{
+	std::string channel_name;
+	std::string mode;
+	std::string word;
+    std::string argument;
+    char pre_fix = 'e';
+	
+    std::getline(sstream >> std::ws, channel_name, ' ');
+	while(std::getline(sstream >> std::ws, word, ' '))
+    {
+        pre_fix = 'e';
+        for(int i = 0; i < word.size(); i++)
+        {
+            if(word[i] == '+' || word[i] == '-') // add here for <ws>: ? if we have one just call a funktion that handals this separate
+            {
+                pre_fix = word[i];
+                i++;
+            }
+            if(word[i] == 'i') // all without arguments! protect for non prefix ( +  or - )
+            {
+                after_life.modesSwitch(sender, pre_fix, word[i], ""); // so if no prefix send error? (e)
+                std::cout << word[i] << std::endl;
+            }
+            else if(word[i] == 'k')
+            {
+                std::getline(sstream >> std::ws, argument, ' ');
+                after_life.modesSwitch(sender, pre_fix, word[i], argument);
+                std::cout << pre_fix << word[i] << " " << argument << std::endl;
+            }
+        }
+    }
+}
+
 int main()
 {
     Client *niki = addUser("niki");
     Client *beni = addUser("beni");
     Channel after_life(niki, "AfterLife");
+    std::stringstream input("#nyancat +iiiiiiik aaaa +i");
 
-    test_isInChannel(after_life, niki, beni);
+    /* test_isInChannel(after_life, niki, beni);
     test_rmClient(after_life, beni);
     test_setPassword(after_life, niki, beni);
-    test_multible_clients(10);
+    test_multible_clients(10); */
+    MODE(after_life, niki, input);
 
     delete niki;
     delete beni;
