@@ -147,6 +147,8 @@ std::string	Irc::getWord(std::stringstream& sstream)
 
 //WIR NEHMEN AN DAS wir immer PASS NICK USER bekommen 
 //dh ich kann das bissi ändern
+//??WHAT HAPPENS IF HE DOES PASS AGAIN --> ERR_ALREADYREGISTERED, also when he has no nick or user set
+//if PASSWORD is wrong we disconnect him
 void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client_fd)
 {
     std::string password;

@@ -23,6 +23,12 @@ void	sendError(IRC_ERR error, Client* sender, const std::string& input)
 		case ERR_CANNOTSENDTOCHAN:
 			err_message += input + " :Cannot send to channel"; //<channel name>
 			break;
+		case ERR_TOOMANYCHANNELS:
+			err_message += input + " :You have joined too many channels"; //<channel name>
+			break;
+		case ERR_TOOMANYTARGETS:
+			err_message += input + " :Duplicate recipients. No message delivered"; //<target> ????? very weird stil when this is triggered --> protocoll
+			break;
 		case ERR_UNKNOWNCOMMAND:
 			err_message += input + " :Unknown command"; //<command>
 			break;
@@ -51,7 +57,7 @@ void	sendError(IRC_ERR error, Client* sender, const std::string& input)
 			err_message += ":You may not reregister";
 			break;
 		case ERR_PASSWDMISMATCH:
-			err_message += ":Password incorrect";
+			err_message += ":Password incorrect"; //!!!!? THIS WILL BE DONE SOMEWHERE ELSE
 			break;
 		case ERR_KEYSET:
 			err_message += input + " :Channel key already set"; //<channel>
