@@ -2,7 +2,7 @@
 
 Client::Client(int fd): _fd(fd) 
 {
-	std::cout << "Client with socket: " << _fd << "created" << std::endl;
+	/* std::cout << "Client with socket: " << _fd << "created" << std::endl; */
 }
 
 Client::~Client()
@@ -15,7 +15,7 @@ Client::~Client()
 
 bool Client::isRegistered() const
 {
-	if (!_nickname.empty() && !_username.empty() && _is_authenticated)
+	if (!_nickname.empty() && !_username.empty())
 		return true;
 	return false;
 }
@@ -28,8 +28,12 @@ bool Client::isRegistered() const
 
 void Client::setNickname(const std::string& name)
 {
+	// checking if its empty? is 
+	if (name.size() > 9 || containsForbiddenChars(name, " ,*?!@$:.#"))
+		std::cout << "432 Erreonous nickname" << std::endl;
+
 	_nickname = name;
-	_prefix = ":" + _nickname + "!" + _username + "@" + _hostname; //bissi blöd but working
+	_prefix = ":" + _nickname + "!" + _username + "@" + _hostname; //a lil ick but working
 }
 
 void Client::setUser(const std::string& uname, const std::string& hname, const std::string& sname, const std::string& rname)
@@ -61,4 +65,23 @@ void Client::joinChannel(Channel *channel)
 void Client::leaveChannel(Channel *channel)
 {
 	_channels.erase(std::find(_channels.begin(), _channels.end(), channel));
+}
+
+void Client::sendTo(const std::string& msg, Client* recipient) const
+{
+	const std::string message = this->getPrefix() + msg;
+	// std::cout << "SEND FUNCTION NOT COMPLETED YET" << std::endl;
+	if (send(recipient->getFd(), message.c_str(), message.size(), 0) == -1)
+		std::cerr << "send() failed" << std::endl;
+}
+
+
+void Client::sendTo(const std::string& msg, Channel* recipient) const //???????????
+{
+	const std::string message = this->getPrefix() + " " + msg;
+	std::cout << "--> Sending: " << message << std::endl;
+	// std::cout << "SEND FUNCTION NOT COMPLETED YET" << std::endl;
+	// if (send(recipient->getFd(), message.c_str(), message.size(), 0) == -1)
+		// std::cerr << "send() failed" << std::endl;
+	(void)(recipient);
 }

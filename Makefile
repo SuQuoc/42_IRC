@@ -1,5 +1,5 @@
 NAME		= ircserv
-ARGS 		= 192.168.0.75 8080
+ARGS 		= 6667 pw1234567
 CXX			= c++
 CXXFLAGS	= -Wall -Wextra -Werror -MMD -MP -pedantic -g -std=c++98
  
@@ -10,7 +10,8 @@ SRCS		= 	Irc.cpp \
 				AServer.cpp \
 				Channel.cpp \
 				Client.cpp \
-				main.cpp
+				main.cpp \
+				utils_string.cpp
 
 SRC_DIR 	= ./Srcs
 SRCS 		:= $(addprefix $(SRC_DIR)/, $(SRCS))

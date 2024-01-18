@@ -7,8 +7,12 @@
 #include <algorithm>
 #include <unistd.h>
 #include <iostream>
+#include <algorithm>
+
 
 #include "Channel.hpp"
+#include "Irc_error.hpp"
+#include "utils.hpp"
 
 
 //git checkout -b quocsu
@@ -59,6 +63,8 @@ public:
 
 	void joinChannel(Channel *channel); // i or fiona(const) could call then nikis function
 	void leaveChannel(Channel *channel); // i or fiona(const) could call then nikis function 
+	void sendTo(const std::string& msg, Client* recipient) const;
+	void sendTo(const std::string& msg, Channel* recipient) const;
 };
 
 

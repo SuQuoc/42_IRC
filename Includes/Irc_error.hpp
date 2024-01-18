@@ -1,8 +1,10 @@
 
-#include "irc.hpp"
+# pragma once
 
 enum IRC_ERR
 {
+    RPL_CHANNELMODEIS = 324,
+
     ERR_NOSUCHCHANNEL = 403, //? can this happen with our Reference client, when does it occur
     ERR_CANNOTSENDTOCHAN = 404, //?
     ERR_UNKNOWNCOMMAND = 421,
@@ -15,29 +17,10 @@ enum IRC_ERR
     ERR_NEEDMOREPARAMS = 461,
     ERR_ALREADYREGISTERED = 462,
     ERR_PASSWDMISMATCH = 464,
+    ERR_KEYSET = 467,
     ERR_UNKNOWNMODE = 472, //?
+    ERR_NOPRIVILEGES = 481,
     ERR_CHANOPRIVSNEEDED = 482, 
     ERR_USERMODEUNKNOWNFLAG = 501, //?
     ERR_USERSDONTMATCH = 502 //?
 };
-
-
-void sendErrorToClient(IRC_ERR error, Client* sender)
-{
-	std::string error_message;
-	error_message = sender.getPrefix() 
-	switch (error)
-	{
-		case ERR_NOSUCHCHANNEL:
-			error_message += "LOOK AT IRC PROTOCOLL";
-			break;
-		case ERR_ERRONEUSNICKNAME:
-			error_message += "LOOK AT IRC PROTOCOLL";
-			break;
-		case ERR_NICKNAMEINUSE:
-			break;
-		default:
-			throw smth;
-	}
-	sender.sendMsg();
-}

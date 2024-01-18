@@ -7,9 +7,37 @@ Irc::Irc(std::string password): AServer(password) {}
 Irc::Irc operator=(const Irc& I); */
 Irc::~Irc() {}
 
+void	Irc::sendError(IRC_ERR error, Client* sender) const
+{
+	std::string error_message;
+	error_message = sender->getPrefix(); //doesnt end with a space
+	switch (error)
+	{
+		case ERR_NOSUCHCHANNEL:
+			error_message += " Error was not implemented yet, go work";
+			break;
+		case ERR_ERRONEUSNICKNAME:
+			error_message += " LOOK AT IRC PROTOCOLL";
+			break;
+		case ERR_NICKNAMEINUSE:
+			break;
+		default:
+			std::cout << "Error was not implemented yet, go work" << std::endl;
+			//throw ;?
+	}
+	std::cout << error_message << std::endl;
+	//sender.sendMsg();
+}
+
+
 //private methods 
 void	Irc::command_switch(Client *sender, const std::string message, const int& new_client_fd) //message-> 'request' better name? for us to discern
 {
+	// TESTING BLOCK
+	// (void)(sender);
+	// std::string msg = ":X 401 niki :No such nick/channel\r\n";
+	// send(new_client_fd, msg.c_str(), msg.size(), 0);
+
     std::stringstream	sstream(message); //message can't be empty
     std::string	cmd;
 
@@ -18,8 +46,8 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 	std::cout << "cmd: " << cmd << "$" << std::endl;
 	if (sender == NULL) //doesn't protect when sender is not in map?
 	{
-		std::getline(sstream, cmd); //?
-		std::getline(sstream >> std::ws, cmd, ' '); //?
+		std::getline(sstream, cmd); //? for CAP LS 
+		std::getline(sstream, cmd, ' '); //?
 		//std::cout << "cmd2: " << cmd << "$" << std::endl;
 		if (cmd == "PASS")
 			std::cout << "PASS()" << new_client_fd << std::endl; //PASS(new_client_fd); // client can always try PASS although not registered ?
@@ -41,9 +69,29 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 	else std::cout << "sendError(ERR_UNKNOWNCOMMAND)" << std::endl; //sendError(ERR_UNKNOWNCOMMAND);
 }
 
+std::string	Irc::getWord(std::stringstream& sstream)
+{
+	std::string	str;
+	
+	std::getline(sstream, str, ' ');
+	while (str.empty() && !sstream.eof())
+		std::getline(sstream, str, ' ');
+	return (str);
+}
+
+/* std::string	Irc::getWord(std::stringstream& sstream)
+{
+	std::string	str;
+	
+	std::getline(sstream, str, ' ');
+	while (str.empty() && !sstream.eof())
+		std::getline(sstream, str, ' ');
+	return (str);
+} */
+
 
 //methods (commands)
-// void	JOIN(Client *sender, std::stringstream &sstream)
+// void	Irc::JOIN(Client *sender, std::stringstream &sstream)
 // {
 // 	std::string	channel_name = getWord(sstream);
 	
@@ -68,7 +116,7 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 // 	return (message);
 // }
 
-// void	PART(Client *sender, std::stringstream &sstream)
+// void	Irc::PART(Client *sender, std::stringstream &sstream)
 // {
 // 	//PART #channnel-name msg
 // 	Channel		*channel;
@@ -105,85 +153,171 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 // 	delete client-object (sender)
 // 	erase client from name_client-map (name)
 // }
-// void	KICK(Client *sender, std::stringstream &sstream);
+// void	Irc::KICK(Client *sender, std::stringstream &sstream);
+//
+//}
 
 
-
-// //WIR NEHMEN AN DAS wir immer PASS NICK USER bekommen 
-// //dh ich kann das bissi ändern
-// void	PASS(Client *sender, std::stringstream &sstream)
-// {
-//     std::string password;
-//     std::getline(sstream, password); //until newline default
-
-//     if (password.empty())
-//         sendError(ERR_);
-//     else if (sender->isRegistered())
-//         sendError(ERR_); //already registered
-//     else if (password == _serverPW) //gehört noch in Abstract Server
-//         sender->setToAuthenticated(); //bissi blöder name
-//     else
-//         sendError(ERR_);
-//         // delete the user von server already?
-
-// 	NICK(sender, sstream);
-// 	USER(sender, sstream);
-// }
-
-// //should we even check for the order or trust Hexchat --> trust Hexchat
-// void	NICK(Client *sender, std::stringstream &sstream)
-// {
-//     std::string nickname;
-//     std::getline(sstream, nickname); //until newline default
-// 	//what if nick has space is it being ignored are is space not allowed?
-    
-//     if (nickanme.empty())
-//         sendError(ERR_);
-//     //else if (sender.isAuthenticated() == false) //didnt do PASS before NICK 
-//     //    sendError(ERR_); //or return 
-//     else if (!isNormed(nickname)) // are spaces allowed? getline currently loops until \n
-//         sendError(ERR_); //or return 
-
-//     it = _fd_map.find(nickname) //key may not be used cuz it creates an entry --> actually good for us no?
-//     if (it == map.end()) //no one has the nickname
-//         sender.setNickname();
-// }
-
-// void	USER(Client *sender, std::stringstream &sstream)
-// {
-//     std::vector<std::string> info(4);
-
-// 	if (sender->isRegistered())
-// 		sendError(ERR_); //already registered
-
-// 	//for loop a lil weird but fine for now
-//     for (std::vector<std::string>::it = it.begin(); it != info.end(); it++)
-//     {
-//         std::getline(sstream, *it, ' ');
-// 		if (it->empty())
-// 			sendError(ERR_); //need more params
-// 		if (!isNormed(*it))
-// 			sendError(ERR_); //invalid due to characters, lengths, etc
-//     }
-//     sender->setUser(info[0], info[1], info[2], info[3]);
-// 	sender->registrationAccepted(); //setter i guess ? should also sendMsg(RPL_WELCOME); --> in
-// 	//add Client to map //server job
-// }
-// void	PRIVMSG(Client *sender, std::stringstream &sstream);
-
-// void	MODE(Client *sender, std::stringstream &sstream);
-// void	TOPIC(Client *sender, std::stringstream &sstream);
-/* void	INVITE(Client *sender, std::stringstream &sstream)
+//WIR NEHMEN AN DAS wir immer PASS NICK USER bekommen 
+//dh ich kann das bissi ändern
+void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client_fd)
 {
-	std::string	client_name = getWord(sstream);
-	std::string	channel_name = getWord(sstream);
+    std::string password;
+    std::getline(sstream, password); //until newline defaul, according to chatGPT the server takes in the entire string with spaces
+	
+	// TESTING BLOCK
+	// (void)(sender);
+	// (void)(new_client_fd);
+    
+	// if (password.empty()) //wont be triggered through HexChat it would only send NICK and USER
+		// std::cout << "Empty PW" << std::endl;
+	//    sendError(ERR_NOSUCHCHANNEL, sender);
+    if (sender != NULL && sender->isRegistered()) 
+        sendError(ERR_NOSUCHCHANNEL, sender); //already registered
+    else if (password == _password) //gehört noch in Abstract Server
+    {
+		_client_fds[new_client_fd] = new Client(new_client_fd); //should we delete him if NICK or USER triggers an Error?
+		//OLD; sender->setToAuthenticated(); 
+	}
+}
 
-	if (client_name.empty() || channel_name.empty())
-		error not enough arguments
-	check if client exists
-		if not, error client does not exist
-	check if channel exists
-		if not, error channel deos not exist
-	add client to invite vector in channel
-	send invite message to client
+//should we even check for the order or trust Hexchat --> trust Hexchat
+void Irc::NICK(Client *sender, std::stringstream &sstream)
+{
+    std::string nickname = getWord(sstream);
+	//what if nick has space is it being ignored are is space not allowed? --> Not allowed
+    
+    if (nickname.empty())
+	{
+        sendError(ERR_NOSUCHCHANNEL, sender);
+	}
+    //OLD; else if (sender.isAuthenticated() == false) //didnt do PASS before NICK 
+    //    sendError(ERR_NOSUCHCHANNEL, sender); //or return 
+    // else if (!isNormed(nickname)) //
+        // sendError(ERR_NOSUCHCHANNEL, sender); //or return 
+
+	// dont like that availabilty is checked before correctness but it solves problems
+	// if nickname was set before but is not available its bad to have the name in client object if client its not being deleted
+	client_name_map_iter_t it = _client_names.find(nickname); //key may not be used cuz it creates an entry --> actually good for us no?
+	if (it == _client_names.end()) //no one has the nickname
+		sender->setNickname(nickname); //should setter norm check and return?
+	if (sender->isRegistered())
+		addNewPair(sender->getNickname(), sender->getFd());
+}
+
+void	Irc::USER(Client *sender, std::stringstream &sstream)
+{
+    std::vector<std::string> info(4);
+
+	if (sender->isRegistered())
+		sendError(ERR_NOSUCHCHANNEL, sender); //already registered
+
+	//for loop a lil weird but fine for now
+    for (std::vector<std::string>::iterator it = info.begin(); it != info.end(); it++)
+    {
+        std::getline(sstream, *it, ' ');
+		if (it->empty()) 
+			sendError(ERR_NOSUCHCHANNEL, sender); //need more params
+		// if (!isNormed(*it))
+			// sendError(ERR_NOSUCHCHANNEL, sender); //invalid due to characters, lengths, etc
+    }
+    sender->setUser(info[0], info[1], info[2], info[3]);
+	//sender->registrationAccepted(); //setter i guess ? should also sendMsg(RPL_WELCOME); --> in 
+	if (sender->isRegistered())
+	{
+		this->addNewPair(sender->getNickname(), sender->getFd());
+		std::cout << "SEND Welcome to " << sender->getPrefix() << std::endl;
+	}
+	//add Client to map //server job
+}
+void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
+{
+	std::string recipient;
+	std::string message;
+    std::getline(sstream, recipient, ' '); //space 
+    std::getline(sstream, message); //semicolon ignored at the moment
+
+	message = "PRIVMSG " + recipient + " " + message;
+	
+	// SHOULD WE CHECK FOR:
+		// - ':' ?? -> hexchat doesnt let u write /PRIVMSG
+		// - if recpient == sender.getNickname()? -> u can write yourself a message in hexchat with /PRIVMSG
+		// - /PRIVMSG for channels didnt work in Hexchat
+
+	if (recipient.empty()) 
+		sendError(ERR_NOSUCHCHANNEL, sender); //need more params
+	else if (recipient[0] == '#')
+	{
+		channel_map_iter_t rec_it = _channels.find(recipient);
+		if (rec_it == _channels.end())
+			sendError(ERR_NOSUCHCHANNEL, sender); //NO SUCH CHANNEL
+		else
+		{
+			sender->sendTo(message, rec_it->second); //Client should call a function from Channel
+			//it->second->NiksFunctionToRelay(sender, message);
+			//if message is being concatinated in channel it maybe has to know what IRC CMD was triggered
+			//then u can use the NiksFunctionToRelay(sender, message) only for one specific IRC CMD and not for e.g. both PRIVMSG and JOIN
+		}
+	}
+	else
+	{
+		client_name_map_iter_t rec_it = _client_names.find(recipient);
+		if (rec_it == _client_names.end())
+			sendError(ERR_NOSUCHCHANNEL, sender); //NO SUCH NICK
+		else
+			sender->sendTo(message, rec_it->second); //this function calls Channel member
+	}
+}
+
+
+// void Irc::MODE(Client *sender, std::stringstream &sstream);
+// void Irc::TOPIC(Client *sender, std::stringstream &sstream);
+// void Irc::INVITE(Client *sender, std::stringstream &sstream);
+/*
+void Irc::PRIVMSG(Client *sender, std::stringstream &sstream);
+{
+	std::string recipient;
+	std::string message;
+    std::getline(sstream, recipient, ' '); //space 
+    std::getline(sstream, message);
+
+
+	SHOULD WE CHECK FOR:
+		- ':' ?? -> hexchat doesnt let u write /PRIVMSG
+		- if recpient == sender.getNickname()? -> u can write yourself a message in hexchat with /PRIVMSG
+		- /PRIVMSG for channels didnt work in Hexchat
+
+	if (recipient->empty()) 
+		sendError(ERR_); //need more params
+	if (recipient[0] == '#')
+		_channels.find(recipient)->second->NiksFunctionToRelay(sender, message) 
+		//if message is being concatinated in channel it maybe has to know what IRC CMD was triggered
+		//then u can use the NiksFunctionToRelay(sender, message) only for one specific IRC CMD and not for e.g. both PRIVMSG and JOIN
+	else
+		_usersNickname.find(recipient)->second->ClientMemberFunction(message)?
+}
+
+
+void Irc::MODE(Client *sender, std::stringstream &sstream);
+void Irc::TOPIC(Client *sender, std::stringstream &sstream);
+void Irc::INVITE(Client *sender, std::stringstream &sstream); */
+
+/* void Irc::MODE(Client *sender, std::stringstream &sstream)
+{
+	std::string channel_name;
+	std::string mode;
+	std::string str;
+	
+	getline(sstream, str, ' ');
+	while(str.empty() == true && sstream.eof() == true)			//loop until #
+		getline(sstream, str, ' ');
+	if(str[0] == '#')
+	{
+		channel_name = str;
+		//loop to + or - "mode"
+		if(+)
+			plus == true;
+		mode = str[0];
+		_channels[channel_name]->setMode(sender, mode);			//chatch error codes
+	}
 } */

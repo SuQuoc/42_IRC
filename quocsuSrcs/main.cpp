@@ -60,12 +60,12 @@ int main(int argc, char **argv)
         perror("portconvert");
     }
 
-    struct addrinfo hints, *result, *p;
+    struct addrinfo hints, *result, *ptr;
 	int status;
 	char ipstr[INET6_ADDRSTRLEN];
 	
 	std::memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_UNSPEC; // AF_INET or AF_INET6 to force version
+	hints.ai_family = AF_INET; // AF_INET or AF_INET6 to force version
 	hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE; // 
 	if ((status = getaddrinfo("10.13.4.6", _port.c_str(), &hints, &result)) != 0) //dont know why but null (needs AI_PASSIVE?) doesnt work
@@ -74,6 +74,12 @@ int main(int argc, char **argv)
 		return 2;
 	}
     
+    for (ptr = result; ptr != nullptr; ptr = ptr->ai_next) 
+    {
+        if (getnameinfo(ptr->ai_addr, ptr->ai_addrlen, host, NI_MAXHOST, nullptr, 0, NI_NUMERICHOST) == 0) {
+            std::cout << "IP Address: " << host << std::endl;
+        }
+    }
     
 
 
