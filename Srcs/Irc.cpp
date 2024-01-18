@@ -69,25 +69,21 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 	else std::cout << "sendError(ERR_UNKNOWNCOMMAND)" << std::endl; //sendError(ERR_UNKNOWNCOMMAND);
 }
 
-std::string	Irc::getWord(std::stringstream& sstream)
+std::string	extractWord(std::stringstream& sstream)
 {
-	std::string	str;
-	
-	std::getline(sstream, str, ' ');
-	while (str.empty() && !sstream.eof())
-		std::getline(sstream, str, ' ');
-	return (str);
+	std::string	word;
+
+	sstream >> std::ws;
+	if (sstream.peek() == ':')
+	{
+		sstream.get();
+		std::getline(sstream, temp);
+	}
+	else
+		std::getline(sstream, temp, ' ');
+	return (word);
 }
 
-/* std::string	Irc::getWord(std::stringstream& sstream)
-{
-	std::string	str;
-	
-	std::getline(sstream, str, ' ');
-	while (str.empty() && !sstream.eof())
-		std::getline(sstream, str, ' ');
-	return (str);
-} */
 
 
 //methods (commands)
