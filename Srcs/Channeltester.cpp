@@ -119,15 +119,21 @@ void test_multible_clients(int client_ammount)
 void MODE(Channel &after_life, Client *sender, std::stringstream &sstream)
 {
 	std::string channel_name;
-	std::string mode;
-	std::string word;
     std::string argument;
-    char pre_fix = 'e';
+	std::string word;
+    char pre_fix;
 	
     std::getline(sstream >> std::ws, channel_name, ' ');
 	while(std::getline(sstream >> std::ws, word, ' '))
     {
-        pre_fix = 'e';
+        if(word[0] == ':')
+        {
+            std::string line;
+            std::getline(sstream, line);
+            word.erase(word.begin());
+            word.append(line);
+        }
+        pre_fix = '+';
         for(int i = 0; i < word.size(); i++)
         {
             if(word[i] == '+' || word[i] == '-') // add here for <ws>: ? if we have one just call a funktion that handals this separate
@@ -137,7 +143,7 @@ void MODE(Channel &after_life, Client *sender, std::stringstream &sstream)
             }
             if(word[i] == 'i') // all without arguments! protect for non prefix ( +  or - )
             {
-                after_life.modesSwitch(sender, pre_fix, word[i], ""); // so if no prefix send error? (e)
+                after_life.modesSwitch(sender, pre_fix, word[i], "");
                 std::cout << word[i] << std::endl;
             }
             else if(word[i] == 'k')
@@ -155,7 +161,7 @@ int main()
     Client *niki = addUser("niki");
     Client *beni = addUser("beni");
     Channel after_life(niki, "AfterLife");
-    std::stringstream input("#nyancat +iiiiiiik aaaa +i");
+    std::stringstream input("#nyancat +iiiiiiik aaaa +i :aaa   g");
 
     /* test_isInChannel(after_life, niki, beni);
     test_rmClient(after_life, beni);

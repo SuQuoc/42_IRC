@@ -252,7 +252,7 @@ int Channel::modesSwitch(Client *executor, const char &add, const char &ch_modes
 	case SET_KEY:
 		return setPassword(executor, argument, add);
 	default:
-		break;
+		std::cout << "Error wrong mode!" << ch_modes << std::endl;
 	}
 	/* else if(mode == 'o' && (itr = getClient(argument)) != _clients.end())
 		itr->is_operator = true; */
