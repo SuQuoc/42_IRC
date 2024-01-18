@@ -41,7 +41,7 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
     std::stringstream	sstream(message); //message can't be empty
     std::string	cmd;
 
-	std::getline(sstream, cmd, ' ');
+	std::getline(sstream >> std::ws, cmd, ' ');
 
 	std::cout << "cmd: " << cmd << "$" << std::endl;
 	if (sender == NULL) //doesn't protect when sender is not in map?
@@ -69,26 +69,20 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 	else std::cout << "sendError(ERR_UNKNOWNCOMMAND)" << std::endl; //sendError(ERR_UNKNOWNCOMMAND);
 }
 
-std::string	Irc::getWord(std::stringstream& sstream)
+std::string	Irc::extractWord(std::stringstream& sstream)
 {
-	std::string	str;
-	
-	std::getline(sstream, str, ' ');
-	while (str.empty() && !sstream.eof())
-		std::getline(sstream, str, ' ');
-	return (str);
+	std::string	word;
+
+	sstream >> std::ws;
+	if (sstream.peek() == ':')
+	{
+		sstream.get();
+		std::getline(sstream, word);
+	}
+	else
+		std::getline(sstream, word, ' ');
+	return (word);
 }
-
-/* std::string	Irc::getWord(std::stringstream& sstream)
-{
-	std::string	str;
-	
-	std::getline(sstream, str, ' ');
-	while (str.empty() && !sstream.eof())
-		std::getline(sstream, str, ' ');
-	return (str);
-} */
-
 
 //methods (commands)
 // void	Irc::JOIN(Client *sender, std::stringstream &sstream)
@@ -184,7 +178,7 @@ void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client
 //should we even check for the order or trust Hexchat --> trust Hexchat
 void Irc::NICK(Client *sender, std::stringstream &sstream)
 {
-    std::string nickname = getWord(sstream);
+    std::string nickname = extractWord(sstream);
 	//what if nick has space is it being ignored are is space not allowed? --> Not allowed
     
     if (nickname.empty())
