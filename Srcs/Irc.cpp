@@ -19,7 +19,16 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
     std::stringstream	sstream(message); //message can't be empty
     std::string	cmd;
 
-	std::getline(sstream, cmd, ' ');
+	std::getline(sstream >> std::ws, cmd, ' '); "      :dsadasdas hello"
+	if (cmd.at(0) == ':')
+	{
+		if (cmd != sender->getPrefix())
+		{
+			std::cout << "YOU are a imposter" << std::endl; //scared bc hexchat has some weird domain after @ :@1321.32133.3213.IRC
+			return;
+		}
+		std::getline(sstream, cmd, ' ');
+	}
 
 	std::cout << "cmd: " << cmd << "$" << std::endl;
 	if (sender == NULL) //doesn't protect when sender is not in map?
@@ -162,6 +171,7 @@ void Irc::NICK(Client *sender, std::stringstream &sstream)
 	if (nickname.empty())
 	{
         sendError(ERR_ERRONEUSNICKNAME, sender);
+		
 	}
     
 
