@@ -69,7 +69,7 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 	else std::cout << "sendError(ERR_UNKNOWNCOMMAND)" << std::endl; //sendError(ERR_UNKNOWNCOMMAND);
 }
 
-std::string	extractWord(std::stringstream& sstream)
+std::string	Irc::extractWord(std::stringstream& sstream)
 {
 	std::string	word;
 
@@ -77,14 +77,12 @@ std::string	extractWord(std::stringstream& sstream)
 	if (sstream.peek() == ':')
 	{
 		sstream.get();
-		std::getline(sstream, temp);
+		std::getline(sstream, word);
 	}
 	else
-		std::getline(sstream, temp, ' ');
+		std::getline(sstream, word, ' ');
 	return (word);
 }
-
-
 
 //methods (commands)
 // void	Irc::JOIN(Client *sender, std::stringstream &sstream)
@@ -180,7 +178,7 @@ void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client
 //should we even check for the order or trust Hexchat --> trust Hexchat
 void Irc::NICK(Client *sender, std::stringstream &sstream)
 {
-    std::string nickname = getWord(sstream);
+    std::string nickname = extractWord(sstream);
 	//what if nick has space is it being ignored are is space not allowed? --> Not allowed
     
     if (nickname.empty())
