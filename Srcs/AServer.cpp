@@ -64,7 +64,9 @@ void	AServer::accept_connection()
 		}
 		if (_client_fds.find(client_fd) != _client_fds.end())
 			std::cerr << "* Error: new fd already in map" << std::endl;
-		_client_fds[client_fd] = NULL;
+		//_client_fds[client_fd] = NULL;
+		addClientToFdMap(client_fd); //allocatoes the client object
+		std::cout << "Added new Client to Fd-Map!" << std::endl;
 	}
 }
 
@@ -89,7 +91,8 @@ void	AServer::process_event(const int& client_fd)
 				close(client_fd);
 				return ;
 			default:
-				std::cout << "buf: " << buf << std::endl << std::endl;
+				std::cout << "buf: " << buf << "&" << std::endl << std::endl;
+				//_client_fds.find(client_fd)->second --> turn this into a function? findClient()?
 				command_switch(_client_fds.find(client_fd)->second, buf, client_fd); //what if fd is not in map?
 				return ;
 		}
@@ -108,13 +111,13 @@ void	AServer::addNewPair(Client *sender, const std::string& channel_name)
 	std::pair<std::string, Channel*>	pair(channel_name, temp_channel);
 	_channels.insert(pair);
 }
-void	AServer::addNewPair(std::string user_name, const int& client_fd) //add more?
+void	AServer::addClientToNameMap(std::string user_name, const int& client_fd) //add more?
 {
-	Client	*temp_client = new Client(client_fd); //protect new?
+	Client	*temp_client = _client_fds.find(client_fd)->second;
 	std::pair<std::string, Client*>	pair(user_name, temp_client);
 	_client_names.insert(pair);
 }
-void	AServer::addNewPair(const int& client_fd)
+void	AServer::addClientToFdMap(const int& client_fd)
 {
 	Client	*temp_client = new Client(client_fd); //protect new?
 	std::pair<int, Client*>	pair(client_fd, temp_client);

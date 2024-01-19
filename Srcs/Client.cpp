@@ -1,6 +1,6 @@
 # include "../Includes/Client.hpp"
 
-Client::Client(int fd): _fd(fd) 
+Client::Client(int fd): _fd(fd), _is_authenticated(false)
 {
 	/* std::cout << "Client with socket: " << _fd << "created" << std::endl; */
 }
@@ -15,29 +15,37 @@ Client::~Client()
 
 bool Client::isRegistered() const
 {
-	if (!_nickname.empty() && !_username.empty())
+	if (_is_authenticated && !_nickname.empty() && !_username.empty())
 		return true;
 	return false;
 }
 
-// bool Client::isAuthenticated() const 
-// {
-	// 
-// }
+bool Client::isAuthenticated() const {return _is_authenticated;}
 
+void Client::authenticate() {_is_authenticated = true;}
+void Client::deauthenticate() {_is_authenticated = false;}
 
-void Client::setNickname(const std::string& name)
+int Client::setNickname(const std::string& name)
 {
-	// checking if its empty? is 
 	if (name.size() > 9 || containsForbiddenChars(name, " ,*?!@$:.#"))
+	{
 		std::cout << "432 Erreonous nickname" << std::endl;
-
+		return ERR_ERRONEUSNICKNAME;
+	}
 	_nickname = name;
 	_prefix = ":" + _nickname + "!" + _username + "@" + _hostname; //a lil ick but working
+	return 0;
 }
 
-void Client::setUser(const std::string& uname, const std::string& hname, const std::string& sname, const std::string& rname)
+void Client::setUser(std::string& uname, const std::string& hname, const std::string& sname, const std::string& rname)
 {
+	if (uname.empty() || hname.empty() || rname.empty() || sname.empty())
+	{
+		std::cout << "Need more params" << std::endl; //rm later
+		return ; //ERR_NEEDMOREPARAMS?
+	}
+	else if (uname.size() > 9)
+		uname.resize(9); //removeed const from uname --> irc bad protocol
 	_username = uname;
 	_hostname = hname;
 	_realname = rname;

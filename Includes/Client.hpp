@@ -29,37 +29,36 @@ private:
 	std::string _servername;
 	std::string _realname;
 	std::string _prefix;
+	std::string _msg_buf;
 
 	std::vector<Channel *> _channels;
 
-	bool _is_registered;
-	bool _is_authenticated; //not needed i think
+	bool _is_registered; //?
+	bool _is_authenticated;
 
-	Client(const Client&); //
-    Client& operator=(const Client&); //
+	Client(const Client&);
+    Client& operator=(const Client&);
 public:
 	Client(int socketFd);
 	~Client();
 
 	bool isRegistered() const;
-	// bool isAuthenticated() const; //für PASS command
+	bool isAuthenticated() const;
 
 
 
-	void setNickname(const std::string& name);
-	void setUser(const std::string& uname, const std::string& hname, const std::string& sname, const std::string& rname);
-	//void setClientInfo(const std::string& nName, const std::string& uName, const std::string& hName, const std::string& rName);
-	void setToAuthenticated(); //write it
-
-
-	// const std::string& getHostname() const;
-	// const std::string& getRealname() const;
+	int setNickname(const std::string& name);
+	void setUser(std::string& uname, const std::string& hname, const std::string& sname, const std::string& rname);
+	
 	const int& getFd() const;
 	const std::string& getNickname() const;
 	const std::string& getUsername() const;
+	// const std::string& Client::getRealname() const //?? needed or :realname enough
 	const std::string& getPrefix() const; //nickname!username@hostname
 	const std::vector<Channel *>& getAllChannels() const;
 
+	void authenticate ();
+	void deauthenticate();
 
 	void joinChannel(Channel *channel); // i or fiona(const) could call then nikis function
 	void leaveChannel(Channel *channel); // i or fiona(const) could call then nikis function 
