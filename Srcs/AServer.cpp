@@ -95,7 +95,8 @@ void	AServer::process_event(const int& client_fd)
 				return ;
 			default:
 				sender->loadMsgBuffer(buf);
-				sender->returnRequest(); //returns the string and clears the buffer
+				// while (sender->returnRequest()) //returns the string and clears the buffer
+					// command_switch();
 				std::stringstream stream(buf);
 				std::string str;
 				while(getline(stream, str)) //we have to do a while loop cuz "CMD\nCMD1\nCMD3\n"
