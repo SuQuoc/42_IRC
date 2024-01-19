@@ -70,13 +70,13 @@ void	AServer::accept_connection()
 
 void	AServer::process_event(const int& client_fd)
 {
-	char	buf[513]; //13?	
+	char	buf[513];
 	int		bytes_recieved = -1; //better name?
 
 	while (1)
 	{
 		memset(buf, '\0', 513);
-		bytes_recieved = recv(client_fd, buf, sizeof(buf), 0);
+		bytes_recieved = recv(client_fd, buf, sizeof(buf) - 1, 0);
 		switch (bytes_recieved)
 		{
 			case (-1):
@@ -89,7 +89,7 @@ void	AServer::process_event(const int& client_fd)
 				close(client_fd);
 				return ;
 			default:
-				std::cout << "buf: " << buf << "&" << std::endl << std::endl;
+				std::cout << "buf: " << buf << std::endl << std::endl;
 				command_switch(_client_fds.find(client_fd)->second, buf, client_fd); //what if fd is not in map?
 				return ;
 		}

@@ -1,34 +1,12 @@
 #include "../Includes/Irc.hpp"
 
+
 //con- and destructer
 Irc::Irc(): AServer() {}
 Irc::Irc(std::string password): AServer(password) {}
 /* Irc::Irc(const Irc& I);
 Irc::Irc operator=(const Irc& I); */
 Irc::~Irc() {}
-
-void	Irc::sendError(IRC_ERR error, Client* sender) const
-{
-	std::string error_message;
-	error_message = sender->getPrefix(); //doesnt end with a space
-	switch (error)
-	{
-		case ERR_NOSUCHCHANNEL:
-			error_message += " Error was not implemented yet, go work";
-			break;
-		case ERR_ERRONEUSNICKNAME:
-			error_message += " LOOK AT IRC PROTOCOLL";
-			break;
-		case ERR_NICKNAMEINUSE:
-			break;
-		default:
-			std::cout << "Error was not implemented yet, go work" << std::endl;
-			//throw ;?
-	}
-	std::cout << error_message << std::endl;
-	//sender.sendMsg();
-}
-
 
 //private methods 
 void	Irc::command_switch(Client *sender, const std::string message, const int& new_client_fd) //message-> 'request' better name? for us to discern
@@ -42,13 +20,22 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
     std::string	cmd;
 
 	std::getline(sstream >> std::ws, cmd, ' ');
+	if (cmd.at(0) == ':')
+	{
+		if (cmd != sender->getPrefix())
+		{
+			std::cout << "YOU are a imposter" << std::endl; //scared bc hexchat has some weird domain after @ :@1321.32133.3213.IRC
+			return;
+		}
+		std::getline(sstream, cmd, ' ');
+	}
 
-	std::cout << "cmd: " << cmd << "$" << std::endl;
+	std::cout << "cmd: " << cmd << std::endl;
 	if (sender == NULL) //doesn't protect when sender is not in map?
 	{
 		std::getline(sstream, cmd); //? for CAP LS 
 		std::getline(sstream, cmd, ' '); //?
-		//std::cout << "cmd2: " << cmd << "$" << std::endl;
+		//std::cout << "cmd2: " << cmd << std::endl;
 		if (cmd == "PASS")
 			std::cout << "PASS()" << new_client_fd << std::endl; //PASS(new_client_fd); // client can always try PASS although not registered ?
 		else
@@ -81,6 +68,12 @@ std::string	Irc::extractWord(std::stringstream& sstream)
 	}
 	else
 		std::getline(sstream, word, ' ');
+
+	if (!word.empty() && (*(word.end() - 1) == '\n' || *(word.end() - 1) == '\r'))
+		word.erase(word.end() - 1);
+	if (!word.empty() && (*(word.end() - 1) == '\n' || *(word.end() - 1) == '\r'))
+		word.erase(word.end() - 1);
+
 	return (word);
 }
 
@@ -154,6 +147,8 @@ std::string	Irc::extractWord(std::stringstream& sstream)
 
 //WIR NEHMEN AN DAS wir immer PASS NICK USER bekommen 
 //dh ich kann das bissi ändern
+//??WHAT HAPPENS IF HE DOES PASS AGAIN --> ERR_ALREADYREGISTERED, also when he has no nick or user set
+//if PASSWORD is wrong we disconnect him
 void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client_fd)
 {
     std::string password;
@@ -167,15 +162,20 @@ void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client
 		// std::cout << "Empty PW" << std::endl;
 	//    sendError(ERR_NOSUCHCHANNEL, sender);
     if (sender != NULL && sender->isRegistered()) 
-        sendError(ERR_NOSUCHCHANNEL, sender); //already registered
-    else if (password == _password) //gehört noch in Abstract Server
+        sendError(ERR_ALREADYREGISTERED, sender, ""); //already registered
+    else if (password != _password) //gehört noch in Abstract Server
     {
-		_client_fds[new_client_fd] = new Client(new_client_fd); //should we delete him if NICK or USER triggers an Error?
-		//OLD; sender->setToAuthenticated(); 
+		// sendError(ERR_PASSWDMISMATCH); //SHOULD WE hardcode it in this case?
+		return ;
 	}
+	_client_fds[new_client_fd] = new Client(new_client_fd); //should we delete him if NICK or USER triggers an Error?
 }
 
 //should we even check for the order or trust Hexchat --> trust Hexchat
+//OLD; else if (sender.isAuthenticated() == false) //didnt do PASS before NICK 
+    //    sendError(ERR_NOSUCHCHANNEL, sender); //or return 
+    // else if (!isNormed(nickname)) //
+        // sendError(ERR_NOSUCHCHANNEL, sender); //or return 
 void Irc::NICK(Client *sender, std::stringstream &sstream)
 {
     std::string nickname = extractWord(sstream);
@@ -183,18 +183,21 @@ void Irc::NICK(Client *sender, std::stringstream &sstream)
     
     if (nickname.empty())
 	{
-        sendError(ERR_NOSUCHCHANNEL, sender);
+        sendError(ERR_ERRONEUSNICKNAME, sender, "");
+		
 	}
-    //OLD; else if (sender.isAuthenticated() == false) //didnt do PASS before NICK 
-    //    sendError(ERR_NOSUCHCHANNEL, sender); //or return 
-    // else if (!isNormed(nickname)) //
-        // sendError(ERR_NOSUCHCHANNEL, sender); //or return 
+    
 
 	// dont like that availabilty is checked before correctness but it solves problems
 	// if nickname was set before but is not available its bad to have the name in client object if client its not being deleted
 	client_name_map_iter_t it = _client_names.find(nickname); //key may not be used cuz it creates an entry --> actually good for us no?
 	if (it == _client_names.end()) //no one has the nickname
-		sender->setNickname(nickname); //should setter norm check and return?
+	{
+		// if (sender->setNickname(nickname) == ERR_ERRONEUSNICKNAME); //should setter norm check and return?
+			// sendError(ERR_ERRONEUSNICKNAME, sender);
+	}
+	else
+		sendError(ERR_NICKNAMEINUSE, sender, "");
 	if (sender->isRegistered())
 		addNewPair(sender->getNickname(), sender->getFd());
 }
@@ -204,14 +207,14 @@ void	Irc::USER(Client *sender, std::stringstream &sstream)
     std::vector<std::string> info(4);
 
 	if (sender->isRegistered())
-		sendError(ERR_NOSUCHCHANNEL, sender); //already registered
+		sendError(ERR_ALREADYREGISTERED, sender, ""); //already registered
 
 	//for loop a lil weird but fine for now
     for (std::vector<std::string>::iterator it = info.begin(); it != info.end(); it++)
     {
         std::getline(sstream, *it, ' ');
 		if (it->empty()) 
-			sendError(ERR_NOSUCHCHANNEL, sender); //need more params
+			sendError(ERR_NEEDMOREPARAMS, sender, ""); //need more params
 		// if (!isNormed(*it))
 			// sendError(ERR_NOSUCHCHANNEL, sender); //invalid due to characters, lengths, etc
     }
@@ -220,10 +223,17 @@ void	Irc::USER(Client *sender, std::stringstream &sstream)
 	if (sender->isRegistered())
 	{
 		this->addNewPair(sender->getNickname(), sender->getFd());
-		std::cout << "SEND Welcome to " << sender->getPrefix() << std::endl;
+		sendError(RPL_WELCOME, sender, "");
 	}
-	//add Client to map //server job
 }
+
+
+
+// ERR_NORECIPIENT
+// ERR_NOTEXTTOSEND 412
+// ERR_CANNOTSENDTOCHAN 404 WEIRD READ IT
+// ERR_TOOMANYTARGETS ?? I DONT WANT TO COVER THAT
+// ERR_NOSUCHNICK
 void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 {
 	std::string recipient;
@@ -239,12 +249,14 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 		// - /PRIVMSG for channels didnt work in Hexchat
 
 	if (recipient.empty()) 
-		sendError(ERR_NOSUCHCHANNEL, sender); //need more params
+		sendError(ERR_NORECIPIENT, sender, ""); //need more params
+	else if (message.empty())
+		sendError(ERR_NOTEXTTOSEND, sender, ""); //need more params
 	else if (recipient[0] == '#')
 	{
 		channel_map_iter_t rec_it = _channels.find(recipient);
 		if (rec_it == _channels.end())
-			sendError(ERR_NOSUCHCHANNEL, sender); //NO SUCH CHANNEL
+			sendError(ERR_NOSUCHCHANNEL, sender, ""); //NO SUCH CHANNEL
 		else
 		{
 			sender->sendTo(message, rec_it->second); //Client should call a function from Channel
@@ -257,7 +269,7 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 	{
 		client_name_map_iter_t rec_it = _client_names.find(recipient);
 		if (rec_it == _client_names.end())
-			sendError(ERR_NOSUCHCHANNEL, sender); //NO SUCH NICK
+			sendError(ERR_NOSUCHNICK, sender, ""); //NO SUCH NICK
 		else
 			sender->sendTo(message, rec_it->second); //this function calls Channel member
 	}

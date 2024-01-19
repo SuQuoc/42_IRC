@@ -1,8 +1,7 @@
 #pragma once
 
-#include "AServer.hpp"
-
 #include <sstream>
+#include "AServer.hpp"
 #include "Irc_error.hpp"
 
 class AServer;
@@ -37,7 +36,4 @@ public:
 	// void	TOPIC(Client *sender, std::stringstream& sstream);
 	// void	INVITE(Client *sender, std::stringstream& sstream);
 
-
-	// Error switch
-	void	sendError(IRC_ERR error, Client* sender) const;
 };

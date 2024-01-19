@@ -27,29 +27,6 @@ enum IRC_ERR
     ERR_USERSDONTMATCH = 502 //?
 };
 
-void Irc::sendError(IRC_ERR error, Client* sender)
-{
-	std::string error_message;
-	error_message = sender->getPrefix(); //doesnt end with a space
-	switch (error)
-	{
-		case ERR_NOSUCHCHANNEL:
-			error_message += " LOOK AT IRC PROTOCOLL";
-			break;
-		case ERR_ERRONEUSNICKNAME:
-			error_message += " LOOK AT IRC PROTOCOLL";
-			break;
-		case ERR_NICKNAMEINUSE:
-			break;
-		default:
-			std::cout << "Error was not implemented yet, go work" << std::endl;
-			//throw ;?
-	}
-	std::cout << error_message << std::endl;
-	//sender.sendMsg();
-}
-
-
 //private methods 
 void	Irc::command_switch(Client *sender, const std::string message) //message-> 'request' better name? for us to discern
 {
@@ -58,12 +35,12 @@ void	Irc::command_switch(Client *sender, const std::string message) //message-> 
 
 	std::getline(sstream, cmd, ' ');
 
-	std::cout << "cmd: " << cmd << "$" << std::endl;
+	std::cout << "cmd: " << cmd << std::endl;
 	if (sender == NULL) //doesn't protect when sender is not in map?
 	{
 		std::getline(sstream, cmd); //? for CAP LS 
 		std::getline(sstream, cmd, ' '); //?
-		//std::cout << "cmd2: " << cmd << "$" << std::endl;
+		//std::cout << "cmd2: " << cmd << std::endl;
 		if (cmd == "PASS")
 			std::cout << "PASS()" << std::endl; //PASS(); // client can always try PASS although not registered ?
 		//else if (sender->isRegistered() == false) sendError(1, sender); ?
