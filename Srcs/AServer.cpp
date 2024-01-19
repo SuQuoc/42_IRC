@@ -75,29 +75,29 @@ void	AServer::process_event(const int& client_fd)
 	char	buf[513];
 	int		bytes_recieved = -1; //better name?
 
-	while (1)
+
+	memset(buf, '\0', 513);
+	bytes_recieved = recv(client_fd, buf, sizeof(buf) - 1, 0);
+	switch (bytes_recieved)
 	{
-		memset(buf, '\0', 513);
-		bytes_recieved = recv(client_fd, buf, sizeof(buf) - 1, 0);
-		switch (bytes_recieved)
-		{
-			case (-1):
-				/* if (errno == EAGAIN || errno == EWOULDBLOCK) //leave it in? //potential endless-loop?
-					break ; */ 			//loops when ctrl-D is pressed and waits for enter from same client
-				std::cerr << "Error: couldn't recieve data :" << std::strerror(errno) << std::endl;
-				return ;
-			case (0):
-				//disconnect_client(); !!!!
-				close(client_fd);
-				return ;
-			default:
-				std::stringstream stream(buf);
-				std::string str;
-				while(getline(stream, str))
-					command_switch(_client_fds.find(client_fd)->second, str, client_fd); //what if fd is not in map?
-				//_client_fds.find(client_fd)->second --> turn this into a function? findClient()?
-				return ;
-		}
+		case (-1):
+			/* if (errno == EAGAIN || errno == EWOULDBLOCK) //leave it in? //potential endless-loop?
+				break ; */ 			//loops when ctrl-D is pressed and waits for enter from same client
+			std::cerr << "Error: couldn't recieve data :" << std::strerror(errno) << std::endl;
+			return ;
+		case (0):
+			//disconnect_client(); !!!!
+			close(client_fd);
+			return ;
+		case (1):
+			return ;
+		default:
+			std::stringstream stream(buf);
+			std::string str;
+			while(getline(stream, str))
+				command_switch(_client_fds.find(client_fd)->second, str, client_fd); //what if fd is not in map?
+			//_client_fds.find(client_fd)->second --> turn this into a function? findClient()?
+			return ;
 	}
 }
 
