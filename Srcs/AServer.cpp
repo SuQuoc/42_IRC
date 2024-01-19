@@ -91,9 +91,11 @@ void	AServer::process_event(const int& client_fd)
 				close(client_fd);
 				return ;
 			default:
-				std::cout << "buf: " << buf << "&" << std::endl << std::endl;
+				std::stringstream stream(buf);
+				std::string str;
+				while(getline(stream, str))
+					command_switch(_client_fds.find(client_fd)->second, str, client_fd); //what if fd is not in map?
 				//_client_fds.find(client_fd)->second --> turn this into a function? findClient()?
-				command_switch(_client_fds.find(client_fd)->second, buf, client_fd); //what if fd is not in map?
 				return ;
 		}
 	}

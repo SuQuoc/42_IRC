@@ -11,14 +11,13 @@ Irc::~Irc() {}
 //private methods 
 void	Irc::command_switch(Client *sender, const std::string message, const int& new_client_fd) //message-> 'request' better name? for us to discern
 {
+	std::cout << "message =" << message << "!" << std::endl;
 	// TESTING BLOCK
 	// (void)(sender);
 	// std::string msg = ":X 401 niki :No such nick/channel\r\n";
 	// send(new_client_fd, msg.c_str(), msg.size(), 0);
-
     std::stringstream	sstream(message); //message can't be empty
     std::string	cmd;
-
 	//this block checks for Prefix
 	std::getline(sstream >> std::ws, cmd, ' ');
 	if (cmd.at(0) == ':')
@@ -30,21 +29,28 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 		}
 		std::getline(sstream, cmd, ' ');
 	}
-
-
-	std::cout << "cmd: " << cmd << "$" << std::endl;
+	std::cout << "cmd: " << cmd << std::endl;
 		
 		// std::getline(sstream, cmd); //? for CAP LS 
 		// std::getline(sstream, cmd, ' '); //?
 		//std::cout << "cmd2: " << cmd << "$" << std::endl;
-	if (cmd == "PASS") //we only take the last PASS
+	if (cmd == "CAP") //we only take the last PASS
+		return ;
+	else if (cmd == "PASS") //we only take the last PASS
 	{
-
-		std::cout << "PASS()" << new_client_fd << std::endl; //PASS(new_client_fd); // client can always try PASS although not registered ?
 		PASS(sender, sstream, new_client_fd);
+		std::cout << "PASS()" << new_client_fd << std::endl; //PASS(new_client_fd); // client can always try PASS although not registered ?
 	}
-	else if (cmd == "NICK") std::cout << "NICK()" << std::endl; //NICK();
-	else if (cmd == "USER") std::cout << "USER()" << std::endl; //USER();
+	else if (cmd == "NICK") 
+	{
+		NICK(sender, sstream);
+		std::cout << "NICK() " << sender->getNickname() << std::endl;
+	}
+	else if (cmd == "USER")
+	{
+		USER(sender, sstream);
+		std::cout << "USER() " << sender->getUsername() << std::endl; 
+	}
 	else if (sender->isRegistered() == false) sendError(ERR_NOTREGISTERED, sender, ""); //?
 	else if (cmd == "PRIVMSG") std::cout << "PRIVMSG()" << std::endl; //PRIVMSG();
 	else if (cmd == "JOIN") std::cout << "JOIN()" << std::endl; //JOIN();
@@ -70,11 +76,12 @@ std::string	Irc::extractWord(std::stringstream& sstream)
 	else
 		std::getline(sstream, word, ' ');
 
+	if (word.empty() == false && (*(word.end() - 1) == '\n' || *(word.end() - 1) == '\r'))
+	{
+		word.erase(word.end() - 1);
+	}
 	if (!word.empty() && (*(word.end() - 1) == '\n' || *(word.end() - 1) == '\r'))
 		word.erase(word.end() - 1);
-	if (!word.empty() && (*(word.end() - 1) == '\n' || *(word.end() - 1) == '\r'))
-		word.erase(word.end() - 1);
-
 	return (word);
 }
 
@@ -150,6 +157,7 @@ std::string	Irc::extractWord(std::stringstream& sstream)
 //dh ich kann das bissi ändern
 void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client_fd)
 {
+	(void)new_client_fd;
     std::string password = extractWord(sstream);
     	
     if (sender->isRegistered()) 
@@ -157,11 +165,12 @@ void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client
     else if (password == _password)
 	{
 		sender->authenticate();
-		command_switch(sender, sstream.str() ,new_client_fd);
-		command_switch(sender, sstream.str() ,new_client_fd);
+		/* command_switch(sender, sstream.str() ,new_client_fd);
+		command_switch(sender, sstream.str() ,new_client_fd); */
 	}
 	else
 	{
+		std::cout << "pw = " << password << std::endl;
 		sender->deauthenticate();
 		sendError(ERR_PASSWDMISMATCH, sender, "");
 	}
@@ -186,7 +195,7 @@ void Irc::NICK(Client *sender, std::stringstream &sstream)
 	{
 		if (sender->setNickname(nickname) != 0)
 		{
-        	sendError(ERR_ERRONEUSNICKNAME, sender, "");
+			sendError(ERR_ERRONEUSNICKNAME, sender, "");
 			return ;
 		}
 	}
@@ -195,7 +204,7 @@ void Irc::NICK(Client *sender, std::stringstream &sstream)
 	if (sender->isRegistered())
 	{
 		addClientToNameMap(sender->getNickname(), sender->getFd());
-		sendError(RPL_WELCOME, sender, "");
+		sendRPL(RPL_WELCOME, sender, sender->getUsername());
 	}
 }
 
@@ -216,7 +225,7 @@ void	Irc::USER(Client *sender, std::stringstream &sstream)
 	if (sender->isRegistered())
 	{
 		addClientToNameMap(sender->getNickname(), sender->getFd());
-		sendError(RPL_WELCOME, sender, "");
+		sendRPL(RPL_WELCOME, sender, sender->getUsername());
 	}
 }
 

@@ -8,6 +8,7 @@
 //takes in Client pointer to send()
 void	sendError(IRC_ERR error, Client* sender, const std::string& input)
 {
+	return ;
 	std::string err_message;
 
 	//NAME OF THE SERVER
@@ -91,20 +92,22 @@ void	sendError(IRC_ERR error, Client* sender, const std::string& input)
 	//problematic with PASSWORD MISMATCH
 }
 
-/* #include <sstream> */
+#include <sstream>
 
-/* void	sendRPL(IRC_ERR error, Client* sender, const std::string& input)
+void	sendRPL(IRC_ERR error, Client* sender, const std::string& input)
 {
-	std::string server_name;
+	std::string msg;
+	std::string server_name = "AfterLife";
 	std::stringstream error_code;
 
 	error_code << error;
 	switch (error)
 	{
 		case RPL_WELCOME:
-			":" + server_name + " " + error_code.str() + "Welcome to the Internet Relay Network, " + input; //input = getPrefix() from Client; <nick>!<user>@<host>
+			msg = ":" + server_name + " 001 " + sender->getNickname() + " :Welcome to the Internet Relay Network, " + input + "\r\n"; //input = getPrefix() from Client; <nick>!<user>@<host>
 			break;
 		default:
 			std::cout << "CANT HAPPEN DUE TO ENUM" << std::endl;
 	}
-} */
+	send(sender->getFd(), msg.c_str(), msg.size(), 0);
+}

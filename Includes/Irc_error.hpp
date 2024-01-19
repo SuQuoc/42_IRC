@@ -45,3 +45,4 @@ enum IRC_ERR
 };
 
 void	sendError(IRC_ERR error, Client* sender, const std::string& input);
+void	sendRPL(IRC_ERR error, Client* sender, const std::string& input);
