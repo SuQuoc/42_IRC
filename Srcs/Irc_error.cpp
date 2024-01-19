@@ -90,3 +90,21 @@ void	sendError(IRC_ERR error, Client* sender, const std::string& input)
 	send(sender->getFd(), err_message.c_str(), err_message.size(), 0); //--> turn this to a seperat function that sends in a while loop, others outside of switch can also use it 
 	//problematic with PASSWORD MISMATCH
 }
+
+/* #include <sstream> */
+
+/* void	sendRPL(IRC_ERR error, Client* sender, const std::string& input)
+{
+	std::string server_name;
+	std::stringstream error_code;
+
+	error_code << error;
+	switch (error)
+	{
+		case RPL_WELCOME:
+			":" + server_name + " " + error_code.str() + "Welcome to the Internet Relay Network, " + input; //input = getPrefix() from Client; <nick>!<user>@<host>
+			break;
+		default:
+			std::cout << "CANT HAPPEN DUE TO ENUM" << std::endl;
+	}
+} */
