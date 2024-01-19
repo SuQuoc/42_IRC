@@ -37,7 +37,9 @@ protected: //protected? -> yes, if not i would need a getter for everything
 	typedef std::map<std::string, Client*>::iterator	client_name_map_iter_t;
 	typedef std::map<int, Client*>::iterator			client_fd_map_iter_t;
 
-
+//Canonical Form
+	AServer(); //? 
+	AServer(std::string password);
 //methods
 	void	accept_connection();
 	void	process_event(const int& client_sock);
@@ -46,16 +48,16 @@ protected: //protected? -> yes, if not i would need a getter for everything
 	virtual void	command_switch(Client *sender, const std::string message, const int& new_client_fd) = 0;
 
 	void	addNewPair(Client *sender, const std::string& channel_name);
-	void	addNewPair(std::string user_name, const int& client_fd); //add more?
-	void	addNewPair(const int& client_fd);
+	// void	addNewPair(std::string user_name, const int& client_fd); //add more?
+	void	addClientToNameMap(std::string user_name, const int& client_fd); //add more?
+	void	addClientToFdMap(const int& client_fd);
 
 public:
 //con- and destructer
-	AServer();
-	AServer(std::string password);
+	
 	//AServer(const AServer& S); ?
 	//AServer operator=(const AServer& S); //not possible?
-	virtual ~AServer();
+	virtual ~AServer(); //put this under protected?
 
 //methods
 	void	createTcpSocket(const int& port); //exits?

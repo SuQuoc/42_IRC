@@ -19,32 +19,32 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
     std::stringstream	sstream(message); //message can't be empty
     std::string	cmd;
 
+	//this block checks for Prefix
 	std::getline(sstream >> std::ws, cmd, ' ');
 	if (cmd.at(0) == ':')
 	{
 		if (cmd != sender->getPrefix())
 		{
-			std::cout << "YOU are a imposter" << std::endl; //scared bc hexchat has some weird domain after @ :@1321.32133.3213.IRC
+			std::cout << "YOU are a imposter" << std::endl; //"n!u@" nothing after @ should work; scared bc hexchat has some weird domain after @ :@1321.32133.3213.IRC
 			return;
 		}
 		std::getline(sstream, cmd, ' ');
 	}
 
+
 	std::cout << "cmd: " << cmd << "$" << std::endl;
-	if (sender == NULL) //doesn't protect when sender is not in map?
-	{
-		std::getline(sstream, cmd); //? for CAP LS 
-		std::getline(sstream, cmd, ' '); //?
+		
+		// std::getline(sstream, cmd); //? for CAP LS 
+		// std::getline(sstream, cmd, ' '); //?
 		//std::cout << "cmd2: " << cmd << "$" << std::endl;
-		if (cmd == "PASS")
-			std::cout << "PASS()" << new_client_fd << std::endl; //PASS(new_client_fd); // client can always try PASS although not registered ?
-		else
-			std::cerr << "* Error: sender is NULL (in command_switch)" << std::endl; //ERR_NOTREGISTERED !
-		return ;
+	if (cmd == "PASS") //we only take the last PASS
+	{
+
+		std::cout << "PASS()" << new_client_fd << std::endl; //PASS(new_client_fd); // client can always try PASS although not registered ?
 	}
 	else if (cmd == "NICK") std::cout << "NICK()" << std::endl; //NICK();
 	else if (cmd == "USER") std::cout << "USER()" << std::endl; //USER();
-	//else if (sender->isRegistered() == false) sendError(ERR_); ?
+	else if (sender->isRegistered() == false) sendError(ERR_NOTREGISTERED, sender, ""); //?
 	else if (cmd == "PRIVMSG") std::cout << "PRIVMSG()" << std::endl; //PRIVMSG();
 	else if (cmd == "JOIN") std::cout << "JOIN()" << std::endl; //JOIN();
 	else if (cmd == "PART") std::cout << "PART()" << std::endl; //PART();
@@ -141,28 +141,24 @@ std::string	Irc::extractWord(std::stringstream& sstream)
 
 //WIR NEHMEN AN DAS wir immer PASS NICK USER bekommen 
 //dh ich kann das bissi ändern
-//??WHAT HAPPENS IF HE DOES PASS AGAIN --> ERR_ALREADYREGISTERED, also when he has no nick or user set
-//if PASSWORD is wrong we disconnect him
 void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client_fd)
 {
-    std::string password;
-    std::getline(sstream, password); //until newline defaul, according to chatGPT the server takes in the entire string with spaces
-	
-	// TESTING BLOCK
-	// (void)(sender);
-	// (void)(new_client_fd);
-    
-	// if (password.empty()) //wont be triggered through HexChat it would only send NICK and USER
-		// std::cout << "Empty PW" << std::endl;
-	//    sendError(ERR_NOSUCHCHANNEL, sender);
-    if (sender != NULL && sender->isRegistered()) 
+    std::string password = extractWord(sstream);
+    	
+    if (sender->isRegistered()) 
         sendError(ERR_ALREADYREGISTERED, sender, ""); //already registered
-    else if (password != _password) //gehört noch in Abstract Server
-    {
-		// sendError(ERR_PASSWDMISMATCH); //SHOULD WE hardcode it in this case?
-		return ;
+    else if (password == _password)
+	{
+		sender->authenticate();
+		command_switch(sender, sstream.str() ,new_client_fd);
+		command_switch(sender, sstream.str() ,new_client_fd);
 	}
-	_client_fds[new_client_fd] = new Client(new_client_fd); //should we delete him if NICK or USER triggers an Error?
+	else
+	{
+		sender->deauthenticate();
+		sendError(ERR_PASSWDMISMATCH, sender, "");
+	}
+	return ;
 }
 
 //should we even check for the order or trust Hexchat --> trust Hexchat
@@ -173,27 +169,27 @@ void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client
 void Irc::NICK(Client *sender, std::stringstream &sstream)
 {
     std::string nickname = extractWord(sstream);
-	//what if nick has space is it being ignored are is space not allowed? --> Not allowed
-    
-    if (nickname.empty())
-	{
-        sendError(ERR_ERRONEUSNICKNAME, sender, "");
-		
-	}
-    
+    //if (sender->isAuthenticated() == false) //didnt do PASS before NICK 
+    //    sendError(321, sender) and return; //theres no err_code for it
+	//protocol says u must send PASS before NICK and USER but what if client doesnt, what should be send back
 
-	// dont like that availabilty is checked before correctness but it solves problems
-	// if nickname was set before but is not available its bad to have the name in client object if client its not being deleted
+
 	client_name_map_iter_t it = _client_names.find(nickname); //key may not be used cuz it creates an entry --> actually good for us no?
 	if (it == _client_names.end()) //no one has the nickname
 	{
-		// if (sender->setNickname(nickname) == ERR_ERRONEUSNICKNAME); //should setter norm check and return?
-			// sendError(ERR_ERRONEUSNICKNAME, sender);
+		if (sender->setNickname(nickname) != 0)
+		{
+        	sendError(ERR_ERRONEUSNICKNAME, sender, "");
+			return ;
+		}
 	}
 	else
 		sendError(ERR_NICKNAMEINUSE, sender, "");
 	if (sender->isRegistered())
-		addNewPair(sender->getNickname(), sender->getFd());
+	{
+		addClientToNameMap(sender->getNickname(), sender->getFd());
+		sendError(RPL_WELCOME, sender, "");
+	}
 }
 
 void	Irc::USER(Client *sender, std::stringstream &sstream)
@@ -201,22 +197,18 @@ void	Irc::USER(Client *sender, std::stringstream &sstream)
     std::vector<std::string> info(4);
 
 	if (sender->isRegistered())
-		sendError(ERR_ALREADYREGISTERED, sender, ""); //already registered
+	{
+		sendError(ERR_ALREADYREGISTERED, sender, "");
+		return ;
+	}
 
 	//for loop a lil weird but fine for now
     for (std::vector<std::string>::iterator it = info.begin(); it != info.end(); it++)
-    {
-        std::getline(sstream, *it, ' ');
-		if (it->empty()) 
-			sendError(ERR_NEEDMOREPARAMS, sender, ""); //need more params
-		// if (!isNormed(*it))
-			// sendError(ERR_NOSUCHCHANNEL, sender); //invalid due to characters, lengths, etc
-    }
+		*it = extractWord(sstream);
     sender->setUser(info[0], info[1], info[2], info[3]);
-	//sender->registrationAccepted(); //setter i guess ? should also sendMsg(RPL_WELCOME); --> in 
 	if (sender->isRegistered())
 	{
-		this->addNewPair(sender->getNickname(), sender->getFd());
+		addClientToNameMap(sender->getNickname(), sender->getFd());
 		sendError(RPL_WELCOME, sender, "");
 	}
 }
