@@ -1,5 +1,5 @@
 #include "../Includes/Irc.hpp"
-#include "../Includes/IrcReply.hpp"
+
 
 //con- and destructer
 Irc::Irc(): AServer() {}
@@ -19,7 +19,7 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
     std::stringstream	sstream(message); //message can't be empty
     std::string	cmd;
 
-	std::getline(sstream >> std::ws, cmd, ' '); "      :dsadasdas hello"
+	std::getline(sstream >> std::ws, cmd, ' ');
 	if (cmd.at(0) == ':')
 	{
 		if (cmd != sender->getPrefix())
@@ -162,10 +162,10 @@ void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client
 		// std::cout << "Empty PW" << std::endl;
 	//    sendError(ERR_NOSUCHCHANNEL, sender);
     if (sender != NULL && sender->isRegistered()) 
-        sendError(ERR_ALREADYREGISTERED, sender); //already registered
+        sendError(ERR_ALREADYREGISTERED, sender, ""); //already registered
     else if (password != _password) //gehört noch in Abstract Server
     {
-		sendError(ERR_PASSWDMISMATCH); //SHOULD WE hardcode it in this case?
+		// sendError(ERR_PASSWDMISMATCH); //SHOULD WE hardcode it in this case?
 		return ;
 	}
 	_client_fds[new_client_fd] = new Client(new_client_fd); //should we delete him if NICK or USER triggers an Error?
@@ -182,7 +182,7 @@ void Irc::NICK(Client *sender, std::stringstream &sstream)
 
 	if (nickname.empty())
 	{
-        sendError(ERR_ERRONEUSNICKNAME, sender);
+        sendError(ERR_ERRONEUSNICKNAME, sender, "");
 		
 	}
     
@@ -192,11 +192,11 @@ void Irc::NICK(Client *sender, std::stringstream &sstream)
 	client_name_map_iter_t it = _client_names.find(nickname); //key may not be used cuz it creates an entry --> actually good for us no?
 	if (it == _client_names.end()) //no one has the nickname
 	{
-		if (sender->setNickname(nickname) == ERR_ERRONEUSNICKNAME); //should setter norm check and return?
-			sendError(ERR_ERRONEUSNICKNAME, sender);
+		// if (sender->setNickname(nickname) == ERR_ERRONEUSNICKNAME); //should setter norm check and return?
+			// sendError(ERR_ERRONEUSNICKNAME, sender);
 	}
 	else
-		sendError(ERR_NICKNAMEINUSE, sender)
+		sendError(ERR_NICKNAMEINUSE, sender, "");
 	if (sender->isRegistered())
 		addNewPair(sender->getNickname(), sender->getFd());
 }
@@ -206,14 +206,14 @@ void	Irc::USER(Client *sender, std::stringstream &sstream)
     std::vector<std::string> info(4);
 
 	if (sender->isRegistered())
-		sendError(ERR_ALREADYREGISTERED, sender); //already registered
+		sendError(ERR_ALREADYREGISTERED, sender, ""); //already registered
 
 	//for loop a lil weird but fine for now
     for (std::vector<std::string>::iterator it = info.begin(); it != info.end(); it++)
     {
         std::getline(sstream, *it, ' ');
 		if (it->empty()) 
-			sendError(ERR_NEEDMOREPARAMS, sender); //need more params
+			sendError(ERR_NEEDMOREPARAMS, sender, ""); //need more params
 		// if (!isNormed(*it))
 			// sendError(ERR_NOSUCHCHANNEL, sender); //invalid due to characters, lengths, etc
     }
@@ -222,7 +222,7 @@ void	Irc::USER(Client *sender, std::stringstream &sstream)
 	if (sender->isRegistered())
 	{
 		this->addNewPair(sender->getNickname(), sender->getFd());
-		sendError(RPL_WELCOME, sender);
+		sendError(RPL_WELCOME, sender, "");
 	}
 }
 
@@ -248,14 +248,14 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 		// - /PRIVMSG for channels didnt work in Hexchat
 
 	if (recipient.empty()) 
-		sendError(ERR_NORECIPIENT, sender); //need more params
+		sendError(ERR_NORECIPIENT, sender, ""); //need more params
 	else if (message.empty())
-		sendError(ERR_NOTEXTTOSEND, sender); //need more params
+		sendError(ERR_NOTEXTTOSEND, sender, ""); //need more params
 	else if (recipient[0] == '#')
 	{
 		channel_map_iter_t rec_it = _channels.find(recipient);
 		if (rec_it == _channels.end())
-			sendError(ERR_NOSUCHCHANNEL, sender); //NO SUCH CHANNEL
+			sendError(ERR_NOSUCHCHANNEL, sender, ""); //NO SUCH CHANNEL
 		else
 		{
 			sender->sendTo(message, rec_it->second); //Client should call a function from Channel
@@ -268,7 +268,7 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 	{
 		client_name_map_iter_t rec_it = _client_names.find(recipient);
 		if (rec_it == _client_names.end())
-			sendError(ERR_NOSUCHNICK, sender); //NO SUCH NICK
+			sendError(ERR_NOSUCHNICK, sender, ""); //NO SUCH NICK
 		else
 			sender->sendTo(message, rec_it->second); //this function calls Channel member
 	}

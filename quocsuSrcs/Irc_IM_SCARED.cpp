@@ -27,29 +27,6 @@ enum IRC_ERR
     ERR_USERSDONTMATCH = 502 //?
 };
 
-void Irc::sendError(IRC_ERR error, Client* sender)
-{
-	std::string error_message;
-	error_message = sender->getPrefix(); //doesnt end with a space
-	switch (error)
-	{
-		case ERR_NOSUCHCHANNEL:
-			error_message += " LOOK AT IRC PROTOCOLL";
-			break;
-		case ERR_ERRONEUSNICKNAME:
-			error_message += " LOOK AT IRC PROTOCOLL";
-			break;
-		case ERR_NICKNAMEINUSE:
-			break;
-		default:
-			std::cout << "Error was not implemented yet, go work" << std::endl;
-			//throw ;?
-	}
-	std::cout << error_message << std::endl;
-	//sender.sendMsg();
-}
-
-
 //private methods 
 void	Irc::command_switch(Client *sender, const std::string message) //message-> 'request' better name? for us to discern
 {

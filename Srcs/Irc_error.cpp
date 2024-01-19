@@ -1,6 +1,6 @@
 
-#include "IrcReply.hpp"
-#include "Client.hpp"
+#include "Irc_error.hpp"
+
 
 
 //passing empty string on things that dont requie input?
@@ -11,7 +11,7 @@ void	sendError(IRC_ERR error, Client* sender, const std::string& input)
 	std::string err_message;
 
 	//NAME OF THE SERVER
-	err_message = getName(); //Servername, doesnt end with a space
+	// err_message = getName(); //Servername, doesnt end with a space
 	switch (error)
 	{
 		case ERR_NOSUCHNICK:
@@ -87,6 +87,6 @@ void	sendError(IRC_ERR error, Client* sender, const std::string& input)
 			//throw ;?
 	}
 	std::cout << err_message << std::endl;
-	send(sender->getFd(), error_message.c_str(), error_message.size(), 0); //--> turn this to a seperat function that sends in a while loop, others outside of switch can also use it 
+	send(sender->getFd(), err_message.c_str(), err_message.size(), 0); //--> turn this to a seperat function that sends in a while loop, others outside of switch can also use it 
 	//problematic with PASSWORD MISMATCH
 }

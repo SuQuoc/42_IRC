@@ -1,5 +1,10 @@
 
-# pragma once
+#pragma once
+
+#include "../Includes/Client.hpp"
+
+class Client;
+class Channel;
 
 enum IRC_ERR
 {
@@ -34,9 +39,9 @@ enum IRC_ERR
     RPL_NOTOPIC = 331,
     RPL_TOPIC = 332,
     RPL_NAMREPLY = 353,
-    RPL_CHANNELMODEIS //?
-    RPL_UMODEIS //?
-    RPL_INVITING = 341;
+    RPL_CHANNELMODEIS = 324, //?
+    RPL_UMODEIS = 221,//?
+    RPL_INVITING = 341
 };
 
-  
+void	sendError(IRC_ERR error, Client* sender, const std::string& input);
