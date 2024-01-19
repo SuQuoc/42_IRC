@@ -93,3 +93,31 @@ void Client::sendTo(const std::string& msg, Channel* recipient) const //????????
 		// std::cerr << "send() failed" << std::endl;
 	(void)(recipient);
 }
+
+//we want to handle 
+//"text\ntext^D"
+//"text^D"
+//"text^Dtext\n"
+// buffer nur clearn und überschreiben wenn eine nachricht mit \r oder \n am ende drinnen steht. If buffer doesn't have delimiter, dranstückeln bis delimiter kommt. Wenn buffer voll, nicht überschreiben bis message mit delimiter kommt (? last sentence)
+void Client::loadMsgBuffer(const std::string& buf)
+{
+	// if (buf.find('\r') || buf.find('\n'))
+		//  std::string substring = originalString.substr(7, 5);  // Starting at index 7, take 5 characters
+    // originalString.erase(7, 5);
+	// else if ()		
+	// _msg_buf += buf;
+	// if (_msg_buf.size() > 512)
+		// _msg_buf.resize(512);
+	// else if (_msg_buf.size() == 512)
+	// {
+		// char &lastREF = _msg_buf.back();
+		// if (lastREF  != '\r' && lastREF != '\n')
+	// }
+}
+
+std::string Client::returnRequest()
+{
+	std::string request = _msg_buf;
+	_msg_buf.clear();
+	return request;
+}

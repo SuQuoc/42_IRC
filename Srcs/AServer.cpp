@@ -75,6 +75,8 @@ void	AServer::process_event(const int& client_fd)
 	char	buf[513];
 	int		bytes_recieved = -1; //better name?
 
+	Client *sender = _client_fds.find(client_fd)->second;
+
 	while (1)
 	{
 		memset(buf, '\0', 513);
@@ -82,18 +84,21 @@ void	AServer::process_event(const int& client_fd)
 		switch (bytes_recieved)
 		{
 			case (-1):
+				sender->loadMsgBuffer(buf);
 				/* if (errno == EAGAIN || errno == EWOULDBLOCK) //leave it in? //potential endless-loop?
 					break ; */ 			//loops when ctrl-D is pressed and waits for enter from same client
 				std::cerr << "Error: couldn't recieve data :" << std::strerror(errno) << std::endl;
 				return ;
 			case (0):
 				//disconnect_client(); !!!!
-				close(client_fd);
+				close(client_fd); //already in client destructor
 				return ;
 			default:
+				sender->loadMsgBuffer(buf);
+				sender->returnRequest(); //returns the string and clears the buffer
 				std::stringstream stream(buf);
 				std::string str;
-				while(getline(stream, str))
+				while(getline(stream, str)) //we have to do a while loop cuz "CMD\nCMD1\nCMD3\n"
 					command_switch(_client_fds.find(client_fd)->second, str, client_fd); //what if fd is not in map?
 				//_client_fds.find(client_fd)->second --> turn this into a function? findClient()?
 				return ;

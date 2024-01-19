@@ -64,6 +64,10 @@ public:
 	void leaveChannel(Channel *channel); // i or fiona(const) could call then nikis function 
 	void sendTo(const std::string& msg, Client* recipient) const;
 	void sendTo(const std::string& msg, Channel* recipient) const;
+
+	void loadMsgBuffer(const std::string& buf);
+	std::string returnRequest();
+
 };
 
 
