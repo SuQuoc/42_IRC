@@ -72,13 +72,13 @@ void	AServer::accept_connection()
 
 void	AServer::process_event(const int& client_fd)
 {
-	char	buf[513]; //13?	
+	char	buf[513];
 	int		bytes_recieved = -1; //better name?
 
 	while (1)
 	{
 		memset(buf, '\0', 513);
-		bytes_recieved = recv(client_fd, buf, sizeof(buf), 0);
+		bytes_recieved = recv(client_fd, buf, sizeof(buf) - 1, 0);
 		switch (bytes_recieved)
 		{
 			case (-1):

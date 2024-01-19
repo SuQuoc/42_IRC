@@ -41,6 +41,7 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 	{
 
 		std::cout << "PASS()" << new_client_fd << std::endl; //PASS(new_client_fd); // client can always try PASS although not registered ?
+		PASS(sender, sstream, new_client_fd);
 	}
 	else if (cmd == "NICK") std::cout << "NICK()" << std::endl; //NICK();
 	else if (cmd == "USER") std::cout << "USER()" << std::endl; //USER();
@@ -68,6 +69,12 @@ std::string	Irc::extractWord(std::stringstream& sstream)
 	}
 	else
 		std::getline(sstream, word, ' ');
+
+	if (!word.empty() && (*(word.end() - 1) == '\n' || *(word.end() - 1) == '\r'))
+		word.erase(word.end() - 1);
+	if (!word.empty() && (*(word.end() - 1) == '\n' || *(word.end() - 1) == '\r'))
+		word.erase(word.end() - 1);
+
 	return (word);
 }
 
