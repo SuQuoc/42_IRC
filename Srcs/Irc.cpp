@@ -56,26 +56,20 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 	else std::cout << "sendError(ERR_UNKNOWNCOMMAND)" << std::endl; //sendError(ERR_UNKNOWNCOMMAND);
 }
 
-std::string	Irc::getWord(std::stringstream& sstream)
+std::string	Irc::extractWord(std::stringstream& sstream)
 {
-	std::string	str;
-	
-	std::getline(sstream, str, ' ');
-	while (str.empty() && !sstream.eof())
-		std::getline(sstream, str, ' ');
-	return (str);
+	std::string	word;
+
+	sstream >> std::ws;
+	if (sstream.peek() == ':')
+	{
+		sstream.get();
+		std::getline(sstream, word);
+	}
+	else
+		std::getline(sstream, word, ' ');
+	return (word);
 }
-
-/* std::string	Irc::getWord(std::stringstream& sstream)
-{
-	std::string	str;
-	
-	std::getline(sstream, str, ' ');
-	while (str.empty() && !sstream.eof())
-		std::getline(sstream, str, ' ');
-	return (str);
-} */
-
 
 //methods (commands)
 // void	Irc::JOIN(Client *sender, std::stringstream &sstream)
@@ -178,9 +172,10 @@ void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client
         // sendError(ERR_NOSUCHCHANNEL, sender); //or return 
 void Irc::NICK(Client *sender, std::stringstream &sstream)
 {
-    std::string nickname = getWord(sstream);
-
-	if (nickname.empty())
+    std::string nickname = extractWord(sstream);
+	//what if nick has space is it being ignored are is space not allowed? --> Not allowed
+    
+    if (nickname.empty())
 	{
         sendError(ERR_ERRONEUSNICKNAME, sender, "");
 		

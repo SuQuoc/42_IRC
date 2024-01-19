@@ -4,7 +4,7 @@ CXX			= c++
 CXXFLAGS	= -Wall -Wextra -Werror -MMD -MP -g -std=c++98
  
 INCLUDES 	= ./Includes
-#dependencies don't work!
+
 
 SRCS		= 	Irc.cpp \
 				Irc_error.cpp \
