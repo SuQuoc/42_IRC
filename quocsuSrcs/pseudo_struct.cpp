@@ -23,8 +23,36 @@ enum IRC_ERR
     ERR_USERSDONTMATCH = 502 //?
 };
 
+//can the PREFIX we get from the client be always ignored??
+split_irc_message()
+{
+    std::string trailing;
+    std::string prefix;
 
+    //params contains also optional parameters and params2 is only used if cmd supports 2 parameter listing
+    //if it doest support listing then just loop through this
+    //each cmd loops through params, some could only take n params from the vector and ignore the rest
+    std::vector<std::string> params; 
+    std::vector<std::string> params2; //arguments? better name?
 
+    tmp = getline();
+    if (tmp == prefix())
+        prefix = tmp
+        cmd = getline();
+    else
+        cmd = tmp;
+    para = getline();
+    if (supportsMessage(cmd)) //USER, PRIVMSG, PART, QUIT, KICK --> maybe we dont have to check if it supports and do it everytime
+    {
+        msg = find first SPACE-COLON " :" and cut everything after it out from string;
+    }
+    params = splitAtSpace(para); //now params could be filled with #c1,#c2,#c3 and its getting turned into 3 diff strings
+    if (supportsListing(cmd)) //or we check if the strings contain a ,?
+        split params at ',' fill params2 with the splited params;
+        params contains the spliited strings from the first string in params;
+
+    //channel name can have :
+}
 
 
 
