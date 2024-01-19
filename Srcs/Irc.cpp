@@ -43,12 +43,12 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 
 	std::getline(sstream >> std::ws, cmd, ' ');
 
-	std::cout << "cmd: " << cmd << "$" << std::endl;
+	std::cout << "cmd: " << cmd << std::endl;
 	if (sender == NULL) //doesn't protect when sender is not in map?
 	{
 		std::getline(sstream, cmd); //? for CAP LS 
 		std::getline(sstream, cmd, ' '); //?
-		//std::cout << "cmd2: " << cmd << "$" << std::endl;
+		//std::cout << "cmd2: " << cmd << std::endl;
 		if (cmd == "PASS")
 			std::cout << "PASS()" << new_client_fd << std::endl; //PASS(new_client_fd); // client can always try PASS although not registered ?
 		else
@@ -81,6 +81,12 @@ std::string	Irc::extractWord(std::stringstream& sstream)
 	}
 	else
 		std::getline(sstream, word, ' ');
+
+	if (!word.empty() && (*(word.end() - 1) == '\n' || *(word.end() - 1) == '\r'))
+		word.erase(word.end() - 1);
+	if (!word.empty() && (*(word.end() - 1) == '\n' || *(word.end() - 1) == '\r'))
+		word.erase(word.end() - 1);
+
 	return (word);
 }
 
