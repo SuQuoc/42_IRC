@@ -62,6 +62,7 @@ class Channel
 
 		const std::string	&getPassword() const;
 		const std::string	&getName() const;
+		bool getInviteOnly() const;
 		int size() const;
 
 		int modesSwitch(Client *executor, const char &add, const char &mode, const std::string &argument);

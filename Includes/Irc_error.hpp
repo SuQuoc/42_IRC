@@ -2,6 +2,7 @@
 #pragma once
 
 #include "../Includes/Client.hpp"
+#include <sstream>
 
 class Client;
 class Channel;
@@ -41,8 +42,11 @@ enum IRC_ERR
     RPL_NAMREPLY = 353,
     RPL_CHANNELMODEIS = 324, //?
     RPL_UMODEIS = 221,//?
-    RPL_INVITING = 341
+    RPL_INVITING = 341,
+
+    //own codes!
+    RPL_JOIN = 1000
 };
 
-void	sendError(IRC_ERR error, Client* sender, const std::string& input);
+int sendError(IRC_ERR error, Client* sender, const std::string& input);
 void	sendRPL(IRC_ERR error, Client* sender, const std::string& input);

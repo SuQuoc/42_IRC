@@ -6,15 +6,13 @@
 //passing empty string on things that dont requie input?
 //if 2 inputs are needed should we?
 //takes in Client pointer to send()
-void	sendError(IRC_ERR error, Client* sender, const std::string& input)
+int	sendError(IRC_ERR error, Client* sender, const std::string& input)
 {
-	return ;
-	std::stringstream ss;
-	ss << error;
-	//err;
 	std::string err_message;
+	std::string server_name = "AfterLife";
+	std::stringstream error_code;
 
-
+	error_code << error;
 	//NAME OF THE SERVER
 	// err_message = getName(); //Servername, doesnt end with a space
 	switch (error)
@@ -23,7 +21,7 @@ void	sendError(IRC_ERR error, Client* sender, const std::string& input)
 			err_message += input + " :No such nick/channel"; //<nickname>
 			break;
 		case ERR_NOSUCHCHANNEL:
-			err_message += input + " :No such channel"; //<channel name>
+			err_message += ":" + server_name + " " + error_code.str() + " " + sender->getUsername() + " " + input + " :No such channel\r\n"; //<channel name>
 			break;
 		case ERR_CANNOTSENDTOCHAN:
 			err_message += input + " :Cannot send to channel"; //<channel name>
@@ -82,21 +80,18 @@ void	sendError(IRC_ERR error, Client* sender, const std::string& input)
 		case ERR_USERMODEUNKNOWNFLAG:
 			err_message += input + ":Unknown MODE flag";
 			break;
-		//RPL
-		case RPL_WELCOME:
-			err_message += "Welcome to the Internet Relay Network" + input; //input = getPrefix() from Client; <nick>!<user>@<host>
-			break;
-
 		default:
 			std::cout << "CANT HAPPEN DUE TO ENUM" << std::endl;
 			//throw ;?
 	}
-	std::cout << err_message << std::endl;
-	send(sender->getFd(), err_message.c_str(), err_message.size(), 0); //--> turn this to a seperat function that sends in a while loop, others outside of switch can also use it 
+	if(send(sender->getFd(), err_message.c_str(), err_message.size(), 0) == -1) //--> turn this to a seperat function that sends in a while loop, others outside of switch can also use it 
+	{
+		std::cout << "Error send faild in Irc_error." << std::endl;
+		return(-1);
+	}
 	//problematic with PASSWORD MISMATCH
+	return (0);
 }
-
-#include <sstream>
 
 void	sendRPL(IRC_ERR error, Client* sender, const std::string& input)
 {
@@ -107,6 +102,9 @@ void	sendRPL(IRC_ERR error, Client* sender, const std::string& input)
 	error_code << error;
 	switch (error)
 	{
+		case RPL_JOIN:
+			msg = ":" + sender->getPrefix() + " JOIN " + input + " * :" + sender->getUsername() + "\r\n";
+			break;
 		case RPL_WELCOME:
 			msg = ":" + server_name + " 001 " + sender->getNickname() + " :Welcome to the Internet Relay Network, " + input + "\r\n"; //input = getPrefix() from Client; <nick>!<user>@<host>
 			break;

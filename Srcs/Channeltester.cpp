@@ -3,8 +3,9 @@
 Client *addUser(const std::string &name)
 {
     Client *niki = new Client(3);
+    std::string name2 = "niki_username";
 
-    niki->setUser("niki", "niki", "niki", "niki");
+    niki->setUser(name2, name, name, name);
     niki->setNickname("niki");
     return niki;
 }
@@ -107,11 +108,12 @@ void test_multible_clients(int client_ammount)
     {
         Client *client = addUser(std::to_string(i));
         test_addClient(after_life, client);
-        after_life.rmClient(client);
-        delete client;
+        /* after_life.rmClient(client);
+        delete client; */
     }
-    after_life.rmClient(niki);
-    delete niki;
+    /* after_life.rmClient(niki);
+    delete niki; */
+    std::cout << after_life.size() << std::endl;
 }
 
 #include <sstream>
@@ -141,7 +143,7 @@ void MODE(Channel &after_life, Client *sender, std::stringstream &sstream)
                 pre_fix = word[i];
                 i++;
             }
-            if(word[i] == 'i') // all without arguments! protect for non prefix ( +  or - )
+            if(word[i] == 'i' || word[i] == 't') // all without arguments! protect for non prefix ( +  or - )
             {
                 after_life.modesSwitch(sender, pre_fix, word[i], "");
                 std::cout << word[i] << std::endl;
@@ -166,7 +168,7 @@ int main()
     /* test_isInChannel(after_life, niki, beni);
     test_rmClient(after_life, beni);
     test_setPassword(after_life, niki, beni);
-    test_multible_clients(10); */
+    test_multible_clients(300); */
     MODE(after_life, niki, input);
 
     delete niki;

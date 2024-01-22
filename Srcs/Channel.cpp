@@ -34,10 +34,10 @@ void Channel::sendMsg(const Client *sender, const std::string &msg)
 void Channel::sendNonBlock(const int &fd, const std::string &msg)
 {
 	//need to check if msg is not bigger than 512
-	while(send(fd, msg.c_str(), msg.size(), 0) == -1)
+	if(send(fd, msg.c_str(), msg.size(), 0) == -1)
 	{
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			continue ;
+		/* if (errno == EAGAIN || errno == EWOULDBLOCK)
+			continue ; */
 		std::cerr << "send faild in channel.cpp" << std::endl;
 		strerror(errno);
 		std::exit(EXIT_FAILURE);
@@ -186,6 +186,7 @@ std::vector<Channel::Member_t>::iterator Channel::getClient(const std::string _n
 
 const std::string &Channel::getPassword() const { return _password; }
 const std::string &Channel::getName() const { return _name; }
+bool Channel::getInviteOnly() const { return _invite_only; }
 int Channel::size() const { return _clients.size(); }
 
 //returns -1 if not a + or - in add, otherwise error code if fails
@@ -238,7 +239,7 @@ int Channel::setOperator(Client *executor, const char &add, const std::string &n
 //multible arguments are possible
 int Channel::modesSwitch(Client *executor, const char &add, const char &ch_modes, const std::string &argument)
 {
-	enum color { SET_RESTRICT_TOPIC = 't', SET_INVITE_ONLY = 'i', SET_KEY = 'k', SET_OPERATOR ='o' };
+	enum color { SET_RESTRICT_TOPIC = 't', SET_INVITE_ONLY = 'i', SET_KEY = 'k', SET_OPERATOR = 'o' };
 	clients_itr itr;
 
 	switch (ch_modes)
