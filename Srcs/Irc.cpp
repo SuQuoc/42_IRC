@@ -98,14 +98,14 @@ int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 	if(!(channel_name[0] == '#' || channel_name[0] == '&') || channel_name.size() > 200) //check if channel_name is valid
 		return (sendError(ERR_NOSUCHCHANNEL, sender, channel_name));
 	channel_itr = _channels.find(channel_name);
-	if(channel_itr == _channels.end()) // create if channel non exist
+	if(channel_itr == _channels.end()) // create if channel non exist ?
 		addNewPair(sender, channel_name);
 	else
 	{
 		channel_itr->second->addClient(sender, false);
-		//if error send error msg to client 
-		//if( != 0)
-		//	return ;
+		//if error send error msg to client ?
+		//if( != 0) ?
+		//	return ; ?
 	}
 	sender->joinChannel(channel_itr->second);
 	sendRPL(RPL_JOIN, sender, channel_name);

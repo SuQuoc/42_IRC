@@ -3,8 +3,9 @@
 Client *addUser(const std::string &name)
 {
     Client *niki = new Client(3);
+    std::string name = "niki";
 
-    niki->setUser("niki", "niki", "niki", "niki");
+    niki->setUser(name, name, name, name);
     niki->setNickname("niki");
     return niki;
 }
