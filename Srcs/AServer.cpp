@@ -70,27 +70,6 @@ void	AServer::accept_connection()
 	}
 }
 
-void	checkBuf(std::string& str)
-{
-	std::stringstream	sstream(str);
-
-	//check buf for delim
-		//if yes, check client-buf for delim at end (already executed)
-			//if yes, replace client-buf with buf
-			//if not, concatinate buf to client-buf
-		//if not, check client-buf for delim at end (alreaby executed)
-			//if yes, replace client-buf with buf, return empty ~
-			//if not, concatinate buf to client-buf, return empty ~
-
-	//check client-buf for delim at end (already executed)
-		//if yes, replace with str
-		//if not, copy client buf to str
-	//check client-buf for delim at end (what we want to execute)
-		//if yes, copy to str and return str
-		//if not, return empty str
-	
-	return (scommands);
-}
 
 
 
@@ -111,21 +90,21 @@ void	AServer::process_event(const int& client_fd)
 				//disconnect_client(); !!!!
 				close(client_fd); //already in client destructor
 				return ;
-			case (1):
-				return;
 			case (-1):
 				/* if (errno == EAGAIN || errno == EWOULDBLOCK) //leave it in? //potential endless-loop?
 					break ; */ 			//loops when ctrl-D is pressed and waits for enter from same client
 				std::cerr << "Error: couldn't recieve data :" << std::strerror(errno) << std::endl;
 				//return ;
 			default:
-				std::stringstream	sender->checkBuf(buf);
+				std::stringstream	sstream(buf);
 				std::string str;
-				//while(getline) -> problem because of carriage-return?
-				while(getline(stream, str)) //we have to do a while loop cuz "CMD\nCMD1\nCMD3\n"
-					sender->checkBuf(str); //take str as reference
-					command_switch(sender, str, client_fd); //what if fd is not in map?
-				//_client_fds.find(client_fd)->second --> turn this into a function? findClient()?
+				while(splitMsg(sstream, str)) //we have to do a while loop cuz "CMD\nCMD1\nCMD3\n"
+				{
+					sender->loadMsgBuf(str); //take str as reference
+					str = sender->readMsgBuf();
+					if (!str.empty())
+						command_switch(sender, str, client_fd); //what if fd is not in map?
+				}
 				return ;
 		}
 	}

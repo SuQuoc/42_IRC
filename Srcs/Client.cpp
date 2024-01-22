@@ -101,26 +101,43 @@ void Client::sendTo(const std::string& msg, Client* recipient) const //should be
 //"text^D"
 //"text^Dtext\n"
 // buffer nur clearn und überschreiben wenn eine nachricht mit \r oder \n am ende drinnen steht. If buffer doesn't have delimiter, dranstückeln bis delimiter kommt. Wenn buffer voll, nicht überschreiben bis message mit delimiter kommt (? last sentence)
-void Client::loadMsgBuffer(const std::string& buf)
+
+void	Client::loadMsgBuf(const std::string& str)
 {
-	if (buf.find('\r') || buf.find('\n'))
+	if (str.empty())
 		return ;
-		//  std::string substring = originalString.substr(7, 5);  // Starting at index 7, take 5 characters
-    // originalString.erase(7, 5);
-	// else if ()		
-	// _msg_buf += buf;
-	// if (_msg_buf.size() > 512)
-		// _msg_buf.resize(512);
-	// else if (_msg_buf.size() == 512)
+	if (_msg_buf.empty() || *(_msg_buf.end() - 1)  == '\n')
+		_msg_buf = str;
+	else
+	{
+		_msg_buf += str;
+		if (_msg_buf.size() > 510)
+		{
+			_msg_buf.resize(510);
+			if (*(_msg_buf.end() - 1) == '\n')
+				_msg_buf += '\n';
+		}	
+	}
+
+	// if (str.back() == '\n')
 	// {
-		// char &lastREF = _msg_buf.back();
-		// if (lastREF  != '\r' && lastREF != '\n')
+		// str = _msg_buf;
+		// str.pop_back();
 	// }
+	// else
+		// str.clear();
+
 }
 
-std::string Client::returnRequest()
+std::string	Client::readMsgBuf()
 {
-	std::string request = _msg_buf;
-	_msg_buf.clear();
-	return request;
+	std::string msg;
+	if (!_msg_buf.empty() && *(_msg_buf.end() - 1) == '\n')
+	{
+		msg = _msg_buf;
+		msg.erase((_msg_buf.end() - 1));
+		return (msg);
+	}
+	else
+		return "";
 }

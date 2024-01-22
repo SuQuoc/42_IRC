@@ -12,7 +12,7 @@
 
 #include "Channel.hpp"
 #include "Irc_error.hpp"
-#include "utils.hpp"
+#include "utils_string.hpp"
 
 
 //git checkout -b quocsu
@@ -64,9 +64,8 @@ public:
 	void leaveChannel(Channel *channel); // i or fiona(const) could call then nikis function 
 	void sendTo(const std::string& msg, Client* recipient) const;
 
-	void loadMsgBuffer(const std::string& buf);
-	std::string returnRequest();
-
+	void loadMsgBuf(const std::string& buf);
+	std::string	Client::readMsgBuf();
 };
 
 

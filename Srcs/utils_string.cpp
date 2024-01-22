@@ -1,6 +1,5 @@
 
-# include <string>
-# include <vector>
+#include "utils_string.hpp"
 
 std::vector<std::string> splitString(const std::string& input, const std::string& delimiter) 
 {
@@ -54,4 +53,27 @@ bool containsForbiddenChars(const std::string& input, const std::string& forbidd
         }
     }
     return false;
+}
+
+int    splitMsg(std::stringstream& sstream, std::string& str)
+{
+    char    c;
+    int cnt = 0;
+
+    str.clear();
+    while (!sstream.eof() && (sstream.peek() =='\n' || sstream.peek() == '\r'))
+        sstream.get();
+    while (!sstream.eof() && sstream.peek() != '\n' && sstream.peek() != '\r')
+    {
+        if (!sstream.get(c)) //needs to be checked because it only sets the eof if it trys to read it. Is my theory at least
+            break ;
+        str += c;
+        cnt++;
+    }
+    if (!sstream.eof())
+    {
+        str += '\n';
+        cnt++;
+    }
+    return (cnt);
 }

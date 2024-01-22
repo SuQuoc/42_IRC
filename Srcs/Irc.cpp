@@ -75,13 +75,6 @@ std::string	Irc::extractWord(std::stringstream& sstream)
 	}
 	else
 		std::getline(sstream, word, ' ');
-
-	if (word.empty() == false && (*(word.end() - 1) == '\n' || *(word.end() - 1) == '\r'))
-	{
-		word.erase(word.end() - 1);
-	}
-	if (!word.empty() && (*(word.end() - 1) == '\n' || *(word.end() - 1) == '\r'))
-		word.erase(word.end() - 1);
 	return (word);
 }
 

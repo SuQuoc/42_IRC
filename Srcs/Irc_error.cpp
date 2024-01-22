@@ -11,7 +11,7 @@ void	sendError(IRC_ERR error, Client* sender, const std::string& input)
 	return ;
 	std::stringstream ss;
 	ss << error;
-	err;
+	//err;
 	std::string err_message;
 
 
