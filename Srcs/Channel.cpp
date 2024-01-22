@@ -239,7 +239,7 @@ int Channel::setOperator(Client *executor, const char &add, const std::string &n
 //multible arguments are possible
 int Channel::modesSwitch(Client *executor, const char &add, const char &ch_modes, const std::string &argument)
 {
-	enum color { SET_RESTRICT_TOPIC = 't', SET_INVITE_ONLY = 'i', SET_KEY = 'k', SET_OPERATOR ='o' };
+	enum color { SET_RESTRICT_TOPIC = 't', SET_INVITE_ONLY = 'i', SET_KEY = 'k', SET_OPERATOR = 'o' };
 	clients_itr itr;
 
 	switch (ch_modes)
