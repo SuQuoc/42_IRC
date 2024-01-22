@@ -52,7 +52,7 @@ void Client::setUser(std::string& uname, const std::string& hname, const std::st
 	_servername = sname;
 
 	//Annahme das NICK immer zuerst gemacht wird aber dann ist dann nc nicht gecovered falls wirs covern müssen
-	_prefix = ":" + _nickname + "!" + _username + "@" + _hostname;
+	_prefix = _nickname + "!" + _username + "@" + _hostname;
 }
 
 // const std::string& Client::getUsername() const {return _username;}

@@ -53,7 +53,11 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 	}
 	else if (sender->isRegistered() == false) sendError(ERR_NOTREGISTERED, sender, ""); //?
 	else if (cmd == "PRIVMSG") std::cout << "PRIVMSG()" << std::endl; //PRIVMSG();
-	else if (cmd == "JOIN") std::cout << "JOIN()" << std::endl; //JOIN();
+	else if (cmd == "JOIN")
+	{
+		JOIN(sender, sstream);
+		std::cout << "JOIN()" << std::endl; //JOIN();
+	} 
 	else if (cmd == "PART") std::cout << "PART()" << std::endl; //PART();
 	else if (cmd == "QUIT") std::cout << "QUIT()" << std::endl; //QUIT();
 	else if (cmd == "KICK") std::cout << "KICK()" << std::endl; //KICK();
@@ -86,20 +90,27 @@ std::string	Irc::extractWord(std::stringstream& sstream)
 }
 
 //methods (commands)
-// void	Irc::JOIN(Client *sender, std::stringstream &sstream)
-// {
-// 	std::string	channel_name = getWord(sstream);
-	
-// 	check if channel exists
-// 		if not, check if channel_name is valid
-// 		if yes, make channel //addNewPair(sender, channel_name);
-// 		if not, error
-// 	check if client is in channel
-// 		if yes, error
-// 	if not, try adding client to channel
-// 		error ?
-// 	add channel to channel vector in user
-// }
+int	Irc::JOIN(Client *sender, std::stringstream &sstream)
+{
+	channel_map_iter_t channel_itr;
+	std::string	channel_name = extractWord(sstream);
+
+	if(!(channel_name[0] == '#' || channel_name[0] == '&') || channel_name.size() > 200) //check if channel_name is valid
+		return (sendError(ERR_NOSUCHCHANNEL, sender, channel_name));
+	channel_itr = _channels.find(channel_name);
+	if(channel_itr == _channels.end()) // create if channel non exist
+		addNewPair(sender, channel_name);
+	else
+	{
+		channel_itr->second->addClient(sender, false);
+		//if error send error msg to client 
+		//if( != 0)
+		//	return ;
+	}
+	sender->joinChannel(channel_itr->second);
+	sendRPL(RPL_JOIN, sender, channel_name);
+	return (0);
+}
 // std::string	make_message(sender, msg, default)
 // {
 // 	std::string	message;

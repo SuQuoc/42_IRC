@@ -34,10 +34,10 @@ void Channel::sendMsg(const Client *sender, const std::string &msg)
 void Channel::sendNonBlock(const int &fd, const std::string &msg)
 {
 	//need to check if msg is not bigger than 512
-	while(send(fd, msg.c_str(), msg.size(), 0) == -1)
+	if(send(fd, msg.c_str(), msg.size(), 0) == -1)
 	{
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			continue ;
+		/* if (errno == EAGAIN || errno == EWOULDBLOCK)
+			continue ; */
 		std::cerr << "send faild in channel.cpp" << std::endl;
 		strerror(errno);
 		std::exit(EXIT_FAILURE);
