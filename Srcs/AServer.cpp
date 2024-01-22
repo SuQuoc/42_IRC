@@ -111,6 +111,8 @@ void	AServer::process_event(const int& client_fd)
 				//disconnect_client(); !!!!
 				close(client_fd); //already in client destructor
 				return ;
+			case (1):
+				return;
 			case (-1):
 				/* if (errno == EAGAIN || errno == EWOULDBLOCK) //leave it in? //potential endless-loop?
 					break ; */ 			//loops when ctrl-D is pressed and waits for enter from same client
