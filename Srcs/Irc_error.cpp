@@ -9,7 +9,11 @@
 void	sendError(IRC_ERR error, Client* sender, const std::string& input)
 {
 	return ;
+	std::stringstream ss;
+	ss << error;
+	err;
 	std::string err_message;
+
 
 	//NAME OF THE SERVER
 	// err_message = getName(); //Servername, doesnt end with a space

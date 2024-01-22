@@ -70,6 +70,30 @@ void	AServer::accept_connection()
 	}
 }
 
+void	checkBuf(std::string& str)
+{
+	std::stringstream	sstream(str);
+
+	//check buf for delim
+		//if yes, check client-buf for delim at end (already executed)
+			//if yes, replace client-buf with buf
+			//if not, concatinate buf to client-buf
+		//if not, check client-buf for delim at end (alreaby executed)
+			//if yes, replace client-buf with buf, return empty ~
+			//if not, concatinate buf to client-buf, return empty ~
+
+	//check client-buf for delim at end (already executed)
+		//if yes, replace with str
+		//if not, copy client buf to str
+	//check client-buf for delim at end (what we want to execute)
+		//if yes, copy to str and return str
+		//if not, return empty str
+	
+	return (scommands);
+}
+
+
+
 void	AServer::process_event(const int& client_fd)
 {
 	char	buf[513];
@@ -83,24 +107,22 @@ void	AServer::process_event(const int& client_fd)
 		bytes_recieved = recv(client_fd, buf, sizeof(buf) - 1, 0);
 		switch (bytes_recieved)
 		{
-			case (-1):
-				sender->loadMsgBuffer(buf);
-				/* if (errno == EAGAIN || errno == EWOULDBLOCK) //leave it in? //potential endless-loop?
-					break ; */ 			//loops when ctrl-D is pressed and waits for enter from same client
-				std::cerr << "Error: couldn't recieve data :" << std::strerror(errno) << std::endl;
-				return ;
 			case (0):
 				//disconnect_client(); !!!!
 				close(client_fd); //already in client destructor
 				return ;
+			case (-1):
+				/* if (errno == EAGAIN || errno == EWOULDBLOCK) //leave it in? //potential endless-loop?
+					break ; */ 			//loops when ctrl-D is pressed and waits for enter from same client
+				std::cerr << "Error: couldn't recieve data :" << std::strerror(errno) << std::endl;
+				//return ;
 			default:
-				sender->loadMsgBuffer(buf);
-				// while (sender->returnRequest()) //returns the string and clears the buffer
-					// command_switch();
-				std::stringstream stream(buf);
+				std::stringstream	sender->checkBuf(buf);
 				std::string str;
+				//while(getline) -> problem because of carriage-return?
 				while(getline(stream, str)) //we have to do a while loop cuz "CMD\nCMD1\nCMD3\n"
-					command_switch(_client_fds.find(client_fd)->second, str, client_fd); //what if fd is not in map?
+					sender->checkBuf(str); //take str as reference
+					command_switch(sender, str, client_fd); //what if fd is not in map?
 				//_client_fds.find(client_fd)->second --> turn this into a function? findClient()?
 				return ;
 		}
@@ -131,6 +153,44 @@ void	AServer::addClientToFdMap(const int& client_fd)
 	std::pair<int, Client*>	pair(client_fd, temp_client);
 	_client_fds.insert(pair);
 }
+
+void 	AServer::rmClient(Client *client)
+{
+	if (!client) return;
+
+	client_fd_map_iter_t it = _client_fds.find(client->getFd());
+	if (it == _client_fds.end())
+		return;
+	client_name_map_iter_t it2 = _client_names.find(client->getNickname());
+	if (it2 == _client_names.end()) //this should never be triggered
+		return;
+	_client_fds.erase(it);;
+	_client_names.erase(it2);
+	delete client;
+}
+
+void 	AServer::rmClient(int client_fd)
+{
+	client_fd_map_iter_t it = _client_fds.find(client_fd);
+	if (it == _client_fds.end())
+		return;
+	client_name_map_iter_t it2 = _client_names.find(it->second->getNickname());
+	if (it2 == _client_names.end()) //this should never be triggered
+		return;
+	_client_fds.erase(it);
+	_client_names.erase(it2);
+	delete it->second; //will the it be corrupted? dont think so
+}
+
+void 	AServer::rmChannel(const std::string& channel_name)
+{
+	channel_map_iter_t it = _channels.find(channel_name);
+	if (it == _channels.end())
+		return ;
+	_channels.erase(it);
+	delete it->second;
+}
+
 
 struct addrinfo* AServer::getIpAdressToBind(const int& port) // NOT needed CRY.... !!!???
 {

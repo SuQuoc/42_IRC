@@ -1,6 +1,6 @@
 # include "../Includes/Client.hpp"
 
-Client::Client(int fd): _fd(fd), _is_authenticated(false)
+Client::Client(int fd): _fd(fd), _authenticated(false), _server_op(false)
 {
 	/* std::cout << "Client with socket: " << _fd << "created" << std::endl; */
 }
@@ -13,17 +13,12 @@ Client::~Client()
 	}
 }
 
-bool Client::isRegistered() const
-{
-	if (_is_authenticated && !_nickname.empty() && !_username.empty())
-		return true;
-	return false;
-}
+bool Client::isServerOp() const {return _server_op;}
+bool Client::isAuthenticated() const {return _authenticated;}
+bool Client::isRegistered() const {return _registered;}
 
-bool Client::isAuthenticated() const {return _is_authenticated;}
-
-void Client::authenticate() {_is_authenticated = true;}
-void Client::deauthenticate() {_is_authenticated = false;}
+void Client::authenticate() {_authenticated = true;}
+void Client::deauthenticate() {_authenticated = false;}
 
 int Client::setNickname(const std::string& name)
 {
@@ -33,16 +28,21 @@ int Client::setNickname(const std::string& name)
 		return ERR_ERRONEUSNICKNAME;
 	}
 	_nickname = name;
-	_prefix = ":" + _nickname + "!" + _username + "@" + _hostname; //a lil ick but working
+	_prefix = _nickname + "!" + _username + "@" + _hostname; //a lil ick but working
+	if (_authenticated && !_nickname.empty() && !_username.empty())
+		_registered = true;
 	return 0;
 }
-
-void Client::setUser(std::string& uname, const std::string& hname, const std::string& sname, const std::string& rname)
+// Note that hostname and servername are normally ignored by the IRC
+// server when the USER command comes from a directly connected client
+// (for security reasons), but they are used in server to server
+// communication.
+int Client::setUser(std::string& uname, const std::string& hname, const std::string& sname, const std::string& rname)
 {
 	if (uname.empty() || hname.empty() || rname.empty() || sname.empty())
 	{
 		std::cout << "Need more params" << std::endl; //rm later
-		return ; //ERR_NEEDMOREPARAMS?
+		return ERR_NEEDMOREPARAMS; //ERR_NEEDMOREPARAMS?
 	}
 	else if (uname.size() > 9)
 		uname.resize(9); //removeed const from uname --> irc bad protocol
@@ -52,7 +52,10 @@ void Client::setUser(std::string& uname, const std::string& hname, const std::st
 	_servername = sname;
 
 	//Annahme das NICK immer zuerst gemacht wird aber dann ist dann nc nicht gecovered falls wirs covern müssen
-	_prefix = ":" + _nickname + "!" + _username + "@" + _hostname;
+	_prefix = _nickname + "!" + _username + "@" + _hostname;
+	if (_authenticated && !_nickname.empty() && !_username.empty())
+		_registered = true;
+	return 0;
 }
 
 // const std::string& Client::getUsername() const {return _username;}
@@ -67,31 +70,30 @@ const std::vector<Channel *>& Client::getAllChannels() const {return _channels;}
 
 void Client::joinChannel(Channel *channel)
 {
+	if (!channel) 
+	{
+		std::cout << "Error: joinChannel()" << std::endl;
+		return ;
+	}
 	_channels.push_back(channel);
 }
 
 void Client::leaveChannel(Channel *channel)
 {
+	if (!channel) 
+	{
+		std::cout << "Error: leaveChannel()" << std::endl;
+		return ;
+	}
 	_channels.erase(std::find(_channels.begin(), _channels.end(), channel));
 }
 
-void Client::sendTo(const std::string& msg, Client* recipient) const
+void Client::sendTo(const std::string& msg, Client* recipient) const //should be done by the client??
 {
-	const std::string message = this->getPrefix() + msg;
 	// std::cout << "SEND FUNCTION NOT COMPLETED YET" << std::endl;
-	if (send(recipient->getFd(), message.c_str(), message.size(), 0) == -1)
+	std::cout << "--> Sending: " << msg << std::endl;
+	if (send(recipient->getFd(), msg.c_str(), msg.size(), 0) == -1)
 		std::cerr << "send() failed" << std::endl;
-}
-
-
-void Client::sendTo(const std::string& msg, Channel* recipient) const //???????????
-{
-	const std::string message = this->getPrefix() + " " + msg;
-	std::cout << "--> Sending: " << message << std::endl;
-	// std::cout << "SEND FUNCTION NOT COMPLETED YET" << std::endl;
-	// if (send(recipient->getFd(), message.c_str(), message.size(), 0) == -1)
-		// std::cerr << "send() failed" << std::endl;
-	(void)(recipient);
 }
 
 //we want to handle 
@@ -102,18 +104,18 @@ void Client::sendTo(const std::string& msg, Channel* recipient) const //????????
 void Client::loadMsgBuffer(const std::string& buf)
 {
 	if (buf.find('\r') || buf.find('\n'))
-
-		 std::string substring = originalString.substr(7, 5);  // Starting at index 7, take 5 characters
-    originalString.erase(7, 5);
-	else if ()		
-	_msg_buf += buf;
-	if (_msg_buf.size() > 512)
-		_msg_buf.resize(512);
-	else if (_msg_buf.size() == 512)
-	{
-		char &lastREF = _msg_buf.back();
-		if (lastREF  != '\r' && lastREF != '\n')
-	}
+		return ;
+		//  std::string substring = originalString.substr(7, 5);  // Starting at index 7, take 5 characters
+    // originalString.erase(7, 5);
+	// else if ()		
+	// _msg_buf += buf;
+	// if (_msg_buf.size() > 512)
+		// _msg_buf.resize(512);
+	// else if (_msg_buf.size() == 512)
+	// {
+		// char &lastREF = _msg_buf.back();
+		// if (lastREF  != '\r' && lastREF != '\n')
+	// }
 }
 
 std::string Client::returnRequest()
