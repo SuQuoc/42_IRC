@@ -190,7 +190,10 @@ void Irc::NICK(Client *sender, std::stringstream &sstream)
 	if (it == _client_names.end()) //no one has the nickname
 	{
 		if (sender->setNickname(nickname) != 0)
-			return sendError(ERR_ERRONEUSNICKNAME, sender, "");
+		{
+			sendError(ERR_ERRONEUSNICKNAME, sender, "");
+			return ;
+		}
 	}
 	else
 	{
