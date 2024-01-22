@@ -9,13 +9,9 @@
 #include <iostream>
 #include <algorithm>
 
-
 #include "Channel.hpp"
 #include "Irc_error.hpp"
 #include "utils_string.hpp"
-
-
-//git checkout -b quocsu
 
 class Channel;
 
@@ -65,7 +61,7 @@ public:
 	void sendTo(const std::string& msg, Client* recipient) const;
 
 	void loadMsgBuf(const std::string& buf);
-	std::string	Client::readMsgBuf();
+	std::string	readMsgBuf() const;
 };
 
 

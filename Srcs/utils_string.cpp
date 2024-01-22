@@ -61,8 +61,6 @@ int    splitMsg(std::stringstream& sstream, std::string& str)
     int cnt = 0;
 
     str.clear();
-    while (!sstream.eof() && (sstream.peek() =='\n' || sstream.peek() == '\r'))
-        sstream.get();
     while (!sstream.eof() && sstream.peek() != '\n' && sstream.peek() != '\r')
     {
         if (!sstream.get(c)) //needs to be checked because it only sets the eof if it trys to read it. Is my theory at least
@@ -75,5 +73,7 @@ int    splitMsg(std::stringstream& sstream, std::string& str)
         str += '\n';
         cnt++;
     }
+    while (!sstream.eof() && (sstream.peek() =='\n' || sstream.peek() == '\r'))
+        sstream.get();
     return (cnt);
 }

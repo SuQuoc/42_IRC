@@ -1,6 +1,6 @@
 # include "../Includes/Client.hpp"
 
-Client::Client(int fd): _fd(fd), _authenticated(false), _server_op(false)
+Client::Client(int fd): _fd(fd), _authenticated(false), _registered(false), _server_op(false)
 {
 	/* std::cout << "Client with socket: " << _fd << "created" << std::endl; */
 }
@@ -111,31 +111,22 @@ void	Client::loadMsgBuf(const std::string& str)
 	else
 	{
 		_msg_buf += str;
-		if (_msg_buf.size() > 510)
+		if (_msg_buf.size() > 512)
 		{
-			_msg_buf.resize(510);
-			if (*(_msg_buf.end() - 1) == '\n')
+			_msg_buf.resize(512);
+			if (*(str.end() - 1) == '\n')
 				_msg_buf += '\n';
 		}	
 	}
-
-	// if (str.back() == '\n')
-	// {
-		// str = _msg_buf;
-		// str.pop_back();
-	// }
-	// else
-		// str.clear();
-
 }
 
-std::string	Client::readMsgBuf()
+std::string	Client::readMsgBuf() const
 {
 	std::string msg;
 	if (!_msg_buf.empty() && *(_msg_buf.end() - 1) == '\n')
 	{
 		msg = _msg_buf;
-		msg.erase((_msg_buf.end() - 1));
+		msg.erase((msg.end() - 1));
 		return (msg);
 	}
 	else
