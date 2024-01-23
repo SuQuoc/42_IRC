@@ -9,6 +9,7 @@ Irc::Irc operator=(const Irc& I); */
 Irc::~Irc() {}
 
 //private methods 
+
 void	Irc::command_switch(Client *sender, const std::string message, const int& new_client_fd) //message-> 'request' better name? for us to discern
 {
 	std::cout << "message =" << message << "!" << std::endl;
@@ -23,6 +24,7 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 		if (cmd != sender->getPrefix())
 		{
 			std::cout << "YOU are a imposter" << std::endl; //"n!u@" nothing after @ should work; scared bc hexchat has some weird domain after @ :@1321.32133.3213.IRC
+			//send()
 			return;
 		}
 		std::getline(sstream, cmd, ' ');
@@ -33,10 +35,10 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 	else if (cmd == "NICK") NICK(sender, sstream);
 	else if (cmd == "USER")	USER(sender, sstream);
 	else if (sender->isRegistered() == false) sendError(ERR_NOTREGISTERED, sender, ""); //?
-	else if (cmd == "PRIVMSG") std::cout << "PRIVMSG()" << std::endl; //PRIVMSG();
+	else if (cmd == "PRIVMSG") PRIVMSG(sender, sstream);
 	else if (cmd == "JOIN") JOIN(sender, sstream);
 	else if (cmd == "PART") PART(sender, sstream);
-	else if (cmd == "QUIT") std::cout << "QUIT()" << std::endl; //QUIT();
+	else if (cmd == "QUIT") QUIT(sender, sstream);
 	else if (cmd == "KICK") std::cout << "KICK()" << std::endl; //KICK();
 	else if (cmd == "INVITE") std::cout << "INVITE()" << std::endl; //INVITE();
 	else if (cmd == "MODE") std::cout << "MODE()" << std::endl; //MODE();
@@ -107,24 +109,35 @@ void	Irc::PART(Client *sender, std::stringstream &sstream)
 		//sendError(too many argument in list);
 }
 
-// void	QUIT(Client *sender, std::stringstream &sstream)
-// {
-// 	std::string	channel_name;
-// 	std::string	msg;
-// 	std::getline(sstream, msg); //make message! //or do it in channel-object?
+//cant use PART
+// - doesnt support listing with ',' e.g: "hungry,bye guys"
+// - i dont write myself a message when quiting
+// - only errors with quit would be if client is the last in channel
+// 		or if the channel doesnt exist
+void	Irc::QUIT(Client *sender, std::stringstream &sstream)
+{
+	std::string	channel_name;
+	std::string	msg = extractWord(sstream);
+	int err;
+	if (msg.empty())
+		msg = "disconnected"; //where will the entire message be concatinated? in channel?
+	
+	std::vector<Channel *> channels = sender->getAllChannels();
+	for (std::vector<Channel *>::iterator it = channels.begin(); it != channels.end(); it++)
+	{
+		Channel *channel = (*it); 
+		if (!channel) //necessary? checking if the channel is in map or null seems overkill, since this case should never happen
+			continue ;
+		// sender->leaveChannel(channel); //unecessary ?? he will leave entire server
+		channel_name = channel->getName();
+		err = channel->rmClient(sender);
+		if (err == -1) //exchange -1 with CHANNEL_DEAD, and use rmClient with a message
+			rmChannelFromMap(channel_name);		
+	}
+	rmClientFromMaps(sender);
+}
 
-// 	get const channel-vector reference from client-map(?)
-// 	loop through channel-vector
-// 		if (channel-vector[i]->removeClient(sender, msg) == CHANNEL_DEAD); //delete channel when empty()
-// 			get channel_name from channel-vector[i]
-// 			delete channel through channel-map (channel_name);
-// 			erase channel from channel-map
-// 		sender->leaveChannel(channel-vector[i]);
-// 	erase client from fd_client-map
-// 	get client_name (-> channel_name variable?)
-// 	delete client-object (sender)
-// 	erase client from name_client-map (name)
-// }
+
 // void	Irc::KICK(Client *sender, std::stringstream &sstream);
 //
 //}
@@ -214,11 +227,7 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 	std::string recipient = extractWord(sstream);
 	std::string message = extractWord(sstream);
 
-	message = ":" + sender->getPrefix() + "PRIVMSG " + recipient + " :" + message;
-	
-	// SHOULD WE CHECK FOR:
-		// - if recpient == sender.getNickname()? -> u can write yourself a message in hexchat with /PRIVMSG
-		// - /PRIVMSG for channels didnt work in Hexchat
+	message = ":" + sender->getPrefix() + " PRIVMSG " + recipient + " :" + message; //PART uses same method -> extra function?
 
 	if (recipient.empty()) 
 		sendError(ERR_NORECIPIENT, sender, ""); //need more params
@@ -244,10 +253,30 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 		if (rec_it == _client_names.end())
 			sendError(ERR_NOSUCHNICK, sender, ""); //NO SUCH NICK
 		else
-			sender->sendTo(message, rec_it->second); //should be done by the server??
+			sender->sendTo(message, rec_it->second); //should be done by the server??!!!
 	}
 }
 
 //void Irc::MODE(Client *sender, std::stringstream &sstream);
 //void Irc::TOPIC(Client *sender, std::stringstream &sstream);
 //void Irc::INVITE(Client *sender, std::stringstream &sstream);
+
+/* void Irc::clientDied(int client_fd) //pure virtual or put this as a normal function in AServer
+{
+	std::string	channel_name;
+	int err;
+	Client *client = _client_fds.find(client_fd)->second;
+
+	std::vector<Channel *> channels = client->getAllChannels();
+	for (std::vector<Channel *>::iterator it = channels.begin(); it != channels.end(); it++)
+	{
+		Channel *channel = (*it); 
+		if (!channel)
+			continue ;
+		channel_name = channel->getName();
+		err = channel->rmClient(client); //"lost connection" 
+		if (err == -1)
+			rmChannelFromMap(channel_name);		
+	}
+	rmClientFromMaps(client);
+} */
