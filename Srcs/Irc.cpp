@@ -45,21 +45,6 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 	std::cout << std::endl;
 }
 
-std::string	Irc::extractWord(std::stringstream& sstream)
-{
-	std::string	word;
-
-	sstream >> std::ws;
-	if (sstream.peek() == ':')
-	{
-		sstream.get();
-		std::getline(sstream, word);
-	}
-	else
-		std::getline(sstream, word, ' ');
-	return (word);
-}
-
 //methods (commands)
 int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 {

@@ -11,7 +11,6 @@ class Irc : public AServer
 private:
 //methods
 	void	command_switch(Client *sender, const std::string message, const int& new_client_fd);
-	std::string	extractWord(std::stringstream& sstream);
 
 public:
 //con- and destructer
