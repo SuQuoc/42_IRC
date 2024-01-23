@@ -22,8 +22,8 @@ public:
 	~Irc();
 
 //methods (commands)
-	int	JOIN(Client *sender, std::stringstream& sstream);
-	// void	PART(Client *sender, std::stringstream& sstream);
+	int		JOIN(Client *sender, std::stringstream& sstream);
+	void	PART(Client *sender, std::stringstream& sstream);
 	// void	QUIT(Client *sender, std::stringstream& sstream);
 	// void	KICK(Client *sender, std::stringstream& sstream);
 

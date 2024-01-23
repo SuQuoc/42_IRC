@@ -86,7 +86,6 @@ void	AServer::process_event(const int& client_fd)
 	
 	memset(buf, '\0', 513);
 	bytes_recieved = recv(client_fd, buf, sizeof(buf) - 1, 0);
-	std::cout << "bytes reicv: " << bytes_recieved << "|" << std::endl;
 	switch (bytes_recieved)
 	{
 		case (0):
@@ -101,8 +100,6 @@ void	AServer::process_event(const int& client_fd)
 		default:
 			std::stringstream	sstream(buf);
 			std::string str;
-			std::cout << "buf: " << buf << "|" << std::endl;
-			std::cout << "str: " << buf << "|" << std::endl;
 			while(splitMsg(sstream, str)) //we have to do a while loop cuz "CMD\nCMD1\nCMD3\n"
 			{
 				sender->loadMsgBuf(str); //take str as reference
@@ -138,7 +135,7 @@ void	AServer::addClientToFdMap(const int& client_fd)
 	_client_fds.insert(pair);
 }
 
-void 	AServer::rmClient(Client *client)
+void 	AServer::rmClientFromMaps(Client *client) //necessary? we always have fd if we have client
 {
 	if (!client) return;
 
@@ -148,12 +145,12 @@ void 	AServer::rmClient(Client *client)
 	client_name_map_iter_t it2 = _client_names.find(client->getNickname());
 	if (it2 == _client_names.end()) //this should never be triggered
 		return;
-	_client_fds.erase(it);;
+	_client_fds.erase(it);
 	_client_names.erase(it2);
 	delete client;
 }
 
-void 	AServer::rmClient(int client_fd)
+void 	AServer::rmClientFromMaps(int client_fd)
 {
 	client_fd_map_iter_t it = _client_fds.find(client_fd);
 	if (it == _client_fds.end())
@@ -161,18 +158,18 @@ void 	AServer::rmClient(int client_fd)
 	client_name_map_iter_t it2 = _client_names.find(it->second->getNickname());
 	if (it2 == _client_names.end()) //this should never be triggered
 		return;
+	delete it->second;
 	_client_fds.erase(it);
 	_client_names.erase(it2);
-	delete it->second; //will the it be corrupted? dont think so
 }
 
-void 	AServer::rmChannel(const std::string& channel_name)
+void 	AServer::rmChannelFromMap(const std::string& channel_name)
 {
 	channel_map_iter_t it = _channels.find(channel_name);
 	if (it == _channels.end())
 		return ;
-	_channels.erase(it);
 	delete it->second;
+	_channels.erase(it);
 }
 
 

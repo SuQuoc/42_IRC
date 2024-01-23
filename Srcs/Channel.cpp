@@ -26,21 +26,14 @@ void Channel::sendMsg(const Client *sender, const std::string &msg)
 	{
 		if(itr->members == sender)
 			continue ;
-		sendNonBlock(sender->getFd(), msg);
-	}
-}
-
-// need to rework !!! ???
-void Channel::sendNonBlock(const int &fd, const std::string &msg)
-{
-	//need to check if msg is not bigger than 512
-	if(send(fd, msg.c_str(), msg.size(), 0) == -1)
-	{
-		/* if (errno == EAGAIN || errno == EWOULDBLOCK)
-			continue ; */
-		std::cerr << "send faild in channel.cpp" << std::endl;
-		strerror(errno);
-		std::exit(EXIT_FAILURE);
+		if(send(itr->members->getFd(), msg.c_str(), msg.size(), 0) == -1)
+		{
+			/* if (errno == EAGAIN || errno == EWOULDBLOCK)
+				continue ; */
+			std::cerr << "send faild in channel.cpp" << std::endl;
+			strerror(errno);
+			std::exit(EXIT_FAILURE); //?
+		}
 	}
 }
 
@@ -68,21 +61,24 @@ void Channel::rmClient(const Client *executor, const Client *rm_client)
 	//need to  send a msg to the executor?
 }
 
-void Channel::rmClient(const Client *rm_client)
+//returns -1 if last client leaves channel
+int Channel::rmClient(const Client *rm_client)
 {
 	clients_itr itr;
 
 	if(!rm_client)
-		return ;
+		return -2; //should never happen
 	itr = getClient(rm_client);
 	if(itr == _clients.end())			// need to send a msg to the client ?
 	{
 		std::cout << "Placeholder in rmClient() in channel.hpp" << std::endl << "rm_client is not in channel!" << std::endl;
-		// 441 ERR_USERNOTINCHANNEL
-		return ;
+		return (ERR_USERNOTINCHANNEL);
 	}
+	sendMsg(rm_client, ":" + rm_client->getPrefix() + " PART " + _name + " :leaving\r\n");
 	_clients.erase(itr);
-	// send kick msg
+	if (_clients.empty())
+		return (-1);
+	return (0);
 }
 
 void	Channel::addClient(Client *new_client, bool is_operator)

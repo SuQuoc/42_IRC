@@ -51,9 +51,9 @@ protected: //protected? -> yes, if not i would need a getter for everything
 	// void	addNewPair(std::string user_name, const int& client_fd); //add more?
 	void	addClientToNameMap(std::string user_name, const int& client_fd); //add more?
 	void	addClientToFdMap(const int& client_fd);
-	void 	rmClient(Client *client); 
-	void 	rmClient(int client_fd); //which one makes more sense, do we need it for name too?
-	void 	rmChannel(const std::string& channel_name);
+	void 	rmClientFromMaps(Client *client); 
+	void 	rmClientFromMaps(int client_fd); //which one makes more sense, do we need it for name too?
+	void 	rmChannelFromMap(const std::string& channel_name);
 
 public:
 //con- and destructer

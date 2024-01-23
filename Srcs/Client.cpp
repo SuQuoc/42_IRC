@@ -85,7 +85,11 @@ void Client::leaveChannel(Channel *channel)
 		std::cout << "Error: leaveChannel()" << std::endl;
 		return ;
 	}
-	_channels.erase(std::find(_channels.begin(), _channels.end(), channel));
+	std::vector<Channel*>::iterator	it = std::find(_channels.begin(), _channels.end(), channel);
+
+	if(it == _channels.end())
+		return ;
+	_channels.erase(it);
 }
 
 void Client::sendTo(const std::string& msg, Client* recipient) const //should be done by the client??

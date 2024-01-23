@@ -12,12 +12,10 @@ Irc::~Irc() {}
 void	Irc::command_switch(Client *sender, const std::string message, const int& new_client_fd) //message-> 'request' better name? for us to discern
 {
 	std::cout << "message =" << message << "!" << std::endl;
-	// TESTING BLOCK
-	// (void)(sender);
-	// std::string msg = ":X 401 niki :No such nick/channel\r\n";
-	// send(new_client_fd, msg.c_str(), msg.size(), 0);
+
     std::stringstream	sstream(message); //message can't be empty
     std::string	cmd;
+
 	//this block checks for Prefix 
 	std::getline(sstream >> std::ws, cmd, ' ');
 	if (cmd.at(0) == ':')
@@ -29,42 +27,22 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 		}
 		std::getline(sstream, cmd, ' ');
 	}
-	std::cout << "cmd: " << cmd << std::endl;
-		
-		// std::getline(sstream, cmd); //? for CAP LS 
-		// std::getline(sstream, cmd, ' '); //?
-		//std::cout << "cmd2: " << cmd << "$" << std::endl;
 	if (cmd == "CAP") //we only take the last PASS
 		return ;
-	else if (cmd == "PASS") //we only take the last PASS
-	{
-		PASS(sender, sstream, new_client_fd);
-		std::cout << "PASS()" << new_client_fd << std::endl; //PASS(new_client_fd); // client can always try PASS although not registered ?
-	}
-	else if (cmd == "NICK") 
-	{
-		NICK(sender, sstream);
-		std::cout << "NICK() " << sender->getNickname() << std::endl;
-	}
-	else if (cmd == "USER")
-	{
-		USER(sender, sstream);
-		std::cout << "USER() " << sender->getUsername() << std::endl; 
-	}
+	else if (cmd == "PASS") PASS(sender, sstream, new_client_fd); //we only take the last PASS // client can always try PASS although not registered ?
+	else if (cmd == "NICK") NICK(sender, sstream);
+	else if (cmd == "USER")	USER(sender, sstream);
 	else if (sender->isRegistered() == false) sendError(ERR_NOTREGISTERED, sender, ""); //?
 	else if (cmd == "PRIVMSG") std::cout << "PRIVMSG()" << std::endl; //PRIVMSG();
-	else if (cmd == "JOIN")
-	{
-		JOIN(sender, sstream);
-		std::cout << "JOIN()" << std::endl; //JOIN();
-	} 
-	else if (cmd == "PART") std::cout << "PART()" << std::endl; //PART();
+	else if (cmd == "JOIN") JOIN(sender, sstream);
+	else if (cmd == "PART") PART(sender, sstream);
 	else if (cmd == "QUIT") std::cout << "QUIT()" << std::endl; //QUIT();
 	else if (cmd == "KICK") std::cout << "KICK()" << std::endl; //KICK();
 	else if (cmd == "INVITE") std::cout << "INVITE()" << std::endl; //INVITE();
 	else if (cmd == "MODE") std::cout << "MODE()" << std::endl; //MODE();
 	else if (cmd == "TOPIC") std::cout << "TOPIC()" << std::endl; //TOPIC();
 	else sendError(ERR_UNKNOWNCOMMAND, sender, cmd);
+	std::cout << std::endl;
 }
 
 std::string	Irc::extractWord(std::stringstream& sstream)
@@ -100,6 +78,7 @@ int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 		//if( != 0) ?
 		//	return ; ?
 	}
+	channel_itr = _channels.find(channel_name);
 	sender->joinChannel(channel_itr->second);
 	sendRPL(RPL_JOIN, sender, channel_name);
 	return (0);
@@ -115,25 +94,48 @@ int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 // 	return (message);
 // }
 
-// void	Irc::PART(Client *sender, std::stringstream &sstream)
-// {
-// 	//PART #channnel-name msg
-// 	Channel		*channel;
-// 	std::string	channel_name;
-// 	std::string	msg;
+void	Irc::PART(Client *sender, std::stringstream &sstream)
+{
+	channel_map_iter_t	channel_it;
+	std::stringstream	channel_name_sstream(extractWord(sstream));
+	std::string			channel_name;
+	std::string			part_msg;
+	int					err;
 
-// 	std::getline(sstream, channel_name);
-// 	std::getline(sstream, msg); //make message! //or do it in channel-object?
-// 	channel = sender.getChannel(channel_name)
-// 	if (channel == std::nullptr)
-// 		//send error to sender //or return if send is in client-class
-// 	if (channel_map.find(channel_name)->removeClient(sender, msg) == CHANNEL_DEAD); //delete channel when empty()
-// 			//get channel_name from channel-vector[i] //not needed here
-// 			delete channel through channel-map (channel_name);
-// 			erase channel from channel-map
-// 	sender->leaveChannel();
-// 	channel.sendMsg(sender, make_message(sender, msg, default));
-// }
+	for (int cnt = 0; cnt < 15 && std::getline(channel_name_sstream, channel_name, ','); cnt++) //std::getline returns eof when stream is empty?
+	{
+		channel_it = _channels.find(channel_name);
+		if (channel_it == _channels.end())
+		{
+			std::cout << "*Error: PART(): channel is not in channel map" << std::endl;
+			sendError(ERR_NOSUCHCHANNEL, sender, channel_name);
+			continue ;
+		}
+		if (channel_it->second == NULL) //necassery?
+		{
+			std::cout << "*Error: PART(): channel* == NULL" << std::endl;
+			sendError(ERR_NOSUCHCHANNEL, sender, channel_name);
+			continue ;
+		}
+		err = channel_it->second->rmClient(sender);
+		if (err > 0)
+		{
+			std::cout << "*Error: PART(): err > 0" << std::endl;
+			sendError(static_cast<IRC_ERR>(err), sender, channel_name);
+			continue ;
+		}
+		sender->leaveChannel(channel_it->second);
+
+		part_msg = ":" + sender->getPrefix() + " PART " + channel_name + " :leaving\r\n";
+		send(sender->getFd(), part_msg.c_str(), part_msg.size(), 0);
+		if (err == -1) //delete channel when empty()
+			rmChannelFromMap(channel_name);
+	}
+	if (!channel_name_sstream.eof())
+		return ;
+		//sendError(too many argument in list);
+}
+
 // void	QUIT(Client *sender, std::stringstream &sstream)
 // {
 // 	std::string	channel_name;
