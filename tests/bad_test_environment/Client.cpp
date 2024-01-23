@@ -1,4 +1,4 @@
-# include "../Includes/Client.hpp"
+# include "../../Includes/Client.hpp"
 
 Client::Client(int fd): _fd(fd), _authenticated(false), _registered(false), _server_op(false)
 {
@@ -22,7 +22,7 @@ void Client::deauthenticate() {_authenticated = false;}
 
 int Client::setNickname(const std::string& name)
 {
-	if (name.size() > 9 || containsForbiddenChars(name, " ,*?!@$:.#"))
+	if (name.size() > 9)
 	{
 		std::cout << "432 Erreonous nickname" << std::endl;
 		return ERR_ERRONEUSNICKNAME;

@@ -1,4 +1,4 @@
-#include "../Includes/Irc.hpp"
+#include "../../Includes/Irc.hpp"
 
 static int	stoi_(const std::string str)
 {
@@ -69,5 +69,5 @@ int main(const int argc, const char *argv[])
 	Client c1(10);
     Channel ch1(&c1, "Test");
     c1.joinChannel(&ch1);
-
+	c1.leaveChannel(&ch1);
 }

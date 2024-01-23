@@ -1,4 +1,4 @@
-#include "../Includes/Channel.hpp"
+#include "../../Includes/Channel.hpp"
 
 Channel::Channel(Client *owner, const std::string &channel_name) : _name(channel_name), _max_clients(MAX_CLIENTS)
 {

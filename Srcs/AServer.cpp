@@ -280,7 +280,10 @@ void	AServer::epollLoop()
 			}
 			//??????????v
 			else if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN))) //???????????????
-				close(events[i].data.fd);
+			{
+				close(events[i].data.fd); //Irc::QUIT() with a "client died" message ??!!
+				//clientDied() QUIT(); //writing own function similar to QUIT? it has to resolve the fd to the client
+			}
 			else
 			{
 				// std::cout << "process event" << std::endl;
