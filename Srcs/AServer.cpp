@@ -68,7 +68,7 @@ void	AServer::accept_connection()
 			return ;
 		}
 		//_client_fds[client_fd] = NULL;
-		addClientToFdMap(client_fd); //allocatoes the client object
+		addNewClientToFdMap(client_fd); //allocatoes the client object
 		std::cout << "Added new Client to Fd-Map!" << std::endl;
 	}
 }
@@ -116,7 +116,7 @@ void	AServer::failure_exit(const std::string& error_msg)
 	std::exit(errno); //errno?
 }
 
-void	AServer::addNewPair(Client *sender, const std::string& channel_name)
+void	AServer::addNewChannelToMap(Client *sender, const std::string& channel_name)
 {
 	Channel	*temp_channel = new Channel(sender, channel_name); //protect new?
 	std::pair<std::string, Channel*>	pair(channel_name, temp_channel);
@@ -128,7 +128,7 @@ void	AServer::addClientToNameMap(std::string user_name, const int& client_fd) //
 	std::pair<std::string, Client*>	pair(user_name, temp_client);
 	_client_names.insert(pair);
 }
-void	AServer::addClientToFdMap(const int& client_fd)
+void	AServer::addNewClientToFdMap(const int& client_fd)
 {
 	Client	*temp_client = new Client(client_fd); //protect new?
 	std::pair<int, Client*>	pair(client_fd, temp_client);

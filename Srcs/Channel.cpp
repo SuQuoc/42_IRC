@@ -57,12 +57,12 @@ void Channel::rmClient(const Client *executor, const Client *rm_client)
 		return ;
 		// :server-name 482 your-nickname #channel :You're not channel operator ?
 	}
-	rmClient(rm_client);
+	rmClient(rm_client); //needs pass error-codes to irc
 	//need to  send a msg to the executor?
 }
 
 //returns -1 if last client leaves channel
-int Channel::rmClient(const Client *rm_client)
+int Channel::rmClient(const Client *rm_client) //add 
 {
 	clients_itr itr;
 

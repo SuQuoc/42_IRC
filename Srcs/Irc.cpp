@@ -70,7 +70,7 @@ int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 		return (sendError(ERR_NOSUCHCHANNEL, sender, channel_name));
 	channel_itr = _channels.find(channel_name);
 	if(channel_itr == _channels.end()) // create if channel non exist ?
-		addNewPair(sender, channel_name);
+		addNewChannelToMap(sender, channel_name);
 	else
 	{
 		channel_itr->second->addClient(sender, false);
@@ -83,17 +83,9 @@ int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 	sendRPL(RPL_JOIN, sender, channel_name);
 	return (0);
 }
-// std::string	make_message(sender, msg, default)
-// {
-// 	std::string	message;
 
-// 	give message sender info
-// 	if (msg.empty())
-// 		message + default
-// 	message + msg;
-// 	return (message);
-// }
 
+//---------------------------------COMMANDS--------------------------------------------
 void	Irc::PART(Client *sender, std::stringstream &sstream)
 {
 	channel_map_iter_t	channel_it;
@@ -105,15 +97,9 @@ void	Irc::PART(Client *sender, std::stringstream &sstream)
 	for (int cnt = 0; cnt < 15 && std::getline(channel_name_sstream, channel_name, ','); cnt++) //std::getline returns eof when stream is empty?
 	{
 		channel_it = _channels.find(channel_name);
-		if (channel_it == _channels.end())
+		if (channel_it == _channels.end() || channel_it->second == NULL)
 		{
 			std::cout << "*Error: PART(): channel is not in channel map" << std::endl;
-			sendError(ERR_NOSUCHCHANNEL, sender, channel_name);
-			continue ;
-		}
-		if (channel_it->second == NULL) //necassery?
-		{
-			std::cout << "*Error: PART(): channel* == NULL" << std::endl;
 			sendError(ERR_NOSUCHCHANNEL, sender, channel_name);
 			continue ;
 		}
@@ -277,55 +263,6 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 	}
 }
 
-
-// void Irc::MODE(Client *sender, std::stringstream &sstream);
-// void Irc::TOPIC(Client *sender, std::stringstream &sstream);
-// void Irc::INVITE(Client *sender, std::stringstream &sstream);
-/*
-void Irc::PRIVMSG(Client *sender, std::stringstream &sstream);
-{
-	std::string recipient;
-	std::string message;
-    std::getline(sstream, recipient, ' '); //space 
-    std::getline(sstream, message);
-
-
-	SHOULD WE CHECK FOR:
-		- ':' ?? -> hexchat doesnt let u write /PRIVMSG
-		- if recpient == sender.getNickname()? -> u can write yourself a message in hexchat with /PRIVMSG
-		- /PRIVMSG for channels didnt work in Hexchat
-
-	if (recipient->empty()) 
-		sendError(ERR_); //need more params
-	if (recipient[0] == '#')
-		_channels.find(recipient)->second->NiksFunctionToRelay(sender, message) 
-		//if message is being concatinated in channel it maybe has to know what IRC CMD was triggered
-		//then u can use the NiksFunctionToRelay(sender, message) only for one specific IRC CMD and not for e.g. both PRIVMSG and JOIN
-	else
-		_usersNickname.find(recipient)->second->ClientMemberFunction(message)?
-}
-
-
-void Irc::MODE(Client *sender, std::stringstream &sstream);
-void Irc::TOPIC(Client *sender, std::stringstream &sstream);
-void Irc::INVITE(Client *sender, std::stringstream &sstream); */
-
-/* void Irc::MODE(Client *sender, std::stringstream &sstream)
-{
-	std::string channel_name;
-	std::string mode;
-	std::string str;
-	
-	getline(sstream, str, ' ');
-	while(str.empty() == true && sstream.eof() == true)			//loop until #
-		getline(sstream, str, ' ');
-	if(str[0] == '#')
-	{
-		channel_name = str;
-		//loop to + or - "mode"
-		if(+)
-			plus == true;
-		mode = str[0];
-		_channels[channel_name]->setMode(sender, mode);			//chatch error codes
-	}
-} */
+//void Irc::MODE(Client *sender, std::stringstream &sstream);
+//void Irc::TOPIC(Client *sender, std::stringstream &sstream);
+//void Irc::INVITE(Client *sender, std::stringstream &sstream);
