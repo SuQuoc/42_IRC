@@ -1,45 +1,4 @@
-
-#include "utils_string.hpp"
-
-std::vector<std::string> splitString(const std::string& input, const std::string& delimiter) 
-{
-    std::vector<std::string> result;
-
-    size_t start = 0;
-    size_t pos = input.find(delimiter);
-
-    while (pos != std::string::npos) 
-	{
-        result.push_back(input.substr(start, pos - start));
-        start = pos + delimiter.length();
-        pos = input.find(delimiter, start);
-    }
-    result.push_back(input.substr(start));
-    return result;
-}
-
-
-std::vector<std::string> splitIrcCmd(const std::string& input, const std::string& delimiter) 
-{
-    std::vector<std::string> result;
-
-    size_t start = 0;
-    size_t pos = input.find(delimiter);
-
-    while (pos != std::string::npos) 
-	{
-        result.push_back(input.substr(start, pos - start));
-        start = pos + delimiter.length();
-        if (input.at(start) == ':')
-        {
-            result.push_back(input.substr(start));
-            break;
-        }
-        pos = input.find(delimiter, start);
-    }
-    return result;
-}
-
+#include "../Includes/utils_string.hpp"
 
 bool containsForbiddenChars(const std::string& input, const std::string& forbiddenChars) 
 {
@@ -76,4 +35,19 @@ int    splitMsg(std::stringstream& sstream, std::string& str)
     while (!sstream.eof() && (sstream.peek() =='\n' || sstream.peek() == '\r'))
         sstream.get();
     return (cnt);
+}
+
+std::string extractWord(std::stringstream& sstream)
+{
+	std::string	word;
+
+	sstream >> std::ws;
+	if (sstream.peek() == ':')
+	{
+		sstream.get();
+		std::getline(sstream, word);
+	}
+	else
+		std::getline(sstream, word, ' ');
+	return (word);
 }

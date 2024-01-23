@@ -52,7 +52,7 @@ class Channel
 		void	sendMsg(const Client *sender, const std::string &msg);
 		void	addClient(Client *new_client, bool is_operator);
 		bool	isInChannel(const Client *client);
-		void	rmClient(const Client *rm_client);
+		int		rmClient(const Client *rm_client);
 		bool	isOperator(const Client *client);
 
 		void	setTopic(const std::string &name, const std::string &topic);
