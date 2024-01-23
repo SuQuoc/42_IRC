@@ -64,7 +64,7 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 	else if (cmd == "INVITE") std::cout << "INVITE()" << std::endl; //INVITE();
 	else if (cmd == "MODE") std::cout << "MODE()" << std::endl; //MODE();
 	else if (cmd == "TOPIC") std::cout << "TOPIC()" << std::endl; //TOPIC();
-	else std::cout << "sendError(ERR_UNKNOWNCOMMAND)" << std::endl; //sendError(ERR_UNKNOWNCOMMAND);
+	else sendError(ERR_UNKNOWNCOMMAND, sender, cmd);
 }
 
 std::string	Irc::extractWord(std::stringstream& sstream)

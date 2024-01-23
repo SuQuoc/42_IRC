@@ -9,19 +9,20 @@
 int	sendError(IRC_ERR error, Client* sender, const std::string& input)
 {
 	std::string err_message;
-	std::string server_name = "AfterLife";
+	std::string server_name = "AfterLife"; //put in constructor!
 	std::stringstream error_code;
 
 	error_code << error;
 	//NAME OF THE SERVER
 	// err_message = getName(); //Servername, doesnt end with a space
+	err_message += ":" + server_name + " " + error_code.str() + " " + sender->getUsername() + " ";
 	switch (error)
 	{
 		case ERR_NOSUCHNICK:
 			err_message += input + " :No such nick/channel"; //<nickname>
 			break;
 		case ERR_NOSUCHCHANNEL:
-			err_message += ":" + server_name + " " + error_code.str() + " " + sender->getUsername() + " " + input + " :No such channel\r\n"; //<channel name>
+			err_message += input + " :No such channel"; //<channel name>
 			break;
 		case ERR_CANNOTSENDTOCHAN:
 			err_message += input + " :Cannot send to channel"; //<channel name>
@@ -51,7 +52,7 @@ int	sendError(IRC_ERR error, Client* sender, const std::string& input)
 			err_message += input + " :is already on channel"; //<user> <channel>
 			break;
 		case ERR_NOTREGISTERED:
-			err_message += ":You have not registered";
+			err_message += input + ":You have not registered";
 			break;
 		case ERR_NEEDMOREPARAMS:
 			err_message += input + " :Not enough parameters"; //<command>
@@ -84,6 +85,7 @@ int	sendError(IRC_ERR error, Client* sender, const std::string& input)
 			std::cout << "CANT HAPPEN DUE TO ENUM" << std::endl;
 			//throw ;?
 	}
+	err_message += "\r\n";
 	if(send(sender->getFd(), err_message.c_str(), err_message.size(), 0) == -1) //--> turn this to a seperat function that sends in a while loop, others outside of switch can also use it 
 	{
 		std::cout << "Error send faild in Irc_error." << std::endl;
