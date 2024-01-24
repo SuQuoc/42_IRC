@@ -18,7 +18,7 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 	// send(new_client_fd, msg.c_str(), msg.size(), 0);
     std::stringstream	sstream(message); //message can't be empty
     std::string	cmd;
-	//this block checks for Prefix
+	//this block checks for Prefix 
 	std::getline(sstream >> std::ws, cmd, ' ');
 	if (cmd.at(0) == ':')
 	{
@@ -79,13 +79,6 @@ std::string	Irc::extractWord(std::stringstream& sstream)
 	}
 	else
 		std::getline(sstream, word, ' ');
-
-	if (word.empty() == false && (*(word.end() - 1) == '\n' || *(word.end() - 1) == '\r'))
-	{
-		word.erase(word.end() - 1);
-	}
-	if (!word.empty() && (*(word.end() - 1) == '\n' || *(word.end() - 1) == '\r'))
-		word.erase(word.end() - 1);
 	return (word);
 }
 
@@ -170,8 +163,6 @@ int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 //}
 
 
-//WIR NEHMEN AN DAS wir immer PASS NICK USER bekommen 
-//dh ich kann das bissi ändern
 void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client_fd)
 {
 	(void)new_client_fd;
@@ -190,22 +181,16 @@ void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client
 		std::cout << "pw = " << password << std::endl;
 		sender->deauthenticate();
 		sendError(ERR_PASSWDMISMATCH, sender, "");
+		//delete Client and the entry from the map if Pw is wrong? --> multiple PASS not possible then
 	}
 	return ;
 }
 
-//should we even check for the order or trust Hexchat --> trust Hexchat
-//OLD; else if (sender.isAuthenticated() == false) //didnt do PASS before NICK 
-    //    sendError(ERR_NOSUCHCHANNEL, sender); //or return 
-    // else if (!isNormed(nickname)) //
-        // sendError(ERR_NOSUCHCHANNEL, sender); //or return 
 void Irc::NICK(Client *sender, std::stringstream &sstream)
 {
     std::string nickname = extractWord(sstream);
     //if (sender->isAuthenticated() == false) //didnt do PASS before NICK 
     //    sendError(321, sender) and return; //theres no err_code for it
-	//protocol says u must send PASS before NICK and USER but what if client doesnt, what should be send back
-
 
 	client_name_map_iter_t it = _client_names.find(nickname); //key may not be used cuz it creates an entry --> actually good for us no?
 	if (it == _client_names.end()) //no one has the nickname
@@ -217,7 +202,10 @@ void Irc::NICK(Client *sender, std::stringstream &sstream)
 		}
 	}
 	else
+	{
 		sendError(ERR_NICKNAMEINUSE, sender, "");
+		return ;
+	}
 	if (sender->isRegistered())
 	{
 		addClientToNameMap(sender->getNickname(), sender->getFd());
@@ -238,7 +226,8 @@ void	Irc::USER(Client *sender, std::stringstream &sstream)
 	//for loop a lil weird but fine for now
     for (std::vector<std::string>::iterator it = info.begin(); it != info.end(); it++)
 		*it = extractWord(sstream);
-    sender->setUser(info[0], info[1], info[2], info[3]);
+    if (sender->setUser(info[0], info[1], info[2], info[3]) == ERR_NEEDMOREPARAMS)
+		sendError(ERR_NEEDMOREPARAMS, sender, "");
 	if (sender->isRegistered())
 	{
 		addClientToNameMap(sender->getNickname(), sender->getFd());
@@ -250,20 +239,17 @@ void	Irc::USER(Client *sender, std::stringstream &sstream)
 
 // ERR_NORECIPIENT
 // ERR_NOTEXTTOSEND 412
-// ERR_CANNOTSENDTOCHAN 404 WEIRD READ IT
-// ERR_TOOMANYTARGETS ?? I DONT WANT TO COVER THAT
 // ERR_NOSUCHNICK
+// ERR_CANNOTSENDTOCHAN 404 --> unecessary, mode n,m, and v not required
+// ERR_TOOMANYTARGETS ?? I DONT WANT TO COVER THAT
 void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 {
-	std::string recipient;
-	std::string message;
-    std::getline(sstream, recipient, ' '); //space 
-    std::getline(sstream, message); //semicolon ignored at the moment
+	std::string recipient = extractWord(sstream);
+	std::string message = extractWord(sstream);
 
-	message = "PRIVMSG " + recipient + " " + message;
+	message = ":" + sender->getPrefix() + "PRIVMSG " + recipient + " :" + message;
 	
 	// SHOULD WE CHECK FOR:
-		// - ':' ?? -> hexchat doesnt let u write /PRIVMSG
 		// - if recpient == sender.getNickname()? -> u can write yourself a message in hexchat with /PRIVMSG
 		// - /PRIVMSG for channels didnt work in Hexchat
 
@@ -271,18 +257,19 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 		sendError(ERR_NORECIPIENT, sender, ""); //need more params
 	else if (message.empty())
 		sendError(ERR_NOTEXTTOSEND, sender, ""); //need more params
-	else if (recipient[0] == '#')
+	else if (recipient.at(0) == '#')
 	{
 		channel_map_iter_t rec_it = _channels.find(recipient);
 		if (rec_it == _channels.end())
-			sendError(ERR_NOSUCHCHANNEL, sender, ""); //NO SUCH CHANNEL
+			sendError(ERR_NOSUCHCHANNEL, sender, "");
 		else
-		{
-			sender->sendTo(message, rec_it->second); //Client should call a function from Channel
-			//it->second->NiksFunctionToRelay(sender, message);
-			//if message is being concatinated in channel it maybe has to know what IRC CMD was triggered
-			//then u can use the NiksFunctionToRelay(sender, message) only for one specific IRC CMD and not for e.g. both PRIVMSG and JOIN
-		}
+			rec_it->second->sendMsg(sender, message);	
+	}
+	else if (recipient.find('@') != std::string::npos) //why? so uneccesary 
+	{
+		std::cout << "";
+		//loop through map and check for client prefix, should we implement this even?? --> im against it
+		//another map?? or vector with prefix??
 	}
 	else
 	{
@@ -290,7 +277,7 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 		if (rec_it == _client_names.end())
 			sendError(ERR_NOSUCHNICK, sender, ""); //NO SUCH NICK
 		else
-			sender->sendTo(message, rec_it->second); //this function calls Channel member
+			sender->sendTo(message, rec_it->second); //should be done by the server??
 	}
 }
 

@@ -32,7 +32,7 @@ protected: //protected? -> yes, if not i would need a getter for everything
 	const std::string	_password;
 	int		_epoll_fd;
 	int		_sock_fd;
-
+	//server name? --> passed in constructor
 	typedef std::map<std::string, Channel*>::iterator	channel_map_iter_t;
 	typedef std::map<std::string, Client*>::iterator	client_name_map_iter_t;
 	typedef std::map<int, Client*>::iterator			client_fd_map_iter_t;
@@ -52,6 +52,9 @@ protected: //protected? -> yes, if not i would need a getter for everything
 	// void	addNewPair(std::string user_name, const int& client_fd); //add more?
 	void	addClientToNameMap(std::string user_name, const int& client_fd); //add more?
 	void	addClientToFdMap(const int& client_fd);
+	void 	rmClient(Client *client); 
+	void 	rmClient(int client_fd); //which one makes more sense, do we need it for name too?
+	void 	rmChannel(const std::string& channel_name);
 
 public:
 //con- and destructer
