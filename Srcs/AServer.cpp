@@ -93,10 +93,6 @@ void	AServer::process_event(const int& client_fd)
 	std::cout << "bytes reicv: " << bytes_recieved << "|" << std::endl;
 	switch (bytes_recieved)
 	{
-		case (0):
-			//disconnect_client(); !!!!
-			close(client_fd); //already in client destructor
-			return ;
 		case (-1):
 			/* if (errno == EAGAIN || errno == EWOULDBLOCK) //leave it in? //potential endless-loop?
 				break ; */ 			//loops when ctrl-D is pressed and waits for enter from same client
