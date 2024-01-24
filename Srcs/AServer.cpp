@@ -27,10 +27,10 @@ AServer::~AServer()
 {
 	for (channel_map_iter_t it = _channels.begin(); it != _channels.end(); it++)
 		delete it->second;
-	for (client_name_map_iter_t it = _client_names.begin(); it != _client_names.end(); it++)
-		delete it->second;
-	/* for (client_fd_map_iter_t it = _client_fds.begin(); it != _client_fds.end(); it++)
+	/* for (client_name_map_iter_t it = _client_names.begin(); it != _client_names.end(); it++)
 		delete it->second; */
+	for (client_fd_map_iter_t it = _client_fds.begin(); it != _client_fds.end(); it++)
+		delete it->second;
 	if (_epoll_fd != -1)
 		close(_epoll_fd);
 	if (_sock_fd != -1)

@@ -42,7 +42,7 @@ int	sendError(IRC_ERR error, Client* sender, const std::string& input)
 		case ERR_NICKNAMEINUSE:
 			err_message += input + " :Nickname is already in use"; //<nick>
 			break;
-		case ERR_USERNOTINCHANNEL:
+		case ERR_USERNOTINCHANNEL: //for modes
 			err_message += input + " :They aren't on that channel"; //<nick> <channel>
 			break;
 		case ERR_NOTONCHANNEL:

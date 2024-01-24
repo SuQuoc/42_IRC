@@ -48,6 +48,7 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 }
 
 //methods (commands)
+//---------------------------------COMMANDS--------------------------------------------
 int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 {
 	channel_map_iter_t channel_itr;
@@ -71,18 +72,18 @@ int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 	return (0);
 }
 
-
-//---------------------------------COMMANDS--------------------------------------------
 void	Irc::PART(Client *sender, std::stringstream &sstream)
 {
 	channel_map_iter_t	channel_it;
 	std::stringstream	channel_name_sstream(extractWord(sstream));
 	std::string			channel_name;
 	std::string			part_msg;
+	int					cnt = 0;
 	int					err;
 
-	for (int cnt = 0; cnt < 15 && std::getline(channel_name_sstream, channel_name, ','); cnt++) //std::getline returns eof when stream is empty?
+	while (cnt < 15 && std::getline(channel_name_sstream, channel_name, ',')) //tested (not thoroughly)
 	{
+		cnt++;
 		channel_it = _channels.find(channel_name);
 		if (channel_it == _channels.end() || channel_it->second == NULL)
 		{
@@ -104,9 +105,10 @@ void	Irc::PART(Client *sender, std::stringstream &sstream)
 		if (err == -1) //delete channel when empty()
 			rmChannelFromMap(channel_name);
 	}
+	if (cnt == 0)
+		sendError(ERR_NEEDMOREPARAMS, sender, "");
 	if (!channel_name_sstream.eof())
-		return ;
-		//sendError(too many argument in list);
+		return ; //sendError(too many argument in list);
 }
 
 //cant use PART
@@ -222,7 +224,7 @@ void	Irc::USER(Client *sender, std::stringstream &sstream)
 // ERR_NOSUCHNICK
 // ERR_CANNOTSENDTOCHAN 404 --> unecessary, mode n,m, and v not required
 // ERR_TOOMANYTARGETS ?? I DONT WANT TO COVER THAT
-void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
+void Irc::PRIVMSG(Client *sender, std::stringstream &sstream) //can have list (,), doesn't send newline
 {
 	std::string recipient = extractWord(sstream);
 	std::string message = extractWord(sstream);
@@ -261,22 +263,22 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 //void Irc::TOPIC(Client *sender, std::stringstream &sstream);
 //void Irc::INVITE(Client *sender, std::stringstream &sstream);
 
-/* void Irc::clientDied(int client_fd) //pure virtual or put this as a normal function in AServer
-{
-	std::string	channel_name;
-	int err;
-	Client *client = _client_fds.find(client_fd)->second;
+// void Irc::clientDied(int client_fd) //pure virtual or put this as a normal function in AServer
+// {
+// 	std::string	channel_name;
+// 	int err;
+// 	Client *client = _client_fds.find(client_fd)->second;
 
-	std::vector<Channel *> channels = client->getAllChannels();
-	for (std::vector<Channel *>::iterator it = channels.begin(); it != channels.end(); it++)
-	{
-		Channel *channel = (*it); 
-		if (!channel)
-			continue ;
-		channel_name = channel->getName();
-		err = channel->rmClient(client); //"lost connection" 
-		if (err == -1)
-			rmChannelFromMap(channel_name);		
-	}
-	rmClientFromMaps(client);
-} */
+// 	std::vector<Channel *> channels = client->getAllChannels();
+// 	for (std::vector<Channel *>::iterator it = channels.begin(); it != channels.end(); it++)
+// 	{
+// 		Channel *channel = (*it); 
+// 		if (!channel)
+// 			continue ;
+// 		channel_name = channel->getName();
+// 		err = channel->rmClient(client); //"lost connection" 
+// 		if (err == -1)
+// 			rmChannelFromMap(channel_name);		
+// 	}
+// 	rmClientFromMaps(client);
+// }
