@@ -1,6 +1,10 @@
 #include "../Includes/Channel.hpp"
 
-Channel::Channel(Client *owner, const std::string &channel_name) : _name(channel_name), _max_clients(MAX_CLIENTS)
+Channel::Channel(Client *owner, const std::string &channel_name) : 
+_name(channel_name),
+_restrict_topic(true),
+_invite_only(false),
+_max_clients(MAX_CLIENTS)
 {
 	if(owner == NULL)
 	{

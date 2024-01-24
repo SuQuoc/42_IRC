@@ -42,7 +42,7 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 	else if (cmd == "KICK") std::cout << "KICK()" << std::endl; //KICK();
 	else if (cmd == "INVITE") std::cout << "INVITE()" << std::endl; //INVITE();
 	else if (cmd == "MODE") std::cout << "MODE()" << std::endl; //MODE();
-	else if (cmd == "TOPIC") std::cout << "TOPIC()" << std::endl; //TOPIC();
+	else if (cmd == "TOPIC") TOPIC(sender, sstream);
 	else if (cmd == "OPER") OPER(sender, sstream);
 	else sendError(ERR_UNKNOWNCOMMAND, sender, cmd);
 	std::cout << std::endl;
@@ -359,12 +359,13 @@ void Irc::TOPIC(Client *sender, std::stringstream &sstream)
 	}
 	else
 	{
-		// IRC_ERR er = 381;
-		// int err = ; //channel->setTopic(sender->getNickname(), topic);
-		// if (err != 0)
-			// sendError(err, sender, channel_name);
-		// else 
-			// std::string input = channel_name + " :" + "channel->getTopic()";
-			// std::cout << "sendRPL(TOPIC_SET, sender, )";
+		int err = channel->setTopic(sender->getNickname(), topic);
+		if (err != 0)
+			sendError(static_cast<IRC_ERR>(err), sender, channel_name);
+		else
+		{
+			std::string input = channel_name + " :" + "channel->getTopic()";
+			// sendRPL(TOPIC_SET, sender, input);
+		}
 	}
 }
