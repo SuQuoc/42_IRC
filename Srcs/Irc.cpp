@@ -122,6 +122,7 @@ void	Irc::QUIT(Client *sender, std::stringstream &sstream)
 {
 	std::string	channel_name;
 	std::string	msg = extractWord(sstream);
+	Channel		*channel; 
 	int err;
 	if (msg.empty())
 		msg = "disconnected"; //where will the entire message be concatinated? in channel?
@@ -129,7 +130,7 @@ void	Irc::QUIT(Client *sender, std::stringstream &sstream)
 	std::vector<Channel *> channels = sender->getAllChannels();
 	for (std::vector<Channel *>::iterator it = channels.begin(); it != channels.end(); it++)
 	{
-		Channel *channel = (*it); 
+		channel = (*it); 
 		if (!channel) //necessary? checking if the channel is in map or null seems overkill, since this case should never happen
 			continue ;
 		// sender->leaveChannel(channel); //unecessary ?? he will leave entire server
@@ -319,4 +320,41 @@ std::string Irc::createMsg(Client *sender, const std::string& cmd, const std::st
         return msg;
     std::string message = ":" + sender->getPrefix() + " " + cmd + " " + recipient + " :" + msg + "\r\n"; //PART uses same method -> extra function?
     return message;
+}
+
+void Irc::TOPIC(Client *sender, std::stringstream &sstream)
+{
+	std::string channel_name = extractWord(sstream);
+	std::string topic = extractWord(sstream);
+	channel_map_iter_t channel_it;
+	Channel *channel;
+
+	if (channel_name.empty())
+		sendError(ERR_NEEDMOREPARAMS, sender, "");
+
+	channel_it = _channels.find(channel_name);
+	if (channel_it == _channels.end())
+		return ; //no error listed in protocoll
+	
+	channel = channel_it->second;
+	if (topic.empty()) //only wants 
+	{
+		if ("!channel->getTopic().empty()")
+		{
+			std::string input = channel_name + " :" + "channel->getTopic()";
+			sendRPL(RPL_TOPIC, sender, input);
+		}
+		else
+			sendRPL(RPL_NOTOPIC, sender, channel_name);
+	}
+	else
+	{
+		// IRC_ERR er = 381;
+		// int err = ; //channel->setTopic(sender->getNickname(), topic);
+		// if (err != 0)
+			// sendError(err, sender, channel_name);
+		// else 
+			// std::string input = channel_name + " :" + "channel->getTopic()";
+			// std::cout << "sendRPL(TOPIC_SET, sender, )";
+	}
 }
