@@ -30,7 +30,7 @@ private:
 	std::vector<Channel *> _channels;
 
 	bool _authenticated;
-	bool _registered; //?
+	bool _registered;
 	bool _server_op;
 
 	Client(const Client&);

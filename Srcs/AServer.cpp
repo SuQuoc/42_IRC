@@ -68,7 +68,7 @@ void	AServer::accept_connection()
 			return ;
 		}
 		//_client_fds[client_fd] = NULL;
-		addClientToFdMap(client_fd); //allocatoes the client object
+		addNewClientToFdMap(client_fd); //allocatoes the client object
 		std::cout << "Added new Client to Fd-Map!" << std::endl;
 	}
 }
@@ -90,7 +90,6 @@ void	AServer::process_event(const int& client_fd)
 	
 	memset(buf, '\0', 513);
 	bytes_recieved = recv(client_fd, buf, sizeof(buf) - 1, 0);
-	std::cout << "bytes reicv: " << bytes_recieved << "|" << std::endl;
 	switch (bytes_recieved)
 	{
 		case (-1):
@@ -107,8 +106,6 @@ void	AServer::process_event(const int& client_fd)
 		default:
 			std::stringstream	sstream(buf);
 			std::string str;
-			std::cout << "buf: " << buf << "|" << std::endl;
-			std::cout << "str: " << buf << "|" << std::endl;
 			while(splitMsg(sstream, str)) //we have to do a while loop cuz "CMD\nCMD1\nCMD3\n"
 			{
 				sender->loadMsgBuf(str); //take str as reference
@@ -125,7 +122,7 @@ void	AServer::failure_exit(const std::string& error_msg)
 	std::exit(errno); //errno?
 }
 
-void	AServer::addNewPair(Client *sender, const std::string& channel_name)
+void	AServer::addNewChannelToMap(Client *sender, const std::string& channel_name)
 {
 	Channel	*temp_channel = new Channel(sender, channel_name); //protect new?
 	std::pair<std::string, Channel*>	pair(channel_name, temp_channel);
@@ -137,14 +134,14 @@ void	AServer::addClientToNameMap(std::string user_name, const int& client_fd) //
 	std::pair<std::string, Client*>	pair(user_name, temp_client);
 	_client_names.insert(pair);
 }
-void	AServer::addClientToFdMap(const int& client_fd)
+void	AServer::addNewClientToFdMap(const int& client_fd)
 {
 	Client	*temp_client = new Client(client_fd); //protect new?
 	std::pair<int, Client*>	pair(client_fd, temp_client);
 	_client_fds.insert(pair);
 }
 
-void 	AServer::rmClient(Client *client)
+void 	AServer::rmClientFromMaps(Client *client) //necessary? we always have fd if we have client
 {
 	if (!client) return;
 
@@ -154,12 +151,12 @@ void 	AServer::rmClient(Client *client)
 	client_name_map_iter_t it2 = _client_names.find(client->getNickname());
 	if (it2 == _client_names.end()) //this should never be triggered
 		return;
-	_client_fds.erase(it);;
+	_client_fds.erase(it);
 	_client_names.erase(it2);
 	delete client;
 }
 
-void 	AServer::rmClient(int client_fd)
+void 	AServer::rmClientFromMaps(int client_fd)
 {
 	client_fd_map_iter_t it = _client_fds.find(client_fd);
 	if (it == _client_fds.end())
@@ -167,18 +164,18 @@ void 	AServer::rmClient(int client_fd)
 	client_name_map_iter_t it2 = _client_names.find(it->second->getNickname());
 	if (it2 == _client_names.end()) //this should never be triggered
 		return;
+	delete it->second;
 	_client_fds.erase(it);
 	_client_names.erase(it2);
-	delete it->second; //will the it be corrupted? dont think so
 }
 
-void 	AServer::rmChannel(const std::string& channel_name)
+void 	AServer::rmChannelFromMap(const std::string& channel_name)
 {
 	channel_map_iter_t it = _channels.find(channel_name);
 	if (it == _channels.end())
 		return ;
-	_channels.erase(it);
 	delete it->second;
+	_channels.erase(it);
 }
 
 
@@ -285,7 +282,10 @@ void	AServer::epollLoop()
 			}
 			//??????????v
 			else if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN))) //???????????????
-				close(events[i].data.fd);
+			{
+				close(events[i].data.fd); //Irc::QUIT() with a "client died" message ??!!
+				//clientDied() QUIT(); //writing own function similar to QUIT? it has to resolve the fd to the client
+			}
 			else
 			{
 				// std::cout << "process event" << std::endl;

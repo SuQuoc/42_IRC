@@ -11,7 +11,6 @@ class Irc : public AServer
 private:
 //methods
 	void	command_switch(Client *sender, const std::string message, const int& new_client_fd);
-	std::string	extractWord(std::stringstream& sstream);
 
 public:
 //con- and destructer
@@ -22,9 +21,9 @@ public:
 	~Irc();
 
 //methods (commands)
-	int	JOIN(Client *sender, std::stringstream& sstream);
-	// void	PART(Client *sender, std::stringstream& sstream);
-	// void	QUIT(Client *sender, std::stringstream& sstream);
+	int		JOIN(Client *sender, std::stringstream& sstream);
+	void	PART(Client *sender, std::stringstream& sstream);
+	void	QUIT(Client *sender, std::stringstream& sstream);
 	// void	KICK(Client *sender, std::stringstream& sstream);
 
 	void	PASS(Client *sender, std::stringstream& sstream, const int& new_client_fd);

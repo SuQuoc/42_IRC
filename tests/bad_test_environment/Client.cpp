@@ -1,4 +1,4 @@
-# include "../Includes/Client.hpp"
+# include "../../Includes/Client.hpp"
 
 Client::Client(int fd): _fd(fd), _authenticated(false), _registered(false), _server_op(false)
 {
@@ -22,7 +22,7 @@ void Client::deauthenticate() {_authenticated = false;}
 
 int Client::setNickname(const std::string& name)
 {
-	if (name.size() > 9 || containsForbiddenChars(name, " ,*?!@$:.#"))
+	if (name.size() > 9)
 	{
 		std::cout << "432 Erreonous nickname" << std::endl;
 		return ERR_ERRONEUSNICKNAME;
@@ -76,6 +76,7 @@ void Client::joinChannel(Channel *channel)
 		return ;
 	}
 	_channels.push_back(channel);
+	_channels.at(0)->sendMsg(this, "Hello Test!!");
 }
 
 void Client::leaveChannel(Channel *channel)
@@ -85,11 +86,7 @@ void Client::leaveChannel(Channel *channel)
 		std::cout << "Error: leaveChannel()" << std::endl;
 		return ;
 	}
-	std::vector<Channel*>::iterator	it = std::find(_channels.begin(), _channels.end(), channel);
-
-	if(it == _channels.end())
-		return ;
-	_channels.erase(it);
+	_channels.erase(std::find(_channels.begin(), _channels.end(), channel));
 }
 
 void Client::sendTo(const std::string& msg, Client* recipient) const //should be done by the client??

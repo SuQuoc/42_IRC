@@ -24,7 +24,7 @@
 
 class AServer
 {
-protected: //protected? -> yes, if not i would need a getter for everything
+protected:
 	std::map<std::string, Channel*>	_channels;
 	std::map<std::string, Client*>	_client_names;
 	std::map<int, Client*>			_client_fds;
@@ -48,13 +48,12 @@ protected: //protected? -> yes, if not i would need a getter for everything
 	struct addrinfo*	getIpAdressToBind(const int& port);
 	virtual void	command_switch(Client *sender, const std::string message, const int& new_client_fd) = 0;
 
-	void	addNewPair(Client *sender, const std::string& channel_name);
-	// void	addNewPair(std::string user_name, const int& client_fd); //add more?
-	void	addClientToNameMap(std::string user_name, const int& client_fd); //add more?
-	void	addClientToFdMap(const int& client_fd);
-	void 	rmClient(Client *client); 
-	void 	rmClient(int client_fd); //which one makes more sense, do we need it for name too?
-	void 	rmChannel(const std::string& channel_name);
+	void	addNewChannelToMap(Client *sender, const std::string& channel_name);
+	void	addClientToNameMap(std::string user_name, const int& client_fd);
+	void	addNewClientToFdMap(const int& client_fd);
+	void 	rmClientFromMaps(Client *client); 
+	void 	rmClientFromMaps(int client_fd);
+	void 	rmChannelFromMap(const std::string& channel_name);
 
 public:
 //con- and destructer

@@ -1,5 +1,4 @@
 
-#include "irc.hpp"
 
 #include <iostream>
 #include <sstream>

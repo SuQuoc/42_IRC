@@ -1,4 +1,4 @@
-#include "../Includes/Channel.hpp"
+#include "../../Includes/Channel.hpp"
 
 Channel::Channel(Client *owner, const std::string &channel_name) : _name(channel_name), _max_clients(MAX_CLIENTS)
 {
@@ -26,14 +26,22 @@ void Channel::sendMsg(const Client *sender, const std::string &msg)
 	{
 		if(itr->members == sender)
 			continue ;
-		if(send(itr->members->getFd(), msg.c_str(), msg.size(), 0) == -1)
-		{
-			/* if (errno == EAGAIN || errno == EWOULDBLOCK)
-				continue ; */
-			std::cerr << "send faild in channel.cpp" << std::endl;
-			strerror(errno);
-			std::exit(EXIT_FAILURE); //?
-		}
+		sendNonBlock(sender->getFd(), msg);
+	}
+	std::cout << "Hello i am a channel member function who got passed a Client pointer through \"this\" keyword\n";
+}
+
+// need to rework !!! ???
+void Channel::sendNonBlock(const int &fd, const std::string &msg)
+{
+	//need to check if msg is not bigger than 512
+	if(send(fd, msg.c_str(), msg.size(), 0) == -1)
+	{
+		/* if (errno == EAGAIN || errno == EWOULDBLOCK)
+			continue ; */
+		std::cerr << "send faild in channel.cpp" << std::endl;
+		strerror(errno);
+		std::exit(EXIT_FAILURE);
 	}
 }
 
@@ -57,28 +65,25 @@ void Channel::rmClient(const Client *executor, const Client *rm_client)
 		return ;
 		// :server-name 482 your-nickname #channel :You're not channel operator ?
 	}
-	rmClient(rm_client); //needs pass error-codes to irc
+	rmClient(rm_client);
 	//need to  send a msg to the executor?
 }
 
-//returns -1 if last client leaves channel
-int Channel::rmClient(const Client *rm_client) //add 
+void Channel::rmClient(const Client *rm_client)
 {
 	clients_itr itr;
 
 	if(!rm_client)
-		return -2; //should never happen
+		return ;
 	itr = getClient(rm_client);
 	if(itr == _clients.end())			// need to send a msg to the client ?
 	{
 		std::cout << "Placeholder in rmClient() in channel.hpp" << std::endl << "rm_client is not in channel!" << std::endl;
-		return (ERR_USERNOTINCHANNEL);
+		// 441 ERR_USERNOTINCHANNEL
+		return ;
 	}
-	sendMsg(rm_client, ":" + rm_client->getPrefix() + " PART " + _name + " :leaving\r\n");
 	_clients.erase(itr);
-	if (_clients.empty())
-		return (-1);
-	return (0);
+	// send kick msg
 }
 
 void	Channel::addClient(Client *new_client, bool is_operator)
@@ -166,7 +171,10 @@ void	Channel::setTopic(const std::string &name, const std::string &topic)
 //			getter
 std::vector<Channel::Member_t>::iterator Channel::getClient(const Client *client)
 {
-	return std::find(_clients.begin(), _clients.end(), client);
+	for(clients_itr itr = _clients.begin(); itr != _clients.end(); itr++)
+		if(itr->members == client)
+			return itr;
+	return _clients.end();
 }
 
 std::vector<Channel::Member_t>::iterator Channel::getClient(const std::string _name)
