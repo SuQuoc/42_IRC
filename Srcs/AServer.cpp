@@ -43,7 +43,7 @@ void	AServer::accept_connection()
 	struct sockaddr_in	client_addr;
 	struct epoll_event	ev_temp;
 	socklen_t			client_addr_len = sizeof(client_addr);
-	int		client_fd;
+	int					client_fd;
 
 	while (1)
 	{
@@ -73,8 +73,13 @@ void	AServer::accept_connection()
 	}
 }
 
-
-
+void	AServer::disconnect_client(const int& client_fd)
+{
+	(void)client_fd;
+	/* Client *client = _client_fds.find(client_fd)->second;
+	close(client_fd);
+	delete client; */
+}
 
 void	AServer::process_event(const int& client_fd)
 {
@@ -88,15 +93,17 @@ void	AServer::process_event(const int& client_fd)
 	bytes_recieved = recv(client_fd, buf, sizeof(buf) - 1, 0);
 	switch (bytes_recieved)
 	{
-		case (0):
-			//disconnect_client(); !!!!
-			//close(client_fd); //already in client destructor
-			return ;
 		case (-1):
 			/* if (errno == EAGAIN || errno == EWOULDBLOCK) //leave it in? //potential endless-loop?
 				break ; */ 			//loops when ctrl-D is pressed and waits for enter from same client
 			std::cerr << "Error: couldn't recieve data :" << std::strerror(errno) << std::endl;
-			//return ;
+			return ;
+		case (0):
+			//disconnect_client(client_fd);
+			close(client_fd);
+			return ;
+		case (1):
+			return ;
 		default:
 			std::stringstream	sstream(buf);
 			std::string str;
@@ -251,9 +258,10 @@ void	AServer::createEpoll()
 void	AServer::epollLoop()
 {
 	struct epoll_event	events[1000]; //1000?
-	int 	ev_cnt;
+	std::string			str = "run";
+	int 				ev_cnt;
 
-	while (1)
+	while (str != "exit")
 	{
 		//std::cout << "loop" << std::endl;
 		ev_cnt = epoll_wait(_epoll_fd, events, 1000, 1000); //1000? //-1?
@@ -263,29 +271,16 @@ void	AServer::epollLoop()
 		{
 			std::cout << "fd: " << events[i].data.fd << std::endl;
 			if (events[i].data.fd == _sock_fd)
-			{
-				std::cout << "accept connection" << std::endl;
 				accept_connection();
-			}
 			else if (events[i].data.fd == STDIN_FILENO)
-			{
-				std::string	str;
-				std::cout << "stdin: ";
 				std::cin >> str;
-				if (str == "exit")
-					return ;
-			}
-			//??????????v
 			else if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN))) //???????????????
 			{
 				close(events[i].data.fd); //Irc::QUIT() with a "client died" message ??!!
 				//clientDied() QUIT(); //writing own function similar to QUIT? it has to resolve the fd to the client
 			}
 			else
-			{
-				// std::cout << "process event" << std::endl;
 				process_event(events[i].data.fd); //recv
-			}
 		}
 	}
 	//close client fds in epoll?

@@ -51,8 +51,10 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 //methods (commands)
 int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 {
+	std::string channel_list = extractWord(sstream);
 	channel_map_iter_t channel_itr;
-	std::string	channel_name = extractWord(sstream);
+	std::string	channel_name;
+	std::string	stream_str;
 
 	if(!(channel_name[0] == '#' || channel_name[0] == '&') || channel_name.size() > 200) //check if channel_name is valid
 		return (sendError(ERR_NOSUCHCHANNEL, sender, channel_name));
