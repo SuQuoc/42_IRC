@@ -75,6 +75,7 @@ void	AServer::accept_connection()
 
 void	AServer::disconnect_client(const int& client_fd)
 {
+	(void)client_fd;
 	/* Client *client = _client_fds.find(client_fd)->second;
 	close(client_fd);
 	delete client; */
@@ -270,27 +271,16 @@ void	AServer::epollLoop()
 		{
 			std::cout << "fd: " << events[i].data.fd << std::endl;
 			if (events[i].data.fd == _sock_fd)
-			{
-				std::cout << "accept connection" << std::endl;
 				accept_connection();
-			}
 			else if (events[i].data.fd == STDIN_FILENO)
-			{
-				std::cout << "stdin: ";
 				std::cin >> str;
-				str = "exit";
-			}
-			//??????????v
 			else if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN))) //???????????????
 			{
 				close(events[i].data.fd); //Irc::QUIT() with a "client died" message ??!!
 				//clientDied() QUIT(); //writing own function similar to QUIT? it has to resolve the fd to the client
 			}
 			else
-			{
-				// std::cout << "process event" << std::endl;
 				process_event(events[i].data.fd); //recv
-			}
 		}
 	}
 	//close client fds in epoll?
