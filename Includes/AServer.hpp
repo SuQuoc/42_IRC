@@ -42,6 +42,7 @@ protected:
 	AServer(std::string password);
 //methods
 	void	accept_connection();
+	void	disconnect_client(const int& client_fd);
 	void	process_event(const int& client_sock);
 	void	failure_exit(const std::string& error_msg); //exits?
 	struct addrinfo*	getIpAdressToBind(const int& port);
