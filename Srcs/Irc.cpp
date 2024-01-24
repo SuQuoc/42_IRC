@@ -50,26 +50,32 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 //methods (commands)
 int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 {
-	std::string channel_list = extractWord(sstream);
+	std::string str_names_list = extractWord(sstream);
+	std::string str_keys_list = extractWord(sstream);
+	std::stringstream stream_name(str_names_list);
+	std::stringstream stream_key(str_keys_list);
 	channel_map_iter_t channel_itr;
 	std::string	channel_name;
-	std::string	stream_str;
+	std::string	channel_key;
 
-	if(!(channel_name[0] == '#' || channel_name[0] == '&') || channel_name.size() > 200) //check if channel_name is valid
-		return (sendError(ERR_NOSUCHCHANNEL, sender, channel_name));
-	channel_itr = _channels.find(channel_name);
-	if(channel_itr == _channels.end()) // create if channel non exist ?
-		addNewChannelToMap(sender, channel_name);
-	else
+	while(getline(stream_name, channel_name, ',') && getline(stream_key, channel_key, ','))
 	{
-		channel_itr->second->addClient(sender, false);
-		//if error send error msg to client ?
-		//if( != 0) ?
-		//	return ; ?
+		if(!(channel_name[0] == '#' || channel_name[0] == '&') || channel_name.size() > 200) //check if channel_name is valid
+			return (sendError(ERR_NOSUCHCHANNEL, sender, channel_name));
+		channel_itr = _channels.find(channel_name);
+		if(channel_itr == _channels.end()) // create if channel non exist ?
+			addNewChannelToMap(sender, channel_name);
+		else
+		{
+			channel_itr->second->addClient(sender, false);
+			//if error send error msg to client ?
+			//if( != 0) ?
+			//	return ; ?
+		}
+		channel_itr = _channels.find(channel_name);
+		sender->joinChannel(channel_itr->second);
+		sendRPL(RPL_JOIN, sender, channel_name);
 	}
-	channel_itr = _channels.find(channel_name);
-	sender->joinChannel(channel_itr->second);
-	sendRPL(RPL_JOIN, sender, channel_name);
 	return (0);
 }
 
