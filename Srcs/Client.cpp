@@ -78,7 +78,9 @@ void Client::joinChannel(Channel *channel)
 		std::cout << "Error: joinChannel()" << std::endl;
 		return ;
 	}
-	_channels.push_back(channel);
+	std::vector<Channel*>::iterator	it = std::find(_channels.begin(), _channels.end(), channel);
+	if(it == _channels.end())
+		_channels.push_back(channel);
 }
 
 void Client::leaveChannel(Channel *channel)
@@ -89,18 +91,9 @@ void Client::leaveChannel(Channel *channel)
 		return ;
 	}
 	std::vector<Channel*>::iterator	it = std::find(_channels.begin(), _channels.end(), channel);
-
 	if(it == _channels.end())
 		return ;
 	_channels.erase(it);
-}
-
-void Client::sendTo(const std::string& msg, Client* recipient) const //should be done by the client??
-{
-	// std::cout << "SEND FUNCTION NOT COMPLETED YET" << std::endl;
-	std::cout << "--> Sending: " << msg << std::endl;
-	if (send(recipient->getFd(), msg.c_str(), msg.size(), 0) == -1)
-		std::cerr << "send() failed" << std::endl;
 }
 
 //we want to handle 

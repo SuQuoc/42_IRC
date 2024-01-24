@@ -236,38 +236,46 @@ void	Irc::USER(Client *sender, std::stringstream &sstream)
 // ERR_NOSUCHNICK
 // ERR_CANNOTSENDTOCHAN 404 --> unecessary, mode n,m, and v not required
 // ERR_TOOMANYTARGETS ?? I DONT WANT TO COVER THAT
-void Irc::PRIVMSG(Client *sender, std::stringstream &sstream) //can have list (,), doesn't send newline
+// Hexchat doesnt allow PRIVMSG with channels
+void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 {
-	std::string recipient = extractWord(sstream);
-	std::string message = extractWord(sstream);
+	std::stringstream	recip_sstream(extractWord(sstream));
+	std::string 		message = extractWord(sstream);
+	std::string 		recipient;
 
-	message = ":" + sender->getPrefix() + " PRIVMSG " + recipient + " :" + message; //PART uses same method -> extra function?
-
-	if (recipient.empty()) 
-		sendError(ERR_NORECIPIENT, sender, ""); //need more params
-	else if (message.empty())
-		sendError(ERR_NOTEXTTOSEND, sender, ""); //need more params
-	else if (recipient.at(0) == '#')
+	for (int cnt = 0; cnt < 10 && std::getline(recip_sstream, recipient, ','); cnt++)
 	{
-		channel_map_iter_t rec_it = _channels.find(recipient);
-		if (rec_it == _channels.end())
-			sendError(ERR_NOSUCHCHANNEL, sender, "");
+		if (recipient.empty()) 
+			sendError(ERR_NORECIPIENT, sender, ""); //need more params
+		else if (message.empty())
+			sendError(ERR_NOTEXTTOSEND, sender, ""); //need more params
+		else if (recipient.at(0) == '#')
+		{
+			channel_map_iter_t rec_it = _channels.find(recipient);
+			if (rec_it == _channels.end())
+				sendError(ERR_NOSUCHCHANNEL, sender, "");
+			else
+				rec_it->second->sendMsg(sender, message);	
+		}
+		else if (recipient.find('@') != std::string::npos) //why? so uneccesary 
+		{
+			std::cout << "";
+			//loop through map and check for client prefix, should we implement this even?? --> im against it
+			//another map?? or vector with prefix??
+		}
 		else
-			rec_it->second->sendMsg(sender, message);	
-	}
-	else if (recipient.find('@') != std::string::npos) //why? so uneccesary 
-	{
-		std::cout << "";
-		//loop through map and check for client prefix, should we implement this even?? --> im against it
-		//another map?? or vector with prefix??
-	}
-	else
-	{
-		client_name_map_iter_t rec_it = _client_names.find(recipient);
-		if (rec_it == _client_names.end())
-			sendError(ERR_NOSUCHNICK, sender, ""); //NO SUCH NICK
-		else
-			sender->sendTo(message, rec_it->second); //should be done by the server??!!!
+		{
+			client_name_map_iter_t rec_it = _client_names.find(recipient);
+			if (rec_it == _client_names.end())
+				sendError(ERR_NOSUCHNICK, sender, "");
+			else
+			{
+				message = createMsg(sender, "PRIVMSG", recipient, message); //PART uses same method
+				std::cout << "--> Sending: " << message << std::endl; //out!
+				if (send(rec_it->second->getFd(), message.c_str(), message.size(), 0) == -1)
+					std::cerr << "send() failed" << std::endl;
+			}
+		}
 	}
 }
 
@@ -313,4 +321,12 @@ void Irc::OPER(Client *sender, std::stringstream &sstream)
 		sender->elevateToServOp(); //what if send fails?
 		sendRPL(RPL_YOUREOPER, sender, "");
 	}
+}
+
+std::string Irc::createMsg(Client *sender, const std::string& cmd, const std::string& recipient, const std::string& msg) const
+{
+    if (!sender)
+        return msg;
+    std::string message = ":" + sender->getPrefix() + " " + cmd + " " + recipient + " :" + msg + "\r\n"; //PART uses same method -> extra function?
+    return message;
 }

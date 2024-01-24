@@ -11,7 +11,7 @@ class Irc : public AServer
 private:
 //methods
 	void	command_switch(Client *sender, const std::string message, const int& new_client_fd);
-
+	std::string createMsg(Client *sender, const std::string& cmd, const std::string& recipient, const std::string& msg) const;
 public:
 //con- and destructer
 	Irc();
