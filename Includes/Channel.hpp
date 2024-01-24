@@ -8,6 +8,7 @@
 #include <algorithm>		// std::find
 
 #include "../Includes/Client.hpp"
+#include "Irc_error.hpp"
 
 #define MAX_CLIENTS 100 // How high should it be?
 #define EXIT_FAILURE 1
@@ -51,13 +52,13 @@ class Channel
 
 		void	rmClient(const Client *executor, const Client *rm_client);
 		void	sendMsg(const Client *sender, const std::string &msg);
-		void	addClient(Client *new_client, bool is_operator);
+		int		addClient(Client *new_client, const std::string &password, bool is_operator);
 		bool	isInChannel(const Client *client);
 		int		rmClient(const Client *rm_client);
 		bool	isOperator(const Client *client);
 
-		void	setTopic(const std::string &name, const std::string &topic);
 		int		setPassword(Client *executor,const std::string &password, const char &add);
+		int		setTopic(const std::string &name, const std::string &topic);
 		void	setMaxClients(const int &max_clients);
 		void	setName(const std::string &name);
 

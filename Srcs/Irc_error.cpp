@@ -74,6 +74,9 @@ int	sendError(IRC_ERR error, Client* sender, const std::string& input)
 		case ERR_INVITEONLYCHAN:
 			err_message += input + " :Cannot join channel (+i)"; //<channel>
 			break;
+		case ERR_BADCHANNELKEY:
+			err_message += input + " :Cannot join channel (+k)";
+			break;
 		case ERR_CHANOPRIVSNEEDED:
 			err_message += input + " :You're not channel operator"; //<channel>
 			break;
@@ -106,6 +109,9 @@ void	sendRPL(IRC_ERR error, Client* sender, const std::string& input)
 	msg = ":" + server_name + " " + error_code.str() + " " + sender->getNickname() + " ";
 	switch (error)
 	{
+		case TOPIC_SET:
+			msg = ":" + sender->getPrefix() + " TOPIC " + input;
+			break;
 		case RPL_JOIN:
 			msg = ":" + sender->getPrefix() + " JOIN " + input + " * :" + sender->getUsername();
 			break;

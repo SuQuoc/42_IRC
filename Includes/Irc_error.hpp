@@ -30,6 +30,7 @@ enum IRC_ERR
     ERR_CHANNELISFULL = 471,
     ERR_UNKNOWNMODE = 472,
     ERR_INVITEONLYCHAN = 473,
+    ERR_BADCHANNELKEY = 475,
     ERR_NOPRIVILEGES = 481, //? IRC operator
     ERR_CHANOPRIVSNEEDED = 482, 
     ERR_USERMODEUNKNOWNFLAG = 501,
@@ -46,7 +47,8 @@ enum IRC_ERR
     RPL_INVITING = 341,
 
     //own codes!
-    RPL_JOIN = 1000
+    RPL_JOIN = 1000,
+    TOPIC_SET = 1001
 };
 
 int sendError(IRC_ERR error, Client* sender, const std::string& input);
