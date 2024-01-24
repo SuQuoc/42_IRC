@@ -62,6 +62,7 @@ class Channel
 		void	setMaxClients(const int &max_clients);
 		void	setName(const std::string &name);
 
+		const std::string	&getTopic() const;
 		const std::string	&getPassword() const;
 		const std::string	&getName() const;
 		bool getInviteOnly() const;

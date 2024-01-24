@@ -349,9 +349,9 @@ void Irc::TOPIC(Client *sender, std::stringstream &sstream)
 	channel = channel_it->second;
 	if (topic.empty()) //only wants 
 	{
-		if ("!channel->getTopic().empty()")
+		if (!channel->getTopic().empty())
 		{
-			std::string input = channel_name + " :" + "channel->getTopic()";
+			std::string input = channel_name + " :" + channel->getTopic();
 			sendRPL(RPL_TOPIC, sender, input);
 		}
 		else
@@ -364,8 +364,8 @@ void Irc::TOPIC(Client *sender, std::stringstream &sstream)
 			sendError(static_cast<IRC_ERR>(err), sender, channel_name);
 		else
 		{
-			std::string input = channel_name + " :" + "channel->getTopic()";
-			// sendRPL(TOPIC_SET, sender, input);
+			std::string input = channel_name + " :" + channel->getTopic();
+			sendRPL(TOPIC_SET, sender, input);
 		}
 	}
 }

@@ -191,7 +191,7 @@ std::vector<Channel::Member_t>::iterator Channel::getClient(const std::string _n
 			return itr;
 	return _clients.end();
 }
-
+const std::string &Channel::getTopic() const { return _topic; }
 const std::string &Channel::getPassword() const { return _password; }
 const std::string &Channel::getName() const { return _name; }
 bool Channel::getInviteOnly() const { return _invite_only; }
