@@ -7,7 +7,7 @@ Channel::Channel(Client *owner, const std::string &channel_name) : _name(channel
 		std::cerr << "* Error: owner is NULL (in channel constructor)" << std::endl;
 		return ;
 	}
-	addClient(owner, true);
+	addClient(owner, "", true);
 }
 Channel::Channel(const Channel &C) : _clients(C._clients), _password(C._password), _topic(C._topic), _name(C._name)
 {
@@ -81,28 +81,29 @@ int Channel::rmClient(const Client *rm_client) //add
 	return (0);
 }
 
-void	Channel::addClient(Client *new_client, bool is_operator)
+// -1 if client is NULL
+// -2 is already in channel
+int	Channel::addClient(Client *new_client, const std::string &password, bool is_operator)
 {
 	if(new_client == NULL)
 	{
 		std::cerr << "Error addMember(): new_client is NULL" << std::endl;
-		return ;
+		return -1; // -1 if client is NULL
 	}
 	if(size() >= _max_clients)
-	{
-		std::cerr << "Error channel" << _name << " is full" << std::endl;
-		return ;
-	}
+		return ERR_CHANNELISFULL;
 	if(getClient(new_client) != _clients.end())
 	{
 		std::cerr << "Error client" << new_client->getUsername() << " is already in this channel." << std::endl;
-		return ;
+		return -2; // -2 is already in channel
 	}
-	//	need to send a msg to the client ?
+	if(_password.empty() == false && _password != password)
+		return ERR_BADCHANNELKEY;
 	struct Member_t member;
 	member.is_operator = is_operator;
 	member.members = new_client;
 	_clients.push_back(member);
+	return 0;
 }
 
 bool	Channel::isOperator(const Client *client)

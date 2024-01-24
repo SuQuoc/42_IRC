@@ -75,6 +75,9 @@ int	sendError(IRC_ERR error, Client* sender, const std::string& input)
 		case ERR_INVITEONLYCHAN:
 			err_message += input + " :Cannot join channel (+i)"; //<channel>
 			break;
+		case ERR_BADCHANNELKEY:
+			err_message += input + " :Cannot join channel (+k)";
+			break;
 		case ERR_CHANOPRIVSNEEDED:
 			err_message += input + " :You're not channel operator"; //<channel>
 			break;
