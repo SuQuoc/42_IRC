@@ -59,7 +59,6 @@ public:
 
 	void joinChannel(Channel *channel);
 	void leaveChannel(Channel *channel);
-	void sendTo(const std::string& msg, Client* recipient) const; //depreceated
 
 	void loadMsgBuf(const std::string& buf);
 	std::string	readMsgBuf() const;
