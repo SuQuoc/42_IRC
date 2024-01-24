@@ -229,7 +229,7 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 	std::string recipient = extractWord(sstream);
 	std::string message = extractWord(sstream);
 
-	message = ":" + sender->getPrefix() + " PRIVMSG " + recipient + " :" + message; //PART uses same method -> extra function?
+	message = ":" + sender->getPrefix() + " PRIVMSG " + recipient + " :" + message + "\r\n"; //PART uses same method -> extra function?
 
 	if (recipient.empty()) 
 		sendError(ERR_NORECIPIENT, sender, ""); //need more params

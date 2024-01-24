@@ -78,7 +78,9 @@ void Client::joinChannel(Channel *channel)
 		std::cout << "Error: joinChannel()" << std::endl;
 		return ;
 	}
-	_channels.push_back(channel);
+	std::vector<Channel*>::iterator	it = std::find(_channels.begin(), _channels.end(), channel);
+	if(it == _channels.end())
+		_channels.push_back(channel);
 }
 
 void Client::leaveChannel(Channel *channel)
