@@ -24,7 +24,7 @@ public:
 	int		JOIN(Client *sender, std::stringstream& sstream);
 	void	PART(Client *sender, std::stringstream& sstream);
 	void	QUIT(Client *sender, std::stringstream& sstream);
-	// void	KICK(Client *sender, std::stringstream& sstream);
+	void	KICK(Client *sender, std::stringstream& sstream);
 
 	void	PASS(Client *sender, std::stringstream& sstream, const int& new_client_fd);
 	void	NICK(Client *sender, std::stringstream& sstream);

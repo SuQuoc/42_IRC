@@ -74,7 +74,7 @@ int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 	return (0);
 }
 
-void	Irc::PART(Client *sender, std::stringstream &sstream)
+void	Irc::PART(Client *sender, std::stringstream &sstream) //tested (not thoroughly)
 {
 	channel_map_iter_t	channel_it;
 	std::stringstream	channel_name_sstream(extractWord(sstream));
@@ -83,7 +83,7 @@ void	Irc::PART(Client *sender, std::stringstream &sstream)
 	int					cnt = 0;
 	int					err;
 
-	while (cnt < 15 && std::getline(channel_name_sstream, channel_name, ',')) //tested (not thoroughly)
+	while (cnt < 10 && std::getline(channel_name_sstream, channel_name, ','))
 	{
 		cnt++;
 		channel_it = _channels.find(channel_name);
@@ -110,7 +110,7 @@ void	Irc::PART(Client *sender, std::stringstream &sstream)
 	if (cnt == 0)
 		sendError(ERR_NEEDMOREPARAMS, sender, "");
 	if (!channel_name_sstream.eof())
-		return ; //sendError(too many argument in list);
+		return ; //sendError(too many argument in list)!
 }
 
 //cant use PART
@@ -141,10 +141,18 @@ void	Irc::QUIT(Client *sender, std::stringstream &sstream)
 	rmClientFromMaps(sender);
 }
 
+void	Irc::KICK(Client *sender, std::stringstream &sstream)
+{
+	std::string	channel_name(extractWord(sstream));
+	std::string	user_to_kick(extractWord(sstream));
+	std::string	msg(extractWord(sstream));
 
-// void	Irc::KICK(Client *sender, std::stringstream &sstream);
-//
-//}
+	if (channel_name.empty() || user_to_kick.empty())
+	{
+		sendError(ERR_NEEDMOREPARAMS, sender, )
+	}
+
+}
 
 
 void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client_fd)
