@@ -15,7 +15,7 @@ int	sendError(IRC_ERR error, Client* sender, const std::string& input)
 	error_code << error;
 	//NAME OF THE SERVER
 	// err_message = getName(); //Servername, doesnt end with a space
-	err_message += ":" + server_name + " " + error_code.str() + " " + sender->getUsername() + " ";
+	err_message += ":" + server_name + " " + error_code.str() + " " + sender->getNickname() + " ";
 	switch (error)
 	{
 		case ERR_NOSUCHNICK:
@@ -42,7 +42,7 @@ int	sendError(IRC_ERR error, Client* sender, const std::string& input)
 		case ERR_NICKNAMEINUSE:
 			err_message += input + " :Nickname is already in use"; //<nick>
 			break;
-		case ERR_USERNOTINCHANNEL:
+		case ERR_USERNOTINCHANNEL: //for modes
 			err_message += input + " :They aren't on that channel"; //<nick> <channel>
 			break;
 		case ERR_NOTONCHANNEL:
@@ -84,6 +84,9 @@ int	sendError(IRC_ERR error, Client* sender, const std::string& input)
 		case ERR_USERMODEUNKNOWNFLAG:
 			err_message += input + ":Unknown MODE flag";
 			break;
+		case ERR_NOOPERHOST:
+			err_message += input + ":No O-lines for your host";
+			break;
 		default:
 			std::cout << "CANT HAPPEN DUE TO ENUM" << std::endl;
 			//throw ;?
@@ -94,7 +97,6 @@ int	sendError(IRC_ERR error, Client* sender, const std::string& input)
 		std::cout << "Error send faild in Irc_error." << std::endl;
 		return(-1);
 	}
-	//problematic with PASSWORD MISMATCH
 	return (0);
 }
 
@@ -108,13 +110,18 @@ void	sendRPL(IRC_ERR error, Client* sender, const std::string& input)
 	switch (error)
 	{
 		case RPL_JOIN:
-			msg = ":" + sender->getPrefix() + " JOIN " + input + " * :" + sender->getUsername() + "\r\n";
+			msg = ":" + sender->getPrefix() + " JOIN " + input + " * :" + sender->getUsername();
 			break;
 		case RPL_WELCOME:
-			msg = ":" + server_name + " 001 " + sender->getNickname() + " :Welcome to the Internet Relay Network, " + input + "\r\n"; //input = getPrefix() from Client; <nick>!<user>@<host>
+			msg = ":" + server_name + " 001 " + sender->getNickname() + " :Welcome to the Internet Relay Network, " + input; //input = getPrefix() from Client; <nick>!<user>@<host>
 			break;
+		case RPL_YOUREOPER:
+			msg = ":" + server_name + " 381 " + sender->getNickname() + " :You are now an IRC operator";
+			break;		
 		default:
 			std::cout << "CANT HAPPEN DUE TO ENUM" << std::endl;
 	}
+	msg += "\r\n";
 	send(sender->getFd(), msg.c_str(), msg.size(), 0);
 }
+

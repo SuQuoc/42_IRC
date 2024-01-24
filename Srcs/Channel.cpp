@@ -72,7 +72,7 @@ int Channel::rmClient(const Client *rm_client) //add
 	if(itr == _clients.end())			// need to send a msg to the client ?
 	{
 		std::cout << "Placeholder in rmClient() in channel.hpp" << std::endl << "rm_client is not in channel!" << std::endl;
-		return (ERR_USERNOTINCHANNEL);
+		return (ERR_NOTONCHANNEL);
 	}
 	sendMsg(rm_client, ":" + rm_client->getPrefix() + " PART " + _name + " :leaving\r\n");
 	_clients.erase(itr);
