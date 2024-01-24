@@ -19,6 +19,8 @@ bool Client::isRegistered() const {return _registered;}
 
 void Client::authenticate() {_authenticated = true;}
 void Client::deauthenticate() {_authenticated = false;}
+void Client::elevateToServOp() {_server_op = true;}
+
 
 int Client::setNickname(const std::string& name)
 {
@@ -64,6 +66,7 @@ int Client::setUser(std::string& uname, const std::string& hname, const std::str
 const int& Client::getFd() const {return _fd;}
 const std::string& Client::getNickname() const {return _nickname;}
 const std::string& Client::getUsername() const {return _username;}
+const std::string& Client::getHost() const {return _hostname;}
 const std::string& Client::getPrefix() const {return _prefix;}
 const std::vector<Channel *>& Client::getAllChannels() const {return _channels;}
 

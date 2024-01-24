@@ -43,6 +43,7 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 	else if (cmd == "INVITE") std::cout << "INVITE()" << std::endl; //INVITE();
 	else if (cmd == "MODE") std::cout << "MODE()" << std::endl; //MODE();
 	else if (cmd == "TOPIC") std::cout << "TOPIC()" << std::endl; //TOPIC();
+	else if (cmd == "OPER") OPER(sender, sstream);
 	else sendError(ERR_UNKNOWNCOMMAND, sender, cmd);
 	std::cout << std::endl;
 }
@@ -280,3 +281,23 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 	}
 	rmClientFromMaps(client);
 } */
+
+
+void Irc::OPER(Client *sender, std::stringstream &sstream)
+{
+	std::cout << "Executing OPER()" << std::endl;
+	std::string	host = extractWord(sstream); //chose to name the string "host" and not "user" irc protocoll a bit vague
+	std::string	pw = extractWord(sstream);
+	
+	if (host.empty() || pw.empty())
+		sendError(ERR_NEEDMOREPARAMS, sender, "");
+	else if (host != "_op_host" && sender->getHost() != "_op_host") //need an attribute in AServer or IRC!
+		sendError(ERR_NOOPERHOST, sender, "");
+	else if (pw != "_op_pw") //need an attribute in AServer or IRC!
+		sendError(ERR_PASSWDMISMATCH, sender, "");
+	else
+	{
+		sender->elevateToServOp(); //what if send fails?
+		sendRPL(RPL_YOUREOPER, sender, "");
+	}
+}

@@ -43,22 +43,23 @@ public:
 	bool isAuthenticated() const;
 	bool isServerOp() const;
 
+	void authenticate();
+	void deauthenticate();
+	void elevateToServOp();
+
 	int setNickname(const std::string& name);
 	int setUser(std::string& uname, const std::string& hname, const std::string& sname, const std::string& rname);
 	
 	const int& getFd() const;
 	const std::string& getNickname() const;
 	const std::string& getUsername() const;
-	// const std::string& Client::getRealname() const //?? needed or :realname enough
+	const std::string& getHost() const;
 	const std::string& getPrefix() const; //nickname!username@hostname
 	const std::vector<Channel *>& getAllChannels() const;
 
-	void authenticate ();
-	void deauthenticate();
-
-	void joinChannel(Channel *channel); // i or fiona(const) could call then nikis function
-	void leaveChannel(Channel *channel); // i or fiona(const) could call then nikis function 
-	void sendTo(const std::string& msg, Client* recipient) const;
+	void joinChannel(Channel *channel);
+	void leaveChannel(Channel *channel);
+	void sendTo(const std::string& msg, Client* recipient) const; //depreceated
 
 	void loadMsgBuf(const std::string& buf);
 	std::string	readMsgBuf() const;
