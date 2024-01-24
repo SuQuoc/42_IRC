@@ -29,8 +29,8 @@ AServer::~AServer()
 		delete it->second;
 	for (client_name_map_iter_t it = _client_names.begin(); it != _client_names.end(); it++)
 		delete it->second;
-	for (client_fd_map_iter_t it = _client_fds.begin(); it != _client_fds.end(); it++)
-		delete it->second;
+	/* for (client_fd_map_iter_t it = _client_fds.begin(); it != _client_fds.end(); it++)
+		delete it->second; */
 	if (_epoll_fd != -1)
 		close(_epoll_fd);
 	if (_sock_fd != -1)
@@ -43,7 +43,7 @@ void	AServer::accept_connection()
 	struct sockaddr_in	client_addr;
 	struct epoll_event	ev_temp;
 	socklen_t			client_addr_len = sizeof(client_addr);
-	int		client_fd;
+	int					client_fd;
 
 	while (1)
 	{
@@ -70,11 +70,17 @@ void	AServer::accept_connection()
 	}
 }
 
+void	AServer::disconnect_client(const int& client_fd)
+{
+	/* Client *client = _client_fds.find(client_fd)->second;
+	close(client_fd);
+	delete client; */
+}
+
 void	AServer::process_event(const int& client_fd)
 {
 	char	buf[513];
 	int		bytes_recieved = -1; //better name?
-
 
 	memset(buf, '\0', 513);
 	bytes_recieved = recv(client_fd, buf, sizeof(buf) - 1, 0);
@@ -86,7 +92,7 @@ void	AServer::process_event(const int& client_fd)
 			std::cerr << "Error: couldn't recieve data :" << std::strerror(errno) << std::endl;
 			return ;
 		case (0):
-			//disconnect_client(); !!!!
+			//disconnect_client(client_fd);
 			close(client_fd);
 			return ;
 		case (1):
@@ -204,9 +210,10 @@ void	AServer::createEpoll()
 void	AServer::epollLoop()
 {
 	struct epoll_event	events[1000]; //1000?
-	int 	ev_cnt;
+	std::string			str = "run";
+	int 				ev_cnt;
 
-	while (1)
+	while (str != "exit")
 	{
 		//std::cout << "loop" << std::endl;
 		ev_cnt = epoll_wait(_epoll_fd, events, 1000, 1000); //1000? //-1?
@@ -222,11 +229,9 @@ void	AServer::epollLoop()
 			}
 			else if (events[i].data.fd == STDIN_FILENO)
 			{
-				std::string	str;
 				std::cout << "stdin: ";
 				std::cin >> str;
-				if (str == "exit")
-					return ;
+				str = "exit";
 			}
 			//??????????v
 			else if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN))) //???????????????

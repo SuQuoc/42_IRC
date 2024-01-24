@@ -5,6 +5,7 @@
 #include <cstdlib>			// exit
 #include <vector>
 #include <cerrno>
+#include <algorithm>		// std::find
 
 #include "../Includes/Client.hpp"
 

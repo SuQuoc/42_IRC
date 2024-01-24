@@ -170,10 +170,7 @@ void	Channel::setTopic(const std::string &name, const std::string &topic)
 //			getter
 std::vector<Channel::Member_t>::iterator Channel::getClient(const Client *client)
 {
-	for(clients_itr itr = _clients.begin(); itr != _clients.end(); itr++)
-		if(itr->members == client)
-			return itr;
-	return _clients.end();
+	return std::find(_clients.begin(), _clients.end(), client);
 }
 
 std::vector<Channel::Member_t>::iterator Channel::getClient(const std::string _name)
