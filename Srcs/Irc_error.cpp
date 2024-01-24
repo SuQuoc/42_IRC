@@ -109,6 +109,9 @@ void	sendRPL(IRC_ERR error, Client* sender, const std::string& input)
 	error_code << error;
 	switch (error)
 	{
+		case TOPIC_SET:
+			msg = ":" + sender->getPrefix() + " TOPIC " + input;
+			break;
 		case RPL_JOIN:
 			msg = ":" + sender->getPrefix() + " JOIN " + input + " * :" + sender->getUsername();
 			break;

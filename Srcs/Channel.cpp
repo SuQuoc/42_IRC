@@ -150,18 +150,25 @@ int	Channel::setPassword(Client *executor, const std::string &password, const ch
 	}
 	return ERR_KEYSET; // 467 ERR_KEYSET
 }
-//also checks if name is in clients and if oper if restricted
-void	Channel::setTopic(const std::string &name, const std::string &topic)
+//sucess = 1001 TOPIC_SET
+int	Channel::setTopic(const std::string &name, const std::string &topic)
 {
 	clients_itr client;
 
 	client = getClient(name);
 	if(client == _clients.end())
-		return ; // send msg ???????????? to client ????????
+		return ERR_NOTONCHANNEL;
 	if(_restrict_topic == false)
+	{
 		_topic = topic;
-	else if(_restrict_topic == true && client->is_operator == true)
+		return TOPIC_SET;
+	}
+	if(_restrict_topic == true && client->is_operator == true)
+	{
 		_topic = topic;
+		return TOPIC_SET;
+	}
+	return ERR_CHANOPRIVSNEEDED;
 }
 
 //			getter

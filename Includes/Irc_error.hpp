@@ -47,7 +47,8 @@ enum IRC_ERR
     RPL_INVITING = 341,
 
     //own codes!
-    RPL_JOIN = 1000
+    RPL_JOIN = 1000,
+    TOPIC_SET = 1001
 };
 
 int sendError(IRC_ERR error, Client* sender, const std::string& input);
