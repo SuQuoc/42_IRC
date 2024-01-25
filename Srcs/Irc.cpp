@@ -39,7 +39,7 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 	else if (cmd == "JOIN") JOIN(sender, sstream);
 	else if (cmd == "PART") PART(sender, sstream);
 	else if (cmd == "QUIT") QUIT(sender, sstream);
-	else if (cmd == "KICK") std::cout << "KICK()" << std::endl; //KICK();
+	else if (cmd == "KICK") KICK(sender, sstream);
 	else if (cmd == "INVITE") std::cout << "INVITE()" << std::endl; //INVITE();
 	else if (cmd == "MODE") std::cout << "MODE()" << std::endl; //MODE();
 	else if (cmd == "TOPIC") TOPIC(sender, sstream);
@@ -50,122 +50,6 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 
 //methods (commands)
 //---------------------------------COMMANDS--------------------------------------------
-int	Irc::JOIN(Client *sender, std::stringstream &sstream)
-{
-	std::stringstream stream_name(extractWord(sstream));
-	std::stringstream stream_key(extractWord(sstream));
-	channel_map_iter_t channel_itr;
-	std::string	channel_name;
-	std::string	channel_key;
-
-	while(getline(stream_name, channel_name, ','))
-	{
-		getline(stream_key, channel_key, ',');
-		if(!(channel_name[0] == '#' || channel_name[0] == '&') || channel_name.size() > 200) //check if channel_name is valid
-			return (sendError(ERR_NOSUCHCHANNEL, sender, channel_name));
-		channel_itr = _channels.find(channel_name);
-		if(channel_itr == _channels.end()) // create if channel non exist ?
-			addNewChannelToMap(sender, channel_name);
-		else
-		{
-			int err = channel_itr->second->addClient(sender, channel_key, false);
-			if(err > 0)
-			{
-				sendError(static_cast<IRC_ERR>(err), sender, channel_name);
-				return 1;
-			}
-			else if(err < 0)
-				return 2;
-		}
-		channel_itr = _channels.find(channel_name);
-		sender->joinChannel(channel_itr->second);
-		sendRPL(RPL_JOIN, sender, channel_name);
-	}
-	return (0);
-}
-
-void	Irc::PART(Client *sender, std::stringstream &sstream) //tested (not thoroughly)
-{
-	channel_map_iter_t	channel_it;
-	std::stringstream	channel_name_sstream(extractWord(sstream));
-	std::string			channel_name;
-	std::string			part_msg;
-	int					cnt = 0;
-	int					err;
-
-	while (cnt < 10 && std::getline(channel_name_sstream, channel_name, ','))
-	{
-		cnt++;
-		channel_it = _channels.find(channel_name);
-		if (channel_it == _channels.end() || channel_it->second == NULL)
-		{
-			std::cout << "*Error: PART(): channel is not in channel map" << std::endl;
-			sendError(ERR_NOSUCHCHANNEL, sender, channel_name);
-			continue ;
-		}
-		err = channel_it->second->rmClient(sender, "Leaving"); //????
-		if (err > 0)
-		{
-			std::cout << "*Error: PART(): err > 0" << std::endl;
-			sendError(static_cast<IRC_ERR>(err), sender, channel_name);
-			continue ;
-		}
-		sender->leaveChannel(channel_it->second);
-
-		part_msg = ":" + sender->getPrefix() + " PART " + channel_name + " :Leaving\r\n"; //????
-		send(sender->getFd(), part_msg.c_str(), part_msg.size(), 0);
-		if (err == -1) //delete channel when empty()
-			rmChannelFromMap(channel_name);
-	}
-	if (cnt == 0)
-		sendError(ERR_NEEDMOREPARAMS, sender, "");
-	if (!channel_name_sstream.eof())
-		return ; //sendError(too many argument in list)!
-}
-
-//cant use PART
-// - doesnt support listing with ',' e.g: "hungry,bye guys"
-// - i dont write myself a message when quiting
-// - only errors with quit would be if client is the last in channel
-// 		or if the channel doesnt exist
-void	Irc::QUIT(Client *sender, std::stringstream &sstream)
-{
-	std::string	channel_name;
-	std::string	msg = extractWord(sstream);
-	Channel		*channel; 
-	int err;
-	if (msg.empty())
-		msg = "disconnected"; //where will the entire message be concatinated? in channel?
-	
-	std::vector<Channel *> channels = sender->getAllChannels();
-	for (std::vector<Channel *>::iterator it = channels.begin(); it != channels.end(); it++)
-	{
-		channel = (*it); 
-		if (!channel) //necessary? checking if the channel is in map or null seems overkill, since this case should never happen
-			continue ;
-		// sender->leaveChannel(channel); //unecessary ?? he will leave entire server
-		channel_name = channel->getName();
-		err = channel->rmClient(sender, "Leaving");
-		if (err == -1) //exchange -1 with CHANNEL_DEAD, and use rmClient with a message
-			rmChannelFromMap(channel_name);		
-	}
-	rmClientFromMaps(sender);
-}
-
-void	Irc::KICK(Client *sender, std::stringstream &sstream)
-{
-	std::string	channel_name(extractWord(sstream));
-	std::string	user_to_kick(extractWord(sstream));
-	std::string	msg(extractWord(sstream));
-
-	if (channel_name.empty() || user_to_kick.empty())
-	{
-		sendError(ERR_NEEDMOREPARAMS, sender, )
-	}
-
-}
-
-
 void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client_fd)
 {
 	(void)new_client_fd;
@@ -238,6 +122,149 @@ void	Irc::USER(Client *sender, std::stringstream &sstream)
 	}
 }
 
+int	Irc::JOIN(Client *sender, std::stringstream &sstream)
+{
+	std::stringstream stream_name(extractWord(sstream));
+	std::stringstream stream_key(extractWord(sstream));
+	channel_map_iter_t channel_itr;
+	std::string	channel_name;
+	std::string	channel_key;
+
+	while(getline(stream_name, channel_name, ','))
+	{
+		getline(stream_key, channel_key, ',');
+		if(!(channel_name[0] == '#' || channel_name[0] == '&') || channel_name.size() > 200) //check if channel_name is valid
+			return (sendError(ERR_NOSUCHCHANNEL, sender, channel_name));
+		channel_itr = _channels.find(channel_name);
+		if(channel_itr == _channels.end()) // create if channel non exist ?
+			addNewChannelToMap(sender, channel_name);
+		else
+		{
+			int err = channel_itr->second->addClient(sender, channel_key, false);
+			if(err > 0)
+			{
+				sendError(static_cast<IRC_ERR>(err), sender, channel_name);
+				return 1;
+			}
+			else if(err < 0)
+				return 2;
+		}
+		channel_itr = _channels.find(channel_name);
+		sender->joinChannel(channel_itr->second);
+		channel_itr->second->sendMsg(NULL, ":" + sender->getPrefix() + " JOIN " + channel_name + " * :" + sender->getUsername() + "\r\n");
+	}
+	return (0);
+}
+
+void	Irc::PART(Client *sender, std::stringstream &sstream) //tested (not thoroughly)
+{
+	channel_map_iter_t	channel_it;
+	std::stringstream	channel_name_sstream(extractWord(sstream));
+	std::string			channel_name;
+	std::string			part_msg;
+	int					cnt = 0;
+	int					err;
+
+	while (cnt < 10 && std::getline(channel_name_sstream, channel_name, ','))
+	{
+		cnt++;
+		channel_it = _channels.find(channel_name);
+		if (channel_it == _channels.end() || channel_it->second == NULL)
+		{
+			std::cout << "*Error: PART(): channel is not in channel map" << std::endl;
+			sendError(ERR_NOSUCHCHANNEL, sender, channel_name);
+			continue ;
+		}
+		part_msg = ":" + sender->getPrefix() + " PART " + channel_name + " :Leaving\r\n"; //????
+		err = channel_it->second->rmClient(sender, part_msg);
+		if (err > 0)
+		{
+			std::cout << "*Error: PART(): err > 0" << std::endl;
+			sendError(static_cast<IRC_ERR>(err), sender, channel_name);
+			continue ;
+		}
+		sender->leaveChannel(channel_it->second);
+		if (err == -1) //delete channel when empty()
+			rmChannelFromMap(channel_name);
+	}
+	if (cnt == 0)
+		sendError(ERR_NEEDMOREPARAMS, sender, "");
+	if (!channel_name_sstream.eof())
+		return ; //sendError(too many argument in list)!
+}
+
+//cant use PART
+// - doesnt support listing with ',' e.g: "hungry,bye guys"
+// - i dont write myself a message when quiting
+// - only errors with quit would be if client is the last in channel
+// 		or if the channel doesnt exist
+void	Irc::QUIT(Client *sender, std::stringstream &sstream)
+{
+	std::string	channel_name;
+	std::string	msg = extractWord(sstream);
+	Channel		*channel; 
+	int err;
+	if (msg.empty())
+		msg = "disconnected"; //where will the entire message be concatinated? in channel?
+	
+	std::vector<Channel *> channels = sender->getAllChannels();
+	for (std::vector<Channel *>::iterator it = channels.begin(); it != channels.end(); it++)
+	{
+		channel = (*it); 
+		if (!channel) //necessary? checking if the channel is in map or null seems overkill, since this case should never happen
+			continue ;
+		// sender->leaveChannel(channel); //unecessary ?? he will leave entire server
+		channel_name = channel->getName();
+		err = channel->rmClient(sender, "Leaving");
+		if (err == -1) //exchange -1 with CHANNEL_DEAD, and use rmClient with a message
+			rmChannelFromMap(channel_name);		
+	}
+	rmClientFromMaps(sender);
+}
+
+void	Irc::KICK(Client *sender, std::stringstream &sstream)
+{
+	client_name_map_iter_t	user_to_kick;
+	channel_map_iter_t		channel_it;
+	std::string	channel_name(extractWord(sstream));
+	std::string	user_name(extractWord(sstream));
+	std::string	msg(extractWord(sstream));
+	int			err;
+
+	if (msg.empty())
+		msg = user_name;
+	if (channel_name.empty() || user_name.empty())
+	{
+		sendError(ERR_NEEDMOREPARAMS, sender, "KICK");
+		return ;
+	}
+	channel_it = _channels.find(channel_name);
+	if (channel_it == _channels.end())
+	{
+		sendError(ERR_NOSUCHCHANNEL, sender, channel_name);
+		return ;
+	}
+	user_to_kick = _client_names.find(user_name);
+	if (user_to_kick == _client_names.end())
+	{
+		sendError(ERR_NOSUCHNICK, sender, user_name); //ERR-NOSUCHNICK is not in list of numeric replies for kick in protocoll
+		return ;
+	}
+
+	msg = ":" + sender->getPrefix() + " KICK " + channel_name + " " + user_name + " :" + msg + "\r\n";
+	err = channel_it->second->rmClient(sender, user_to_kick->second, msg);
+	if (err > 0)
+	{
+		std::cout << "KICK: > 0" << std::endl;
+		sendError(static_cast<IRC_ERR>(err), sender, channel_name);
+		return ;
+	}
+	sender->leaveChannel(channel_it->second);
+	if (err == -1) //delete channel when empty()
+		rmChannelFromMap(channel_name);
+}
+
+
 
 
 // ERR_NORECIPIENT
@@ -251,41 +278,40 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 	std::stringstream	recip_sstream(extractWord(sstream));
 	std::string 		message = extractWord(sstream);
 	std::string 		recipient;
+	std::string			reply;
+	int					cnt = 0;
 
-	for (int cnt = 0; cnt < 10 && std::getline(recip_sstream, recipient, ','); cnt++)
+	while (cnt < 10 && std::getline(recip_sstream, recipient, ','))
 	{
+		cnt++;
 		if (recipient.empty()) 
-			sendError(ERR_NORECIPIENT, sender, ""); //need more params
+			sendError(ERR_NORECIPIENT, sender, "PRIVMSG");
 		else if (message.empty())
-			sendError(ERR_NOTEXTTOSEND, sender, ""); //need more params
+			sendError(ERR_NOTEXTTOSEND, sender, "");
 		else if (recipient.at(0) == '#')
 		{
 			channel_map_iter_t rec_it = _channels.find(recipient);
 			if (rec_it == _channels.end())
-				sendError(ERR_NOSUCHCHANNEL, sender, "");
+				sendError(ERR_NOSUCHCHANNEL, sender, recipient);
 			else
-				rec_it->second->sendMsg(sender, message);	
-		}
-		else if (recipient.find('@') != std::string::npos) //why? so uneccesary 
-		{
-			std::cout << "";
-			//loop through map and check for client prefix, should we implement this even?? --> im against it
-			//another map?? or vector with prefix??
-		}
+				rec_it->second->sendMsg(sender, createMsg(sender, "PRIVMSG", recipient, message));
+		} //mask?
 		else
 		{
 			client_name_map_iter_t rec_it = _client_names.find(recipient);
 			if (rec_it == _client_names.end())
-				sendError(ERR_NOSUCHNICK, sender, "");
+				sendError(ERR_NOSUCHNICK, sender, recipient);
 			else
 			{
-				message = createMsg(sender, "PRIVMSG", recipient, message); //PART uses same method
-				std::cout << "--> Sending: " << message << std::endl; //out!
-				if (send(rec_it->second->getFd(), message.c_str(), message.size(), 0) == -1)
+				reply = createMsg(sender, "PRIVMSG", recipient, message); //PART uses same method
+				std::cout << "--> Sending: " << reply << std::endl; //out!
+				if (send(rec_it->second->getFd(), reply.c_str(), reply.size(), 0) == -1)
 					std::cerr << "send() failed" << std::endl;
 			}
 		}
 	}
+	if (cnt == 0)
+		sendError(ERR_NORECIPIENT, sender, "PRIVMSG");
 }
 
 //void Irc::MODE(Client *sender, std::stringstream &sstream);

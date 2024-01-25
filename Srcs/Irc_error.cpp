@@ -32,6 +32,12 @@ int	sendError(IRC_ERR error, Client* sender, const std::string& input)
 		case ERR_TOOMANYTARGETS:
 			err_message += input + " :Duplicate recipients. No message delivered"; //<target> ????? very weird stil when this is triggered --> protocoll
 			break;
+		case ERR_NORECIPIENT:
+			err_message += ":No recipient given (" + input + ")"; //just privmsg
+			break;
+		case ERR_NOTEXTTOSEND:
+			err_message += ":No text to send";
+			break;
 		case ERR_UNKNOWNCOMMAND:
 			err_message += input + " :Unknown command"; //<command>
 			break;
@@ -51,7 +57,7 @@ int	sendError(IRC_ERR error, Client* sender, const std::string& input)
 			err_message += input + " :is already on channel"; //<user> <channel>
 			break;
 		case ERR_NOTREGISTERED:
-			err_message += input + ":You have not registered";
+			err_message += ":You have not registered";
 			break;
 		case ERR_NEEDMOREPARAMS:
 			err_message += input + " :Not enough parameters"; //<command>
@@ -75,16 +81,16 @@ int	sendError(IRC_ERR error, Client* sender, const std::string& input)
 			err_message += input + " :Cannot join channel (+i)"; //<channel>
 			break;
 		case ERR_BADCHANNELKEY:
-			err_message += input + " :Cannot join channel (+k)";
+			err_message += input + " :Cannot join channel (+k)"; //input?
 			break;
 		case ERR_CHANOPRIVSNEEDED:
 			err_message += input + " :You're not channel operator"; //<channel>
 			break;
 		case ERR_USERMODEUNKNOWNFLAG:
-			err_message += input + ":Unknown MODE flag";
+			err_message += input + ":Unknown MODE flag"; //input?
 			break;
 		case ERR_NOOPERHOST:
-			err_message += input + ":No O-lines for your host";
+			err_message += input + ":No O-lines for your host"; //input?
 			break;
 		default:
 			std::cout << "CANT HAPPEN DUE TO ENUM" << std::endl;

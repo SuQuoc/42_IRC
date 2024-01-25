@@ -1,6 +1,6 @@
 #include "../Includes/Channel.hpp"
 
-Channel::Channel(Client *owner, const std::string &channel_name) : 
+Channel::Channel(Client *owner, const std::string &channel_name) :
 _name(channel_name),
 _restrict_topic(true),
 _invite_only(false),
@@ -15,22 +15,23 @@ _max_clients(MAX_CLIENTS)
 }
 Channel::Channel(const Channel &C) : _clients(C._clients), _password(C._password), _topic(C._topic), _name(C._name)
 {
-	
+
 }
 Channel::~Channel() {}
 
+// if sender NULL send to all
 void Channel::sendMsg(const Client *sender, const std::string &msg)
 {
-	if(!sender)
+	/* if(!sender)
 	{
 		std::cerr << "* Error: sender is NULL (in sendMsg)" << std::endl;
 		return ;
-	}
-	if(getClient(sender) == _clients.end())
-		return ; //return error code
+	} */
+	/* if(getClient(sender) == _clients.end())
+		return ; //return error code */
 	for(clients_itr itr = _clients.begin(); itr != _clients.end(); itr++)
 	{
-		if(itr->members == sender)
+		if(sender && itr->members == sender)
 			continue ;
 		if(send(itr->members->getFd(), msg.c_str(), msg.size(), 0) == -1)
 		{
@@ -42,43 +43,31 @@ void Channel::sendMsg(const Client *sender, const std::string &msg)
 }
 
 //does not rm client from clients._channels or the other maps in server
-void Channel::rmClient(const Client *executor, const Client *rm_client, const std::string &leaving_msg)
+int	Channel::rmClient(const Client *executor, const Client *rm_client, const std::string &leaving_msg)
 {
 	clients_itr itr;
 
 	if(!executor || !rm_client)
-		return ;
+		return (-2);  //should never happen
 	itr = getClient(executor);
-	if( itr == _clients.end())			// need to send a msg to the client ?
-	{
-		std::cout << "Placeholder in rmClient() in channel.hpp" << std::endl << "Executor is not a in this channel!" << std::endl;
-		// 441 ERR_USERNOTINCHANNEL
-		return ;
-	}
-	if(itr->is_operator == false)		// need to send a msg to the client ?
-	{
-		std::cout << "Placeholder in rmClient() in channel.hpp" << std::endl << "Executor is not a operator this channel!" << std::endl;
-		return ;
-		// :server-name 482 your-nickname #channel :You're not channel operator ?
-	}
-	rmClient(rm_client, leaving_msg); //needs pass error-codes to irc
-	//need to  send a msg to the executor?
+	if(itr == _clients.end())
+		return ERR_USERNOTINCHANNEL;
+	if(itr->is_operator == false)
+		return ERR_CHANOPRIVSNEEDED;
+	return (rmClient(rm_client, leaving_msg));
 }
 
 //returns -1 if last client leaves channel
-int Channel::rmClient(const Client *rm_client, const std::string &leaving_msg) //add 
+int	Channel::rmClient(const Client *rm_client, const std::string &leaving_msg) //add
 {
 	clients_itr itr;
 
 	if(!rm_client)
-		return -2; //should never happen
+		return (-2); //should never happen
 	itr = getClient(rm_client);
-	if(itr == _clients.end())			// need to send a msg to the client ?
-	{
-		std::cout << "Placeholder in rmClient() in channel.hpp" << std::endl << "rm_client is not in channel!" << std::endl;
+	if(itr == _clients.end())
 		return (ERR_NOTONCHANNEL);
-	}
-	sendMsg(rm_client, ":" + rm_client->getPrefix() + " PART " + _name + " :" + leaving_msg + "\r\n");
+	sendMsg(NULL, leaving_msg);
 	_clients.erase(itr);
 	if (_clients.empty())
 		return (DELETE_CHANNEL);
@@ -119,7 +108,7 @@ bool	Channel::isOperator(const Client *client)
 
 //return true if user is member of this channel
 bool Channel::isInChannel(const Client *client)
-{	
+{
 	if(client == NULL)
 	{
 		std::cout << "Error client is NULL isInChannel()" << std::endl;
@@ -133,7 +122,7 @@ bool Channel::isInChannel(const Client *client)
 //			setter
 void	Channel::setMaxClients(const int &max_clients) { _max_clients = max_clients; }
 void	Channel::setName(const std::string &name) { _name = name; }
-// ? should it respond to the client if it to big? 
+// ? should it respond to the client if it to big?
 int	Channel::setPassword(Client *executor, const std::string &password, const char &add)
 {
 	clients_itr client;

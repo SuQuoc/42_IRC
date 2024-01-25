@@ -51,7 +51,7 @@ class Channel
 		Channel(const Channel &C);
 		~Channel();
 
-		void	rmClient(const Client *executor, const Client *rm_client, const std::string &leaving_msg);
+		int		rmClient(const Client *executor, const Client *rm_client, const std::string &leaving_msg);
 		int		addClient(Client *new_client, const std::string &password, bool is_operator);
 		int		rmClient(const Client *rm_client, const std::string &leaving_msg);
 		void	sendMsg(const Client *sender, const std::string &msg);
