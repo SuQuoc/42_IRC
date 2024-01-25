@@ -3,7 +3,7 @@
 
 //con- and destructer
 Irc::Irc(): AServer() {}
-Irc::Irc(std::string password): AServer(password) {}
+Irc::Irc(std::string password): AServer(password) {_op_host = "OpHost"; _op_password = "OpPass";}
 /* Irc::Irc(const Irc& I);
 Irc::Irc operator=(const Irc& I); */
 Irc::~Irc() {}
@@ -313,14 +313,15 @@ void Irc::OPER(Client *sender, std::stringstream &sstream)
 	
 	if (host.empty() || pw.empty())
 		sendError(ERR_NEEDMOREPARAMS, sender, "");
-	else if (host != "_op_host" && sender->getHost() != "_op_host") //need an attribute in AServer or IRC!
+	else if (host != _op_host && sender->getHost() != _op_host)
 		sendError(ERR_NOOPERHOST, sender, "");
-	else if (pw != "_op_pw") //need an attribute in AServer or IRC!
+	else if (pw != _op_password)
 		sendError(ERR_PASSWDMISMATCH, sender, "");
 	else
 	{
-		sender->elevateToServOp(); //what if send fails?
+		sender->elevateToServOp(); //what if send in next line fails?
 		sendRPL(RPL_YOUREOPER, sender, "");
+		std::cout << "INFO: " << sender->getPrefix() << " is now server op, chaos is coming!" << std::endl;
 	}
 }
 
@@ -368,4 +369,18 @@ void Irc::TOPIC(Client *sender, std::stringstream &sstream)
 			sendRPL(TOPIC_SET, sender, input);
 		}
 	}
+}
+
+void Irc::setOperatorHost(const std::string& hostname)
+{
+	if (containsForbiddenChars(hostname, " 	\r\n")) //could just use isValidPassword() from main?
+		return;
+	_op_host = hostname;
+}
+
+void Irc::setOperatorPW(const std::string& password)
+{
+	if (containsForbiddenChars(password, " 	\r\n")) //could just use isValidPassword() from main?
+		return;
+	_op_password = password; 
 }

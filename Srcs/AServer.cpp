@@ -43,6 +43,8 @@ void	AServer::accept_connection()
 	struct sockaddr_in	client_addr;
 	struct epoll_event	ev_temp;
 	socklen_t			client_addr_len = sizeof(client_addr);
+	struct in_addr 		ipAddr; 
+	char				client_ip_buf[INET_ADDRSTRLEN];
 	int					client_fd;
 
 	while (1)
@@ -54,6 +56,10 @@ void	AServer::accept_connection()
 				std::cerr << "Error: accept failed" << std::endl;
 			return ;
 		}
+		memset(client_ip_buf, '\0', INET_ADDRSTRLEN);
+		ipAddr = client_addr.sin_addr;
+		inet_ntop(AF_INET, &ipAddr, client_ip_buf, INET_ADDRSTRLEN);
+		std::cout << "Client IP: " << client_ip_buf << "!\n";
 		ev_temp.data.fd = client_fd;
 		ev_temp.events = EPOLLIN | EPOLLET; //needs to be in loop? //niki says it could be changed in epoll_ctl() so just to be save
 		fcntl(client_fd, F_SETFL, O_NONBLOCK);
@@ -67,8 +73,7 @@ void	AServer::accept_connection()
 			std::cerr << "* Error: new fd already in map" << std::endl;
 			return ;
 		}
-		//_client_fds[client_fd] = NULL;
-		addNewClientToFdMap(client_fd); //allocatoes the client object
+		addNewClientToFdMap(client_fd, client_ip_buf); //allocatoes the client object
 		std::cout << "Added new Client to Fd-Map!" << std::endl;
 	}
 }
@@ -119,7 +124,8 @@ void	AServer::process_event(const int& client_fd)
 
 void	AServer::failure_exit(const std::string& error_msg)
 {
-	std::cerr << "Error: " << error_msg << ": " << std::strerror(errno) << std::endl;
+	(void)(error_msg);
+	// std::cerr << "Error: " << error_msg << ": " << std::strerror(errno) << std::endl;
 	std::exit(errno); //errno?
 }
 
@@ -135,9 +141,9 @@ void	AServer::addClientToNameMap(std::string user_name, const int& client_fd) //
 	std::pair<std::string, Client*>	pair(user_name, temp_client);
 	_client_names.insert(pair);
 }
-void	AServer::addNewClientToFdMap(const int& client_fd)
+void	AServer::addNewClientToFdMap(const int& client_fd, const std::string& client_ip)
 {
-	Client	*temp_client = new Client(client_fd); //protect new?
+	Client	*temp_client = new Client(client_fd, client_ip); //protect new?
 	std::pair<int, Client*>	pair(client_fd, temp_client);
 	_client_fds.insert(pair);
 }
@@ -179,6 +185,11 @@ void 	AServer::rmChannelFromMap(const std::string& channel_name)
 	_channels.erase(it);
 }
 
+// struct sockaddr_in addr;
+// struct in_addr ipAddr = addr.sin_addr;
+// char str[INET_ADDRSTRLEN];
+// inet_ntop(AF_INET, &ipAddr, str, INET_ADDRSTRLEN);
+// std::cout << "inet: " << str << "|\n";
 
 struct addrinfo* AServer::getIpAdressToBind(const int& port) // NOT needed CRY.... !!!???
 {
@@ -269,7 +280,7 @@ void	AServer::epollLoop()
 			failure_exit("epoll_wait failed"); //exits?
 		for (int i = 0; i < ev_cnt; i++)
 		{
-			std::cout << "fd: " << events[i].data.fd << std::endl;
+			std::cout << "fd: " << events[i].data.fd << std::endl;			
 			if (events[i].data.fd == _sock_fd)
 				accept_connection();
 			else if (events[i].data.fd == STDIN_FILENO)

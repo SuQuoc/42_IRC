@@ -1,9 +1,12 @@
 # include "../Includes/Client.hpp"
 
-Client::Client(int fd): _fd(fd), _authenticated(false), _registered(false), _server_op(false)
-{
-	/* std::cout << "Client with socket: " << _fd << "created" << std::endl; */
-}
+Client::Client(int fd, const std::string& ip_addr): 
+_fd(fd),
+_hostname(ip_addr),
+_authenticated(false),
+_registered(false),
+_server_op(false)
+{}
 
 Client::~Client()
 {
@@ -49,9 +52,9 @@ int Client::setUser(std::string& uname, const std::string& hname, const std::str
 	else if (uname.size() > 9)
 		uname.resize(9); //removeed const from uname --> irc bad protocol
 	_username = uname;
-	_hostname = hname;
 	_realname = rname;
 	_servername = sname;
+	(void)hname;
 
 	//Annahme das NICK immer zuerst gemacht wird aber dann ist dann nc nicht gecovered falls wirs covern müssen
 	_prefix = _nickname + "!" + _username + "@" + _hostname;

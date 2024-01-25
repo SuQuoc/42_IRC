@@ -36,7 +36,7 @@ private:
 	Client(const Client&);
     Client& operator=(const Client&);
 public:
-	Client(int socketFd);
+	Client(int socketFd, const std::string& ip_addr);
 	~Client();
 
 	bool isRegistered() const;
