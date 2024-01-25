@@ -144,10 +144,10 @@ int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 			if(err > 0)
 			{
 				sendError(static_cast<IRC_ERR>(err), sender, channel_name);
-				return 1;
+				continue;
 			}
 			else if(err < 0)
-				return 2;
+				continue;
 		}
 		channel_itr = _channels.find(channel_name);
 		sender->joinChannel(channel_itr->second);
