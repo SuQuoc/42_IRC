@@ -39,7 +39,7 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 	else if (cmd == "PASS") PASS(sender, sstream, new_client_fd); //we only take the last PASS // client can always try PASS although not registered ?
 	else if (cmd == "NICK") NICK(sender, sstream);
 	else if (cmd == "USER")	USER(sender, sstream);
-	else if (sender->isRegistered() == false) _replier._replier.sendError(ERR_NOTREGISTERED, sender, ""); //?
+	else if (sender->isRegistered() == false) _replier.sendError(ERR_NOTREGISTERED, sender, ""); //?
 	else if (cmd == "PRIVMSG") PRIVMSG(sender, sstream);
 	else if (cmd == "JOIN") JOIN(sender, sstream);
 	else if (cmd == "PART") PART(sender, sstream);
@@ -49,7 +49,7 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 	else if (cmd == "MODE") std::cout << "MODE()" << std::endl; //MODE();
 	else if (cmd == "TOPIC") TOPIC(sender, sstream);
 	else if (cmd == "OPER") OPER(sender, sstream);
-	else _replier._replier.sendError(ERR_UNKNOWNCOMMAND, sender, cmd);
+	else _replier.sendError(ERR_UNKNOWNCOMMAND, sender, cmd);
 	std::cout << std::endl;
 }
 
@@ -61,7 +61,7 @@ void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client
     std::string password = extractWord(sstream);
     	
     if (sender->isRegistered()) 
-        _replier._replier.sendError(ERR_ALREADYREGISTERED, sender, ""); //already registered
+        _replier.sendError(ERR_ALREADYREGISTERED, sender, ""); //already registered
     else if (password == _password)
 	{
 		sender->authenticate();
@@ -72,7 +72,7 @@ void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client
 	{
 		std::cout << "pw = " << password << std::endl;
 		sender->deauthenticate();
-		_replier._replier.sendError(ERR_PASSWDMISMATCH, sender, "");
+		_replier.sendError(ERR_PASSWDMISMATCH, sender, "");
 		//delete Client and the entry from the map if Pw is wrong? --> multiple PASS not possible then
 	}
 	return ;
@@ -82,20 +82,20 @@ void Irc::NICK(Client *sender, std::stringstream &sstream)
 {
     std::string nickname = extractWord(sstream);
     //if (sender->isAuthenticated() == false) //didnt do PASS before NICK 
-    //    _replier._replier.sendError(321, sender) and return; //theres no err_code for it
+    //    _replier.sendError(321, sender) and return; //theres no err_code for it
 
 	client_name_map_iter_t it = _client_names.find(nickname); //key may not be used cuz it creates an entry --> actually good for us no?
 	if (it == _client_names.end()) //no one has the nickname
 	{
 		if (sender->setNickname(nickname) != 0)
 		{
-			_replier._replier.sendError(ERR_ERRONEUSNICKNAME, sender, "");
+			_replier.sendError(ERR_ERRONEUSNICKNAME, sender, "");
 			return ;
 		}
 	}
 	else
 	{
-		_replier._replier.sendError(ERR_NICKNAMEINUSE, sender, "");
+		_replier.sendError(ERR_NICKNAMEINUSE, sender, "");
 		return ;
 	}
 	if (sender->isRegistered())
@@ -180,7 +180,7 @@ void	Irc::PART(Client *sender, std::stringstream &sstream) //tested (not thoroug
 			_replier.sendError(ERR_NOSUCHCHANNEL, sender, channel_name);
 			continue ;
 		}
-		part_msg = ":" + sender->getPrefix() + " PART " + channel_name + " :Leaving\r\n"; //????
+		part_msg = createMsg(sender, "PART", channel_name, "Leaving");
 		err = channel_it->second->rmClient(sender, part_msg);
 		if (err > 0)
 		{
