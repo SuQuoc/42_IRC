@@ -133,7 +133,7 @@ void	AServer::addNewChannelToMap(Client *sender, const std::string& channel_name
 {
 	Channel	*temp_channel = new Channel(sender, channel_name); //protect new?
 	std::pair<std::string, Channel*>	pair(channel_name, temp_channel);
-	_channels.insert(pair);
+	_channels.insert(pair); //check if already in map!???
 }
 void	AServer::addClientToNameMap(std::string user_name, const int& client_fd) //add more?
 {
@@ -145,7 +145,7 @@ void	AServer::addNewClientToFdMap(const int& client_fd, const std::string& clien
 {
 	Client	*temp_client = new Client(client_fd, client_ip); //protect new?
 	std::pair<int, Client*>	pair(client_fd, temp_client);
-	_client_fds.insert(pair);
+	_client_fds.insert(pair); //check if already in map!???
 }
 
 void 	AServer::rmClientFromMaps(Client *client) //necessary? we always have fd if we have client

@@ -3,17 +3,28 @@ ARGS 		=
 CXX			= c++
 CXXFLAGS	= -Wall -Wextra -Werror -MMD -MP -pedantic -g
  
-INCLUDES 	= ../includes
+INCLUDES 	= ../Includes
 
-SRCS		= 	splitIrcCmd.cpp \
-				tester_main.cpp
+T_SRCS		= 	joinTests.cpp \
+				main.cpp \
+				TestUtils.cpp
 
-SRC_DIR 	= ./srcs
+SRCS		=	Irc.cpp \
+				IrcReply.cpp \
+				AServer.cpp \
+				Channel.cpp \
+				Client.cpp \
+				utils_string.cpp
+
+SRC_DIR 	= ../Srcs
 SRCS 		:= $(addprefix $(SRC_DIR)/, $(SRCS))
 
 OBJ_DIR 	= ./objects_and_dependencies
 OBJFILES 	= $(notdir $(SRCS:.cpp=.o))
 OBJS 		= $(addprefix $(OBJ_DIR)/, $(OBJFILES))
+
+T_OBJFILES 	= $(T_SRCS:.cpp=.o)
+T_OBJS 		= $(addprefix $(OBJ_DIR)/, $(T_OBJFILES))
 
 DEPS 		:= $(OBJS:.o=.d)
 
@@ -25,13 +36,15 @@ all: $(OBJ_DIR) $(NAME)
 $(OBJ_DIR):
 	@mkdir -p $(OBJ_DIR)
 
-$(NAME): $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OBJS) $(MAIN_OBJS) -o $(NAME)
+$(NAME): $(OBJS) $(T_OBJS)
+	$(CXX) $(CXXFLAGS) $(OBJS) $(T_OBJS) -o $(NAME)
 	@echo "$(GREEN)Executable \"$(NAME)\" succesfully created.$(NC)"
+
+$(OBJ_DIR)/%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -MMD -MP -I$(INCLUDES) -c $< -o $@
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MP -I$(INCLUDES) -c $< -o $@
-
 
 #General________________________________________________________
 clean:
@@ -39,7 +52,7 @@ clean:
 	@echo "$(MAGENTA)Obj directory removed.$(NC)"
 
 fclean: clean
-	rm -f $(NAME)
+	rm -f $(NAME) test_errors.log
 	@echo "$(MAGENTA)Deleted executable named: $(NAME)$(NC)"
 
 re: fclean all
@@ -47,7 +60,7 @@ re: fclean all
 
 #ADD ONS_______________________________________________________
 run: all
-	./$(NAME) $(ARGS)
+	@./$(NAME) $(ARGS) 2> test_errors.log
 
 test: $(OBJS) $(TEST_OBJS)
 	$(CXX) $(OBJS) $(TEST_OBJS) -o tester
