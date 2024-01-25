@@ -35,9 +35,9 @@ void Channel::sendMsg(const Client *sender, const std::string &msg)
 			continue ;
 		if(send(itr->members->getFd(), msg.c_str(), msg.size(), 0) == -1)
 		{
-			std::cerr << "send faild in channel.cpp" << std::endl;
+			/* std::cerr << "send faild in channel.cpp" << std::endl;
 			strerror(errno);
-			std::exit(EXIT_FAILURE); //?
+			std::exit(EXIT_FAILURE); //? */
 		}
 	}
 }
@@ -237,7 +237,6 @@ int Channel::setOperator(Client *executor, const char &add, const std::string &n
 int Channel::modesSwitch(Client *executor, const char &add, const char &ch_modes, const std::string &argument)
 {
 	enum color { SET_RESTRICT_TOPIC = 't', SET_INVITE_ONLY = 'i', SET_KEY = 'k', SET_OPERATOR = 'o' };
-	clients_itr itr;
 
 	switch (ch_modes)
 	{

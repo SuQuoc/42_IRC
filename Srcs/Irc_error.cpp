@@ -99,7 +99,7 @@ int	sendError(IRC_ERR error, Client* sender, const std::string& input)
 	err_message += "\r\n";
 	if(send(sender->getFd(), err_message.c_str(), err_message.size(), 0) == -1) //--> turn this to a seperat function that sends in a while loop, others outside of switch can also use it 
 	{
-		std::cout << "Error send faild in Irc_error." << std::endl;
+		std::cerr << "Error send faild in Irc_error." << std::endl;
 		return(-1);
 	}
 	return (0);
