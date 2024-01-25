@@ -19,6 +19,12 @@ Client::~Client()
 bool Client::isServerOp() const {return _server_op;}
 bool Client::isAuthenticated() const {return _authenticated;}
 bool Client::isRegistered() const {return _registered;}
+bool Client::spaceForChannel() const
+{
+	if (_channel_count == 10) 
+		return false;
+	return true;
+}
 
 void Client::authenticate() {_authenticated = true;}
 void Client::deauthenticate() {_authenticated = false;}
@@ -64,6 +70,7 @@ int Client::setUser(std::string& uname, const std::string& hname, const std::str
 }
 
 const int& Client::getFd() const {return _fd;}
+int Client::getChannelCount() const {return _channel_count;}
 const std::string& Client::getNickname() const {return _nickname;}
 const std::string& Client::getUsername() const {return _username;}
 const std::string& Client::getHost() const {return _hostname;}
@@ -79,8 +86,11 @@ void Client::joinChannel(Channel *channel)
 		return ;
 	}
 	std::vector<Channel*>::iterator	it = std::find(_channels.begin(), _channels.end(), channel);
-	if(it == _channels.end())
+	if(it == _channels.end() && _channel_count < 10)
+	{
 		_channels.push_back(channel);
+		_channel_count++;
+	}
 }
 
 void Client::leaveChannel(Channel *channel)
@@ -94,6 +104,7 @@ void Client::leaveChannel(Channel *channel)
 	if(it == _channels.end())
 		return ;
 	_channels.erase(it);
+	_channel_count--;
 }
 
 //we want to handle 

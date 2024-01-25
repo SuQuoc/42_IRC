@@ -12,7 +12,7 @@ enum IRC_ERR
     ERR_NOSUCHNICK = 401,
     ERR_NOSUCHCHANNEL = 403,
     ERR_CANNOTSENDTOCHAN = 404, //? very weird, not for the case i expected
-    ERR_TOOMANYCHANNELS = 405, //our limit 10?
+    ERR_TOOMANYCHANNELS = 405,
     ERR_TOOMANYTARGETS = 407, //?dont want to implement that
     ERR_NORECIPIENT = 411,
     ERR_NOTEXTTOSEND = 412,

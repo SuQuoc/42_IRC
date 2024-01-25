@@ -19,6 +19,7 @@ class Client
 {
 private:
 	const int _fd;
+	size_t _channel_count;
 	std::string _nickname; // values are change-able so not const take a look what can be changed
 	std::string _username;
 	std::string _hostname;
@@ -42,7 +43,8 @@ public:
 	bool isRegistered() const;
 	bool isAuthenticated() const;
 	bool isServerOp() const;
-
+	bool spaceForChannel() const;
+	
 	void authenticate();
 	void deauthenticate();
 	void elevateToServOp();
@@ -51,6 +53,7 @@ public:
 	int setUser(std::string& uname, const std::string& hname, const std::string& sname, const std::string& rname);
 	
 	const int& getFd() const;
+	int getChannelCount() const;
 	const std::string& getNickname() const;
 	const std::string& getUsername() const;
 	const std::string& getHost() const;

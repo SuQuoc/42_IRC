@@ -140,6 +140,8 @@ int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 		getline(stream_key, channel_key, ',');
 		if(!(channel_name[0] == '#' || channel_name[0] == '&') || channel_name.size() > 200) //check if channel_name is valid
 			return (_replier.sendError(ERR_NOSUCHCHANNEL, sender, channel_name));
+		if (sender->spaceForChannel() == false)
+			return (_replier.sendError(ERR_TOOMANYCHANNELS, sender, channel_name));
 		channel_itr = _channels.find(channel_name);
 		if(channel_itr == _channels.end()) // create if channel non exist ?
 			addNewChannelToMap(sender, channel_name);
