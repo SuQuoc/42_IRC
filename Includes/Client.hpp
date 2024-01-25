@@ -10,7 +10,7 @@
 #include <algorithm>
 
 #include "Channel.hpp"
-#include "Irc_error.hpp"
+#include "IrcReply.hpp"
 #include "utils_string.hpp"
 
 class Channel;

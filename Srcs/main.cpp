@@ -63,7 +63,7 @@ int main(const int argc, const char *argv[])
 	if (!isValidPort(argv[1]) || !isValidPassword(argv[2]))
 		return (0);
 
-	Irc	server(argv[2]);
+	Irc	server("AfterLife", argv[2]);
 	// server.setOperatorHost("10.18.195.33"); //nikis laptop on the 42 network
 	server.setOperatorHost("10.14.3.10");
 	server.setOperatorPW("setOpPW");

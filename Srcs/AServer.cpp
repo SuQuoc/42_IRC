@@ -3,7 +3,7 @@
 //con- and destructer
 AServer::AServer(): _epoll_fd(-1), _sock_fd(-1){}
 
-AServer::AServer(std::string password): _password(password), _epoll_fd(-1), _sock_fd(-1) {}
+AServer::AServer(const std::string& name, const std::string& password): _name(name), _password(password), _epoll_fd(-1), _sock_fd(-1) {}
 /* AServer::AServer(const AServer& S)
 {
 	for (int i = 0; i < S._channels.size(); i++)

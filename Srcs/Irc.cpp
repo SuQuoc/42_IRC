@@ -2,8 +2,13 @@
 
 
 //con- and destructer
-Irc::Irc(): AServer() {}
-Irc::Irc(std::string password): AServer(password) {_op_host = "OpHost"; _op_password = "OpPass";}
+Irc::Irc(const std::string& name, const std::string& password): 
+AServer(name, password),
+_replier(name)
+{
+	_op_host = "OpHost"; 
+	_op_password = "OpPass";
+}
 /* Irc::Irc(const Irc& I);
 Irc::Irc operator=(const Irc& I); */
 Irc::~Irc() {}
@@ -34,7 +39,7 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 	else if (cmd == "PASS") PASS(sender, sstream, new_client_fd); //we only take the last PASS // client can always try PASS although not registered ?
 	else if (cmd == "NICK") NICK(sender, sstream);
 	else if (cmd == "USER")	USER(sender, sstream);
-	else if (sender->isRegistered() == false) sendError(ERR_NOTREGISTERED, sender, ""); //?
+	else if (sender->isRegistered() == false) _replier.sendError(ERR_NOTREGISTERED, sender, ""); //?
 	else if (cmd == "PRIVMSG") PRIVMSG(sender, sstream);
 	else if (cmd == "JOIN") JOIN(sender, sstream);
 	else if (cmd == "PART") PART(sender, sstream);
@@ -44,7 +49,7 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 	else if (cmd == "MODE") std::cout << "MODE()" << std::endl; //MODE();
 	else if (cmd == "TOPIC") TOPIC(sender, sstream);
 	else if (cmd == "OPER") OPER(sender, sstream);
-	else sendError(ERR_UNKNOWNCOMMAND, sender, cmd);
+	else _replier.sendError(ERR_UNKNOWNCOMMAND, sender, cmd);
 	std::cout << std::endl;
 }
 
@@ -62,7 +67,7 @@ int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 	{
 		getline(stream_key, channel_key, ',');
 		if(!(channel_name[0] == '#' || channel_name[0] == '&') || channel_name.size() > 200) //check if channel_name is valid
-			return (sendError(ERR_NOSUCHCHANNEL, sender, channel_name));
+			return (_replier.sendError(ERR_NOSUCHCHANNEL, sender, channel_name));
 		channel_itr = _channels.find(channel_name);
 		if(channel_itr == _channels.end()) // create if channel non exist ?
 			addNewChannelToMap(sender, channel_name);
@@ -71,7 +76,7 @@ int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 			int err = channel_itr->second->addClient(sender, channel_key, false);
 			if(err > 0)
 			{
-				sendError(static_cast<IRC_ERR>(err), sender, channel_name);
+				_replier.sendError(static_cast<IRC_ERR>(err), sender, channel_name);
 				return 1;
 			}
 			else if(err < 0)
@@ -79,7 +84,7 @@ int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 		}
 		channel_itr = _channels.find(channel_name);
 		sender->joinChannel(channel_itr->second);
-		sendRPL(RPL_JOIN, sender, channel_name);
+		_replier.sendRPL(RPL_JOIN, sender, channel_name);
 	}
 	return (0);
 }
@@ -100,14 +105,14 @@ void	Irc::PART(Client *sender, std::stringstream &sstream)
 		if (channel_it == _channels.end() || channel_it->second == NULL)
 		{
 			std::cout << "*Error: PART(): channel is not in channel map" << std::endl;
-			sendError(ERR_NOSUCHCHANNEL, sender, channel_name);
+			_replier.sendError(ERR_NOSUCHCHANNEL, sender, channel_name);
 			continue ;
 		}
 		err = channel_it->second->rmClient(sender);
 		if (err > 0)
 		{
 			std::cout << "*Error: PART(): err > 0" << std::endl;
-			sendError(static_cast<IRC_ERR>(err), sender, channel_name);
+			_replier.sendError(static_cast<IRC_ERR>(err), sender, channel_name);
 			continue ;
 		}
 		sender->leaveChannel(channel_it->second);
@@ -118,9 +123,9 @@ void	Irc::PART(Client *sender, std::stringstream &sstream)
 			rmChannelFromMap(channel_name);
 	}
 	if (cnt == 0)
-		sendError(ERR_NEEDMOREPARAMS, sender, "");
+		_replier.sendError(ERR_NEEDMOREPARAMS, sender, "");
 	if (!channel_name_sstream.eof())
-		return ; //sendError(too many argument in list);
+		return ; //_replier.sendError(too many argument in list);
 }
 
 //cant use PART
@@ -164,7 +169,7 @@ void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client
     std::string password = extractWord(sstream);
     	
     if (sender->isRegistered()) 
-        sendError(ERR_ALREADYREGISTERED, sender, ""); //already registered
+        _replier.sendError(ERR_ALREADYREGISTERED, sender, ""); //already registered
     else if (password == _password)
 	{
 		sender->authenticate();
@@ -175,7 +180,7 @@ void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client
 	{
 		std::cout << "pw = " << password << std::endl;
 		sender->deauthenticate();
-		sendError(ERR_PASSWDMISMATCH, sender, "");
+		_replier.sendError(ERR_PASSWDMISMATCH, sender, "");
 		//delete Client and the entry from the map if Pw is wrong? --> multiple PASS not possible then
 	}
 	return ;
@@ -185,26 +190,26 @@ void Irc::NICK(Client *sender, std::stringstream &sstream)
 {
     std::string nickname = extractWord(sstream);
     //if (sender->isAuthenticated() == false) //didnt do PASS before NICK 
-    //    sendError(321, sender) and return; //theres no err_code for it
+    //    _replier.sendError(321, sender) and return; //theres no err_code for it
 
 	client_name_map_iter_t it = _client_names.find(nickname); //key may not be used cuz it creates an entry --> actually good for us no?
 	if (it == _client_names.end()) //no one has the nickname
 	{
 		if (sender->setNickname(nickname) != 0)
 		{
-			sendError(ERR_ERRONEUSNICKNAME, sender, "");
+			_replier.sendError(ERR_ERRONEUSNICKNAME, sender, "");
 			return ;
 		}
 	}
 	else
 	{
-		sendError(ERR_NICKNAMEINUSE, sender, "");
+		_replier.sendError(ERR_NICKNAMEINUSE, sender, "");
 		return ;
 	}
 	if (sender->isRegistered())
 	{
 		addClientToNameMap(sender->getNickname(), sender->getFd());
-		sendRPL(RPL_WELCOME, sender, sender->getUsername());
+		_replier.sendRPL(RPL_WELCOME, sender, sender->getUsername());
 	}
 }
 
@@ -214,7 +219,7 @@ void	Irc::USER(Client *sender, std::stringstream &sstream)
 
 	if (sender->isRegistered())
 	{
-		sendError(ERR_ALREADYREGISTERED, sender, "");
+		_replier.sendError(ERR_ALREADYREGISTERED, sender, "");
 		return ;
 	}
 
@@ -222,11 +227,11 @@ void	Irc::USER(Client *sender, std::stringstream &sstream)
     for (std::vector<std::string>::iterator it = info.begin(); it != info.end(); it++)
 		*it = extractWord(sstream);
     if (sender->setUser(info[0], info[1], info[2], info[3]) == ERR_NEEDMOREPARAMS)
-		sendError(ERR_NEEDMOREPARAMS, sender, "");
+		_replier.sendError(ERR_NEEDMOREPARAMS, sender, "");
 	if (sender->isRegistered())
 	{
 		addClientToNameMap(sender->getNickname(), sender->getFd());
-		sendRPL(RPL_WELCOME, sender, sender->getUsername());
+		_replier.sendRPL(RPL_WELCOME, sender, sender->getUsername());
 	}
 }
 
@@ -247,14 +252,14 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 	for (int cnt = 0; cnt < 10 && std::getline(recip_sstream, recipient, ','); cnt++)
 	{
 		if (recipient.empty()) 
-			sendError(ERR_NORECIPIENT, sender, ""); //need more params
+			_replier.sendError(ERR_NORECIPIENT, sender, ""); //need more params
 		else if (message.empty())
-			sendError(ERR_NOTEXTTOSEND, sender, ""); //need more params
+			_replier.sendError(ERR_NOTEXTTOSEND, sender, ""); //need more params
 		else if (recipient.at(0) == '#')
 		{
 			channel_map_iter_t rec_it = _channels.find(recipient);
 			if (rec_it == _channels.end())
-				sendError(ERR_NOSUCHCHANNEL, sender, "");
+				_replier.sendError(ERR_NOSUCHCHANNEL, sender, "");
 			else
 				rec_it->second->sendMsg(sender, message);	
 		}
@@ -268,7 +273,7 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 		{
 			client_name_map_iter_t rec_it = _client_names.find(recipient);
 			if (rec_it == _client_names.end())
-				sendError(ERR_NOSUCHNICK, sender, "");
+				_replier.sendError(ERR_NOSUCHNICK, sender, "");
 			else
 			{
 				message = createMsg(sender, "PRIVMSG", recipient, message); //PART uses same method
@@ -312,15 +317,15 @@ void Irc::OPER(Client *sender, std::stringstream &sstream)
 	std::string	pw = extractWord(sstream);
 	
 	if (host.empty() || pw.empty())
-		sendError(ERR_NEEDMOREPARAMS, sender, "");
+		_replier.sendError(ERR_NEEDMOREPARAMS, sender, "");
 	else if (host != _op_host && sender->getHost() != _op_host)
-		sendError(ERR_NOOPERHOST, sender, "");
+		_replier.sendError(ERR_NOOPERHOST, sender, "");
 	else if (pw != _op_password)
-		sendError(ERR_PASSWDMISMATCH, sender, "");
+		_replier.sendError(ERR_PASSWDMISMATCH, sender, "");
 	else
 	{
 		sender->elevateToServOp(); //what if send in next line fails?
-		sendRPL(RPL_YOUREOPER, sender, "");
+		_replier.sendRPL(RPL_YOUREOPER, sender, "");
 		std::cout << "INFO: " << sender->getPrefix() << " is now server op, chaos is coming!" << std::endl;
 	}
 }
@@ -341,7 +346,7 @@ void Irc::TOPIC(Client *sender, std::stringstream &sstream)
 	Channel *channel;
 
 	if (channel_name.empty())
-		sendError(ERR_NEEDMOREPARAMS, sender, "");
+		_replier.sendError(ERR_NEEDMOREPARAMS, sender, "");
 
 	channel_it = _channels.find(channel_name);
 	if (channel_it == _channels.end())
@@ -353,20 +358,20 @@ void Irc::TOPIC(Client *sender, std::stringstream &sstream)
 		if (!channel->getTopic().empty())
 		{
 			std::string input = channel_name + " :" + channel->getTopic();
-			sendRPL(RPL_TOPIC, sender, input);
+			_replier.sendRPL(RPL_TOPIC, sender, input);
 		}
 		else
-			sendRPL(RPL_NOTOPIC, sender, channel_name);
+			_replier.sendRPL(RPL_NOTOPIC, sender, channel_name);
 	}
 	else
 	{
 		int err = channel->setTopic(sender->getNickname(), topic);
 		if (err != 0)
-			sendError(static_cast<IRC_ERR>(err), sender, channel_name);
+			_replier.sendError(static_cast<IRC_ERR>(err), sender, channel_name);
 		else
 		{
 			std::string input = channel_name + " :" + channel->getTopic();
-			sendRPL(TOPIC_SET, sender, input);
+			_replier.sendRPL(TOPIC_SET, sender, input);
 		}
 	}
 }

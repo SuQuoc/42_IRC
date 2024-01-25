@@ -2,7 +2,8 @@
 
 #include <sstream>
 #include "AServer.hpp"
-#include "Irc_error.hpp"
+#include "IrcReply.hpp"
+
 
 class AServer;
 
@@ -11,13 +12,15 @@ class Irc : public AServer
 private:
 	std::string 	_op_host;
 	std::string 	_op_password;
+
+	IrcReply _replier;
 //methods
 	void	command_switch(Client *sender, const std::string message, const int& new_client_fd);
 	std::string createMsg(Client *sender, const std::string& cmd, const std::string& recipient, const std::string& msg) const;
 public:
 //con- and destructer
 	Irc(); //should be priv!!
-	Irc(std::string password);
+	Irc(const std::string& name, const std::string& password);
  	//Irc(const Irc& I); ?
 	//Irc operator=(const Irc& I); ?
 	~Irc();

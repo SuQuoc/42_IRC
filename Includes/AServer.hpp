@@ -29,6 +29,7 @@ protected:
 	std::map<std::string, Client*>	_client_names;
 	std::map<int, Client*>			_client_fds;
 	struct epoll_event	_ev;
+	const std::string	_name;
 	const std::string	_password;
 	int		_epoll_fd;
 	int		_sock_fd;
@@ -39,7 +40,7 @@ protected:
 
 //Canonical Form
 	AServer(); //? 
-	AServer(std::string password);
+	AServer(const std::string& name, const std::string& password);
 //methods
 	void	accept_connection();
 	void	disconnect_client(const int& client_fd);
