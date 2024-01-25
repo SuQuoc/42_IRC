@@ -2,8 +2,8 @@
 #include "../Includes/IrcReply.hpp"
 
 
-IrcReply::IrcReply(const std::string& server_name): _server_name(server_name){};
-IrcReply::~IrcReply(){};
+IrcReply::IrcReply(const std::string& server_name): _server_name(server_name){}
+IrcReply::~IrcReply(){}
 
 
 //passing empty string on things that dont requie input?
