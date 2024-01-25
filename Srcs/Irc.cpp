@@ -42,7 +42,7 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 	else if (cmd == "KICK") std::cout << "KICK()" << std::endl; //KICK();
 	else if (cmd == "INVITE") std::cout << "INVITE()" << std::endl; //INVITE();
 	else if (cmd == "MODE") std::cout << "MODE()" << std::endl; //MODE();
-	else if (cmd == "TOPIC") std::cout << "TOPIC()" << std::endl; //TOPIC();
+	else if (cmd == "TOPIC") TOPIC(sender, sstream);
 	else if (cmd == "OPER") OPER(sender, sstream);
 	else sendError(ERR_UNKNOWNCOMMAND, sender, cmd);
 	std::cout << std::endl;
@@ -52,25 +52,35 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 //---------------------------------COMMANDS--------------------------------------------
 int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 {
+	std::stringstream stream_name(extractWord(sstream));
+	std::stringstream stream_key(extractWord(sstream));
 	channel_map_iter_t channel_itr;
-	std::string	channel_name(extractWord(sstream));
-	std::string	stream_str;
+	std::string	channel_name;
+	std::string	channel_key;
 
-	if(!(channel_name[0] == '#' || channel_name[0] == '&') || channel_name.size() > 200) //check if channel_name is valid
-		return (sendError(ERR_NOSUCHCHANNEL, sender, channel_name));
-	channel_itr = _channels.find(channel_name);
-	if(channel_itr == _channels.end()) // create if channel non exist ?
-		addNewChannelToMap(sender, channel_name);
-	else
+	while(getline(stream_name, channel_name, ','))
 	{
-		channel_itr->second->addClient(sender, false);
-		//if error send error msg to client ?
-		//if( != 0) ?
-		//	return ; ?
+		getline(stream_key, channel_key, ',');
+		if(!(channel_name[0] == '#' || channel_name[0] == '&') || channel_name.size() > 200) //check if channel_name is valid
+			return (sendError(ERR_NOSUCHCHANNEL, sender, channel_name));
+		channel_itr = _channels.find(channel_name);
+		if(channel_itr == _channels.end()) // create if channel non exist ?
+			addNewChannelToMap(sender, channel_name);
+		else
+		{
+			int err = channel_itr->second->addClient(sender, channel_key, false);
+			if(err > 0)
+			{
+				sendError(static_cast<IRC_ERR>(err), sender, channel_name);
+				return 1;
+			}
+			else if(err < 0)
+				return 2;
+		}
+		channel_itr = _channels.find(channel_name);
+		sender->joinChannel(channel_itr->second);
+		sendRPL(RPL_JOIN, sender, channel_name);
 	}
-	channel_itr = _channels.find(channel_name);
-	sender->joinChannel(channel_itr->second);
-	sendRPL(RPL_JOIN, sender, channel_name);
 	return (0);
 }
 
@@ -93,7 +103,7 @@ void	Irc::PART(Client *sender, std::stringstream &sstream) //tested (not thoroug
 			sendError(ERR_NOSUCHCHANNEL, sender, channel_name);
 			continue ;
 		}
-		err = channel_it->second->rmClient(sender);
+		err = channel_it->second->rmClient(sender, "Leaving"); //????
 		if (err > 0)
 		{
 			std::cout << "*Error: PART(): err > 0" << std::endl;
@@ -102,7 +112,7 @@ void	Irc::PART(Client *sender, std::stringstream &sstream) //tested (not thoroug
 		}
 		sender->leaveChannel(channel_it->second);
 
-		part_msg = ":" + sender->getPrefix() + " PART " + channel_name + " :leaving\r\n";
+		part_msg = ":" + sender->getPrefix() + " PART " + channel_name + " :Leaving\r\n"; //????
 		send(sender->getFd(), part_msg.c_str(), part_msg.size(), 0);
 		if (err == -1) //delete channel when empty()
 			rmChannelFromMap(channel_name);
@@ -122,6 +132,7 @@ void	Irc::QUIT(Client *sender, std::stringstream &sstream)
 {
 	std::string	channel_name;
 	std::string	msg = extractWord(sstream);
+	Channel		*channel; 
 	int err;
 	if (msg.empty())
 		msg = "disconnected"; //where will the entire message be concatinated? in channel?
@@ -129,12 +140,12 @@ void	Irc::QUIT(Client *sender, std::stringstream &sstream)
 	std::vector<Channel *> channels = sender->getAllChannels();
 	for (std::vector<Channel *>::iterator it = channels.begin(); it != channels.end(); it++)
 	{
-		Channel *channel = (*it); 
+		channel = (*it); 
 		if (!channel) //necessary? checking if the channel is in map or null seems overkill, since this case should never happen
 			continue ;
 		// sender->leaveChannel(channel); //unecessary ?? he will leave entire server
 		channel_name = channel->getName();
-		err = channel->rmClient(sender);
+		err = channel->rmClient(sender, "Leaving");
 		if (err == -1) //exchange -1 with CHANNEL_DEAD, and use rmClient with a message
 			rmChannelFromMap(channel_name);		
 	}
@@ -327,4 +338,42 @@ std::string Irc::createMsg(Client *sender, const std::string& cmd, const std::st
         return msg;
     std::string message = ":" + sender->getPrefix() + " " + cmd + " " + recipient + " :" + msg + "\r\n"; //PART uses same method -> extra function?
     return message;
+}
+
+void Irc::TOPIC(Client *sender, std::stringstream &sstream)
+{
+	std::string channel_name = extractWord(sstream);
+	std::string topic = extractWord(sstream);
+	channel_map_iter_t channel_it;
+	Channel *channel;
+
+	if (channel_name.empty())
+		sendError(ERR_NEEDMOREPARAMS, sender, "");
+
+	channel_it = _channels.find(channel_name);
+	if (channel_it == _channels.end())
+		return ; //no error listed in protocoll
+	
+	channel = channel_it->second;
+	if (topic.empty()) //only wants 
+	{
+		if (!channel->getTopic().empty())
+		{
+			std::string input = channel_name + " :" + channel->getTopic();
+			sendRPL(RPL_TOPIC, sender, input);
+		}
+		else
+			sendRPL(RPL_NOTOPIC, sender, channel_name);
+	}
+	else
+	{
+		int err = channel->setTopic(sender->getNickname(), topic);
+		if (err != 0)
+			sendError(static_cast<IRC_ERR>(err), sender, channel_name);
+		else
+		{
+			std::string input = channel_name + " :" + channel->getTopic();
+			sendRPL(TOPIC_SET, sender, input);
+		}
+	}
 }

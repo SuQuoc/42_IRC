@@ -2,7 +2,6 @@
 #include "Irc_error.hpp"
 
 
-
 //passing empty string on things that dont requie input?
 //if 2 inputs are needed should we?
 //takes in Client pointer to send()
@@ -75,6 +74,9 @@ int	sendError(IRC_ERR error, Client* sender, const std::string& input)
 		case ERR_INVITEONLYCHAN:
 			err_message += input + " :Cannot join channel (+i)"; //<channel>
 			break;
+		case ERR_BADCHANNELKEY:
+			err_message += input + " :Cannot join channel (+k)";
+			break;
 		case ERR_CHANOPRIVSNEEDED:
 			err_message += input + " :You're not channel operator"; //<channel>
 			break;
@@ -104,8 +106,12 @@ void	sendRPL(IRC_ERR error, Client* sender, const std::string& input)
 	std::stringstream error_code;
 
 	error_code << error;
+	msg = ":" + server_name + " " + error_code.str() + " " + sender->getNickname() + " ";
 	switch (error)
 	{
+		case TOPIC_SET:
+			msg = ":" + sender->getPrefix() + " TOPIC " + input;
+			break;
 		case RPL_JOIN:
 			msg = ":" + sender->getPrefix() + " JOIN " + input + " * :" + sender->getUsername();
 			break;
@@ -113,8 +119,14 @@ void	sendRPL(IRC_ERR error, Client* sender, const std::string& input)
 			msg = ":" + server_name + " 001 " + sender->getNickname() + " :Welcome to the Internet Relay Network, " + input; //input = getPrefix() from Client; <nick>!<user>@<host>
 			break;
 		case RPL_YOUREOPER:
-			msg = ":" + server_name + " 381 " + sender->getNickname() + " :You are now an IRC operator";
-			break;		
+			msg += " :You are now an IRC operator";
+			break;
+		case RPL_TOPIC:
+			msg = input + "<channel> :<topic>"; //channel topic
+			break;
+		case RPL_NOTOPIC:
+			msg = input + " :No topic is set"; //channel
+			break;
 		default:
 			std::cout << "CANT HAPPEN DUE TO ENUM" << std::endl;
 	}

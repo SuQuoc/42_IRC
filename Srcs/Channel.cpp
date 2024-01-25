@@ -1,13 +1,17 @@
 #include "../Includes/Channel.hpp"
 
-Channel::Channel(Client *owner, const std::string &channel_name) : _name(channel_name), _max_clients(MAX_CLIENTS)
+Channel::Channel(Client *owner, const std::string &channel_name) : 
+_name(channel_name),
+_restrict_topic(true),
+_invite_only(false),
+_max_clients(MAX_CLIENTS)
 {
 	if(owner == NULL)
 	{
 		std::cerr << "* Error: owner is NULL (in channel constructor)" << std::endl;
 		return ;
 	}
-	addClient(owner, true);
+	addClient(owner, "", true);
 }
 Channel::Channel(const Channel &C) : _clients(C._clients), _password(C._password), _topic(C._topic), _name(C._name)
 {
@@ -22,14 +26,14 @@ void Channel::sendMsg(const Client *sender, const std::string &msg)
 		std::cerr << "* Error: sender is NULL (in sendMsg)" << std::endl;
 		return ;
 	}
+	if(getClient(sender) == _clients.end())
+		return ; //return error code
 	for(clients_itr itr = _clients.begin(); itr != _clients.end(); itr++)
 	{
 		if(itr->members == sender)
 			continue ;
 		if(send(itr->members->getFd(), msg.c_str(), msg.size(), 0) == -1)
 		{
-			/* if (errno == EAGAIN || errno == EWOULDBLOCK)
-				continue ; */
 			std::cerr << "send faild in channel.cpp" << std::endl;
 			strerror(errno);
 			std::exit(EXIT_FAILURE); //?
@@ -38,7 +42,7 @@ void Channel::sendMsg(const Client *sender, const std::string &msg)
 }
 
 //does not rm client from clients._channels or the other maps in server
-void Channel::rmClient(const Client *executor, const Client *rm_client)
+void Channel::rmClient(const Client *executor, const Client *rm_client, const std::string &leaving_msg)
 {
 	clients_itr itr;
 
@@ -57,12 +61,12 @@ void Channel::rmClient(const Client *executor, const Client *rm_client)
 		return ;
 		// :server-name 482 your-nickname #channel :You're not channel operator ?
 	}
-	rmClient(rm_client); //needs pass error-codes to irc
+	rmClient(rm_client, leaving_msg); //needs pass error-codes to irc
 	//need to  send a msg to the executor?
 }
 
 //returns -1 if last client leaves channel
-int Channel::rmClient(const Client *rm_client) //add 
+int Channel::rmClient(const Client *rm_client, const std::string &leaving_msg) //add 
 {
 	clients_itr itr;
 
@@ -74,35 +78,36 @@ int Channel::rmClient(const Client *rm_client) //add
 		std::cout << "Placeholder in rmClient() in channel.hpp" << std::endl << "rm_client is not in channel!" << std::endl;
 		return (ERR_NOTONCHANNEL);
 	}
-	sendMsg(rm_client, ":" + rm_client->getPrefix() + " PART " + _name + " :leaving\r\n");
+	sendMsg(rm_client, ":" + rm_client->getPrefix() + " PART " + _name + " :" + leaving_msg + "\r\n");
 	_clients.erase(itr);
 	if (_clients.empty())
-		return (-1);
+		return (DELETE_CHANNEL);
 	return (0);
 }
 
-void	Channel::addClient(Client *new_client, bool is_operator)
+// -1 if client is NULL
+// -2 is already in channel
+int	Channel::addClient(Client *new_client, const std::string &password, bool is_operator)
 {
 	if(new_client == NULL)
 	{
 		std::cerr << "Error addMember(): new_client is NULL" << std::endl;
-		return ;
+		return -1; // -1 if client is NULL
 	}
 	if(size() >= _max_clients)
-	{
-		std::cerr << "Error channel" << _name << " is full" << std::endl;
-		return ;
-	}
+		return ERR_CHANNELISFULL;
 	if(getClient(new_client) != _clients.end())
 	{
 		std::cerr << "Error client" << new_client->getUsername() << " is already in this channel." << std::endl;
-		return ;
+		return -2; // -2 is already in channel
 	}
-	//	need to send a msg to the client ?
+	if(_password.empty() == false && _password != password)
+		return ERR_BADCHANNELKEY;
 	struct Member_t member;
 	member.is_operator = is_operator;
 	member.members = new_client;
 	_clients.push_back(member);
+	return 0;
 }
 
 bool	Channel::isOperator(const Client *client)
@@ -149,18 +154,25 @@ int	Channel::setPassword(Client *executor, const std::string &password, const ch
 	}
 	return ERR_KEYSET; // 467 ERR_KEYSET
 }
-//also checks if name is in clients and if oper if restricted
-void	Channel::setTopic(const std::string &name, const std::string &topic)
+//sucess = 1001 TOPIC_SET
+int	Channel::setTopic(const std::string &name, const std::string &topic)
 {
 	clients_itr client;
 
 	client = getClient(name);
 	if(client == _clients.end())
-		return ; // send msg ???????????? to client ????????
+		return ERR_NOTONCHANNEL;
 	if(_restrict_topic == false)
+	{
 		_topic = topic;
-	else if(_restrict_topic == true && client->is_operator == true)
+		return TOPIC_SET;
+	}
+	if(_restrict_topic == true && client->is_operator == true)
+	{
 		_topic = topic;
+		return TOPIC_SET;
+	}
+	return ERR_CHANOPRIVSNEEDED;
 }
 
 //			getter
@@ -179,7 +191,7 @@ std::vector<Channel::Member_t>::iterator Channel::getClient(const std::string _n
 			return itr;
 	return _clients.end();
 }
-
+const std::string &Channel::getTopic() const { return _topic; }
 const std::string &Channel::getPassword() const { return _password; }
 const std::string &Channel::getName() const { return _name; }
 bool Channel::getInviteOnly() const { return _invite_only; }
