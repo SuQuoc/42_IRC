@@ -29,6 +29,7 @@ protected:
 	std::map<std::string, Client*>	_client_names;
 	std::map<int, Client*>			_client_fds;
 	struct epoll_event	_ev;
+	const std::string	_name;
 	const std::string	_password;
 	int		_epoll_fd;
 	int		_sock_fd;
@@ -39,7 +40,7 @@ protected:
 
 //Canonical Form
 	AServer(); //? 
-	AServer(std::string password);
+	AServer(const std::string& name, const std::string& password);
 //methods
 	void	accept_connection();
 	void	disconnect_client(const int& client_fd);
@@ -50,7 +51,8 @@ protected:
 
 	void	addNewChannelToMap(Client *sender, const std::string& channel_name);
 	void	addClientToNameMap(std::string user_name, const int& client_fd);
-	void	addNewClientToFdMap(const int& client_fd);
+	void	addNewClientToFdMap(const int& client_fd, const std::string& client_ip);
+
 	void 	rmClientFromMaps(Client *client); 
 	void 	rmClientFromMaps(int client_fd);
 	void 	rmChannelFromMap(const std::string& channel_name);

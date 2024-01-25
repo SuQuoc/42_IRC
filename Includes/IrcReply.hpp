@@ -51,5 +51,17 @@ enum IRC_ERR
     TOPIC_SET = 1001
 };
 
-int sendError(IRC_ERR error, Client* sender, const std::string& input);
-void	sendRPL(IRC_ERR error, Client* sender, const std::string& input);
+class IrcReply
+{
+private:
+    const std::string& _server_name;
+
+    IrcReply(const IrcReply&);
+    IrcReply& operator=(const IrcReply&);
+public:
+    IrcReply(const std::string& server_name);
+    ~IrcReply();
+    
+    int     sendError(IRC_ERR error, Client* sender, const std::string& input) const;
+    void	sendRPL(IRC_ERR error, Client* sender, const std::string& input) const;
+};

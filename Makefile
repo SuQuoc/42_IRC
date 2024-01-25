@@ -7,7 +7,7 @@ INCLUDES 	= ./Includes
 
 
 SRCS		= 	Irc.cpp \
-				Irc_error.cpp \
+				IrcReply.cpp \
 				AServer.cpp \
 				Channel.cpp \
 				Client.cpp \

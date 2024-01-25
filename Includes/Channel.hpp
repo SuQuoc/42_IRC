@@ -8,7 +8,7 @@
 #include <algorithm>		// std::find
 
 #include "../Includes/Client.hpp"
-#include "Irc_error.hpp"
+#include "IrcReply.hpp"
 
 #define MAX_CLIENTS 100 // How high should it be?
 #define EXIT_FAILURE 1

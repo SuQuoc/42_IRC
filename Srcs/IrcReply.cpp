@@ -1,14 +1,17 @@
 
-#include "Irc_error.hpp"
+#include "../Includes/IrcReply.hpp"
+
+
+IrcReply::IrcReply(const std::string& server_name): _server_name(server_name){};
+IrcReply::~IrcReply(){};
 
 
 //passing empty string on things that dont requie input?
-//if 2 inputs are needed should we?
 //takes in Client pointer to send()
-int	sendError(IRC_ERR error, Client* sender, const std::string& input)
+int	IrcReply::sendError(IRC_ERR error, Client* sender, const std::string& input) const
 {
 	std::string err_message;
-	std::string server_name = "AfterLife"; //put in constructor!
+	std::string server_name = "AfterLife"; //put in constructor! 
 	std::stringstream error_code;
 
 	error_code << error;
@@ -105,7 +108,7 @@ int	sendError(IRC_ERR error, Client* sender, const std::string& input)
 	return (0);
 }
 
-void	sendRPL(IRC_ERR error, Client* sender, const std::string& input)
+void	IrcReply::sendRPL(IRC_ERR error, Client* sender, const std::string& input) const
 {
 	std::string msg;
 	std::string server_name = "AfterLife";

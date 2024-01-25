@@ -10,7 +10,7 @@
 #include <algorithm>
 
 #include "Channel.hpp"
-#include "Irc_error.hpp"
+#include "IrcReply.hpp"
 #include "utils_string.hpp"
 
 class Channel;
@@ -36,7 +36,7 @@ private:
 	Client(const Client&);
     Client& operator=(const Client&);
 public:
-	Client(int socketFd);
+	Client(int socketFd, const std::string& ip_addr);
 	~Client();
 
 	bool isRegistered() const;
