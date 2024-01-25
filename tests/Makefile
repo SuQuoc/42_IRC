@@ -10,7 +10,7 @@ T_SRCS		= 	joinTests.cpp \
 				TestUtils.cpp
 
 SRCS		=	Irc.cpp \
-				Irc_error.cpp \
+				IrcReply.cpp \
 				AServer.cpp \
 				Channel.cpp \
 				Client.cpp \
@@ -52,7 +52,7 @@ clean:
 	@echo "$(MAGENTA)Obj directory removed.$(NC)"
 
 fclean: clean
-	rm -f $(NAME)
+	rm -f $(NAME) test_errors.log
 	@echo "$(MAGENTA)Deleted executable named: $(NAME)$(NC)"
 
 re: fclean all

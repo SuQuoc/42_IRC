@@ -5,8 +5,8 @@
 class TestServer: public Irc
 {
 public:
-	TestServer() :Irc("password") {}
-	TestServer(const std::string password): Irc(password) {}
+	TestServer() :Irc("TestServer", "password") {}
+	TestServer(const std::string name, const std::string password): Irc(name, password) {}
 	~TestServer() {}
 
 	void	join_tests();
