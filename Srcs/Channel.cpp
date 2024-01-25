@@ -26,14 +26,14 @@ void Channel::sendMsg(const Client *sender, const std::string &msg)
 		std::cerr << "* Error: sender is NULL (in sendMsg)" << std::endl;
 		return ;
 	}
+	if(getClient(sender) == _clients.end())
+		return ; //return error code
 	for(clients_itr itr = _clients.begin(); itr != _clients.end(); itr++)
 	{
 		if(itr->members == sender)
 			continue ;
 		if(send(itr->members->getFd(), msg.c_str(), msg.size(), 0) == -1)
 		{
-			/* if (errno == EAGAIN || errno == EWOULDBLOCK)
-				continue ; */
 			std::cerr << "send faild in channel.cpp" << std::endl;
 			strerror(errno);
 			std::exit(EXIT_FAILURE); //?
@@ -42,7 +42,7 @@ void Channel::sendMsg(const Client *sender, const std::string &msg)
 }
 
 //does not rm client from clients._channels or the other maps in server
-void Channel::rmClient(const Client *executor, const Client *rm_client)
+void Channel::rmClient(const Client *executor, const Client *rm_client, const std::string &leaving_msg)
 {
 	clients_itr itr;
 
@@ -61,12 +61,12 @@ void Channel::rmClient(const Client *executor, const Client *rm_client)
 		return ;
 		// :server-name 482 your-nickname #channel :You're not channel operator ?
 	}
-	rmClient(rm_client); //needs pass error-codes to irc
+	rmClient(rm_client, leaving_msg); //needs pass error-codes to irc
 	//need to  send a msg to the executor?
 }
 
 //returns -1 if last client leaves channel
-int Channel::rmClient(const Client *rm_client) //add 
+int Channel::rmClient(const Client *rm_client, const std::string &leaving_msg) //add 
 {
 	clients_itr itr;
 
@@ -78,10 +78,10 @@ int Channel::rmClient(const Client *rm_client) //add
 		std::cout << "Placeholder in rmClient() in channel.hpp" << std::endl << "rm_client is not in channel!" << std::endl;
 		return (ERR_NOTONCHANNEL);
 	}
-	sendMsg(rm_client, ":" + rm_client->getPrefix() + " PART " + _name + " :leaving\r\n");
+	sendMsg(rm_client, ":" + rm_client->getPrefix() + " PART " + _name + " :" + leaving_msg + "\r\n");
 	_clients.erase(itr);
 	if (_clients.empty())
-		return (-1);
+		return (DELETE_CHANNEL);
 	return (0);
 }
 

@@ -103,7 +103,7 @@ void	Irc::PART(Client *sender, std::stringstream &sstream)
 			sendError(ERR_NOSUCHCHANNEL, sender, channel_name);
 			continue ;
 		}
-		err = channel_it->second->rmClient(sender);
+		err = channel_it->second->rmClient(sender, "Leaving"); //????
 		if (err > 0)
 		{
 			std::cout << "*Error: PART(): err > 0" << std::endl;
@@ -112,7 +112,7 @@ void	Irc::PART(Client *sender, std::stringstream &sstream)
 		}
 		sender->leaveChannel(channel_it->second);
 
-		part_msg = ":" + sender->getPrefix() + " PART " + channel_name + " :leaving\r\n";
+		part_msg = ":" + sender->getPrefix() + " PART " + channel_name + " :Leaving\r\n"; //????
 		send(sender->getFd(), part_msg.c_str(), part_msg.size(), 0);
 		if (err == -1) //delete channel when empty()
 			rmChannelFromMap(channel_name);
@@ -145,7 +145,7 @@ void	Irc::QUIT(Client *sender, std::stringstream &sstream)
 			continue ;
 		// sender->leaveChannel(channel); //unecessary ?? he will leave entire server
 		channel_name = channel->getName();
-		err = channel->rmClient(sender);
+		err = channel->rmClient(sender, "Leaving");
 		if (err == -1) //exchange -1 with CHANNEL_DEAD, and use rmClient with a message
 			rmChannelFromMap(channel_name);		
 	}
