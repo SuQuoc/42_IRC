@@ -73,7 +73,7 @@ va: all
 	--leak-check=full \
 	--track-origins=yes \
 	--show-leak-kinds=all \
-	./$(NAME) $(ARGS)
+	./$(NAME) $(ARGS) 2> test_errors.log
 
 scan: all
 	scan-build-12 \
