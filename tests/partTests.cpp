@@ -1,4 +1,4 @@
-#include <TestServer.hpp>
+#include "TestServer.hpp"
 
 void	TestServer::partChannelNotEmpty()
 {
@@ -15,9 +15,26 @@ void	TestServer::partChannelNotEmpty()
 
 	if (channel->isInChannel(elena) == true)
 		return (fail("client wasn't removed from channel-vector"));
-	if (elena.)
-	
+	if (elena->isInChannel(channel) == true)
+		return (fail("channel wasn't removed from channel-vector in client"));
+	if (serv._channels.find("#channel") == serv._channels.end())
+		return (fail("channel should not be deleted"));
 	ok();
+}
+
+//too many users join and all part so channel in channels-map should be deleted
+void	TestServer::fromTooManyUsersToChannelEmpty()
+{
+	TestServer 				serv;
+	channel_map_iter_t		channel_it;
+
+	for (int i = 0; i < MAX_CLIENTS + 3; i++)
+		serv.makeUserJoinChannel("#channel", std::to_string(i), 5 + i);
+	for (int i = 0; i < MAX_CLIENTS; i++)
+		serv.PART(serv._client_fds.find(i)->second, makeSstream("#channel"));
+	
+	if (serv._channels.find("#channel") != serv._channels.end())
+		return (fail("channel should be deleted"));
 }
 
 void TestServer::part_tests()

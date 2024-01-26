@@ -9,7 +9,7 @@ void	TestServer::makeUserJoinChannel(const std::string channel_name, const std::
 	JOIN(_client_fds.find(client_fd)->second, sstream);
 }
 
-std::stringstream&	TestServer::makeSstream(const std::string msg) const
+std::stringstream	TestServer::makeSstream(const std::string msg)
 {
 	std::stringstream sstream(msg);
 	return (sstream);
