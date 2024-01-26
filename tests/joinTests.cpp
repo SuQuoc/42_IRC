@@ -134,6 +134,18 @@ void TestServer::CheckingWrongListInput()
 	ok();
 }
 
+void TestServer::AddServerWithPWandJoin()
+{
+	TestServer	serv;
+	Client		*channel_ower;
+	
+	serv.makeUserJoinChannel("#pw", "Fiona", 5);
+	channel_ower = serv.getClient("fiona");
+	serv._channels.find("#pw")->second->setPassword(channel_ower, "123456", '+');
+
+	ok();
+}
+
 void TestServer::join_tests()
 {
 	std::cout << "\033[1;33m---JOIN TESTS---\033[0m" << std::endl;
