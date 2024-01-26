@@ -26,6 +26,14 @@ bool Client::spaceForChannel() const
 	return true;
 }
 
+bool Client::isInChannel(Channel *channel) const
+{
+	std::vector<Channel *>::const_iterator it = std::find(_channels.begin(), _channels.end(), channel);
+	if (it == _channels.end())
+		return (false);
+	return (true);
+}
+
 void Client::authenticate() {_authenticated = true;}
 void Client::deauthenticate() {_authenticated = false;}
 void Client::elevateToServOp() {_server_op = true;}
@@ -76,6 +84,12 @@ const std::string& Client::getUsername() const {return _username;}
 const std::string& Client::getHost() const {return _hostname;}
 const std::string& Client::getPrefix() const {return _prefix;}
 const std::vector<Channel *>& Client::getAllChannels() const {return _channels;}
+std::vector<Channel *>::iterator Client::getChannelIter(Channel *channel)
+{
+	if (!channel)
+		return (_channels.end());
+	return (std::find(_channels.begin(), _channels.end(), channel));
+}
 
 
 void Client::joinChannel(Channel *channel)
@@ -85,7 +99,7 @@ void Client::joinChannel(Channel *channel)
 		std::cout << "Error: joinChannel()" << std::endl;
 		return ;
 	}
-	std::vector<Channel*>::iterator	it = std::find(_channels.begin(), _channels.end(), channel);
+	std::vector<Channel*>::iterator	it = getChannelIter(channel);
 	if(it == _channels.end() && _channel_count < 10)
 	{
 		_channels.push_back(channel);
@@ -100,18 +114,12 @@ void Client::leaveChannel(Channel *channel)
 		std::cout << "Error: leaveChannel()" << std::endl;
 		return ;
 	}
-	std::vector<Channel*>::iterator	it = std::find(_channels.begin(), _channels.end(), channel);
+	std::vector<Channel*>::iterator	it = getChannelIter(channel);
 	if(it == _channels.end())
 		return ;
 	_channels.erase(it);
 	_channel_count--;
 }
-
-//we want to handle 
-//"text\ntext^D"
-//"text^D"
-//"text^Dtext\n"
-// buffer nur clearn und überschreiben wenn eine nachricht mit \r oder \n am ende drinnen steht. If buffer doesn't have delimiter, dranstückeln bis delimiter kommt. Wenn buffer voll, nicht überschreiben bis message mit delimiter kommt (? last sentence)
 
 void	Client::loadMsgBuf(const std::string& str)
 {
