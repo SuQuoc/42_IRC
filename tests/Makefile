@@ -5,7 +5,8 @@ CXXFLAGS	= -Wall -Wextra -Werror -MMD -MP -pedantic -g
  
 INCLUDES 	= ../Includes
 
-T_SRCS		= 	joinTests.cpp \
+T_SRCS		= 	clientTests.cpp \
+				joinTests.cpp \
 				main.cpp \
 				TestUtils.cpp
 
