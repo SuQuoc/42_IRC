@@ -36,6 +36,8 @@ private:
 
 	Client(const Client&);
     Client& operator=(const Client&);
+
+	std::vector<Channel *>::iterator getChannelIter(Channel *channel);
 public:
 	Client(int socketFd, const std::string& ip_addr);
 	~Client();
@@ -44,7 +46,8 @@ public:
 	bool isAuthenticated() const;
 	bool isServerOp() const;
 	bool spaceForChannel() const;
-	
+	bool isInChannel(Channel *channel) const;
+
 	void authenticate();
 	void deauthenticate();
 	void elevateToServOp();
