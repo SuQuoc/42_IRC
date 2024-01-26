@@ -9,9 +9,13 @@ public:
 	TestServer(const std::string name, const std::string password): Irc(name, password) {}
 	~TestServer() {}
 
+//---join---
 	void	join_tests();
 	void	makingNewChannel();
 	void	addingTooManyUsers();
+	void	addingListOfChannels();
+	void	CheckingChannelNames();
+	void	addingCheckingChannelNames();
 
 
 
