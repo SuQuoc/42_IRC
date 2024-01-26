@@ -93,7 +93,10 @@ int	IrcReply::sendError(IRC_ERR error, Client* sender, const std::string& input)
 			err_message += input + ":Unknown MODE flag"; //input?
 			break;
 		case ERR_NOOPERHOST:
-			err_message += input + ":No O-lines for your host"; //input?
+			err_message += ":No O-lines for your host";
+			break;
+		case ERR_NOPRIVILEGES:
+			err_message += ":Permission Denied- You're not an IRC operator";
 			break;
 		default:
 			std::cout << "CANT HAPPEN DUE TO ENUM" << std::endl;

@@ -324,7 +324,7 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 //void Irc::TOPIC(Client *sender, std::stringstream &sstream);
 //void Irc::INVITE(Client *sender, std::stringstream &sstream);
 
-// void Irc::clientDied(int client_fd) //pure virtual or put this as a normal function in AServer
+// void Irc::disconnectClient(int client_fd) //pure virtual or put this as a normal function in AServer
 // {
 // 	std::string	channel_name;
 // 	int err;
@@ -345,10 +345,13 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 //}
 
 
+
+//chose to name the string "host" and not "user" irc protocoll a bit vague
+//find it a bit weird to check the IP is valid IP for IRC operator but nit check if the cmd was send by that IP
 void Irc::OPER(Client *sender, std::stringstream &sstream)
 {
 	std::cout << "Executing OPER()" << std::endl;
-	std::string	host = extractWord(sstream); //chose to name the string "host" and not "user" irc protocoll a bit vague
+	std::string	host = extractWord(sstream); 
 	std::string	pw = extractWord(sstream);
 	
 	if (host.empty() || pw.empty())
@@ -361,7 +364,7 @@ void Irc::OPER(Client *sender, std::stringstream &sstream)
 	{
 		sender->elevateToServOp(); //what if send in next line fails?
 		_replier.sendRPL(RPL_YOUREOPER, sender, "");
-		std::cout << "INFO: " << sender->getPrefix() << " is now server op, chaos is coming!" << std::endl;
+		std::cout << "INFO: " << sender->getPrefix() << " is now server op, chaos is coming!" << std::endl; //out?
 	}
 }
 
@@ -408,20 +411,27 @@ void Irc::TOPIC(Client *sender, std::stringstream &sstream)
 	}
 }
 
+//483 ERR_CANTKILLSERVER; how do u even trigger this? not covered
 void Irc::KILL(Client *sender, std::stringstream &sstream)
 {
 	std::string nickname;
 	std::string comment; 
-	client_name_map_iter_t  client_to_kill;
+	Client*  client_to_kill;
 
 	if (sender->isServerOp() == false)
-		return;
+		return (_replier.sendError(ERR_NOPRIVILEGES, sender, nickname), void());
+
 	nickname = extractWord(sstream);
+	if (nickname.empty())
+		_replier.sendError(ERR_NEEDMOREPARAMS, sender, nickname);
+	
 	comment = extractWord(sstream);
-	client_to_kill = _client_names.find(nickname);
-	if (client_to_kill == _client_names.end())
+
+	client_to_kill = getClient(nickname);
+	if (client_to_kill == NULL)
 		_replier.sendError(ERR_NOSUCHNICK, sender, nickname);
 	
+	//disconnectClient(client_to_kill, comment); 
 }
 
 void Irc::setOperatorHost(const std::string& hostname)

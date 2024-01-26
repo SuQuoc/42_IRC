@@ -78,13 +78,29 @@ void	AServer::accept_connection()
 	}
 }
 
+
 void	AServer::disconnect_client(const int& client_fd)
 {
-	(void)client_fd;
-	/* Client *client = _client_fds.find(client_fd)->second;
-	close(client_fd);
-	delete client; */
+	Client *client = getClient(client_fd);
+	(void)(client);
+	// disconnectClient(Client *client, "lost connection, bye bye, see you in the AfterLife");
 }
+
+// void	AServer::disconnectClient(Client *client, const std::string& msg)
+// {
+	// std::vector<Channel *> channels = client->getAllChannels();
+	// for (std::vector<Channel *>::iterator it = channels.begin(); it != channels.end(); it++)
+	// {
+		// Channel *channel = (*it); 
+		// if (!channel) //necessary? checking if the channel is in map or null seems overkill, since this case should never happen
+			// continue ;
+		/* client->leaveChannel(channel); //unecessary ?? he will leave entire server */
+		// int err = channel->rmClient(client, msg);
+		// if (err == -1) //exchange -1 with CHANNEL_DEAD, and use rmClient with a message
+			// rmChannelFromMap(channel->getName());		
+	// }
+	// rmClientFromMaps(client);
+// }
 
 void	AServer::process_event(const int& client_fd)
 {
