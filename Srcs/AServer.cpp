@@ -296,3 +296,25 @@ void	AServer::epollLoop()
 	}
 	//close client fds in epoll?
 }
+
+AServer::client_fd_map_iter_t	AServer::getClientIter(int fd) {return _client_fds.find(fd);}
+AServer::client_name_map_iter_t	AServer::getClientIter(const std::string& name) {return _client_names.find(name);}
+AServer::channel_map_iter_t		AServer::getChannelIter(const std::string& name) {return _channels.find(name);}
+
+
+
+Channel*	AServer::getChannel(const std::string& name) const
+{
+	channel_map_iter_t
+	if (getChannelIter)
+}
+
+Client*		AServer::getClient(int fd) const
+{
+
+}
+
+Client*		AServer::getClient(const std::string& name) const
+{
+
+}

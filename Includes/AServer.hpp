@@ -56,7 +56,14 @@ protected:
 	void 	rmClientFromMaps(Client *client); 
 	void 	rmClientFromMaps(int client_fd);
 	void 	rmChannelFromMap(const std::string& channel_name);
+//getters
+	client_fd_map_iter_t	getClientIter(int fd);
+	client_name_map_iter_t	getClientIter(const std::string& name);
+	channel_map_iter_t		getChannelIter(const std::string& name);
 
+	Client*		getClient(int fd) const;
+	Client*		getClient(const std::string& name) const;
+	Channel*	getChannel(const std::string& name) const;
 public:
 //con- and destructer
 	
