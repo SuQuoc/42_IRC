@@ -412,6 +412,18 @@ void Irc::TOPIC(Client *sender, std::stringstream &sstream)
 	}
 }
 
+void Irc::KILL(Client *sender, std::stringstream &sstream)
+{
+	std::string nickname;
+	std::string comment; 
+
+	if (sender->isServerOp() == false)
+		return;
+	nickname = extractWord(sstream); 
+	comment = extractWord(sstream);
+
+}
+
 void Irc::setOperatorHost(const std::string& hostname)
 {
 	if (containsForbiddenChars(hostname, " 	\r\n")) //could just use isValidPassword() from main?

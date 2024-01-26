@@ -40,6 +40,8 @@ public:
 	void	TOPIC(Client *sender, std::stringstream& sstream);
 	// void	INVITE(Client *sender, std::stringstream& sstream);
 	void	OPER(Client *sender, std::stringstream &sstream);
+	void	KILL(Client *sender, std::stringstream &sstream);
+
 //methods (commands)
 	void setOperatorHost(const std::string& hostname);
 	void setOperatorPW(const std::string& password);
