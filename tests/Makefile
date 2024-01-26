@@ -7,6 +7,7 @@ INCLUDES 	= ../Includes
 
 T_SRCS		= 	joinTests.cpp \
 				main.cpp \
+				partTests.cpp \
 				TestUtils.cpp
 
 SRCS		=	Irc.cpp \

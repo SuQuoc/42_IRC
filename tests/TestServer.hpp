@@ -4,7 +4,15 @@
 
 class TestServer: public Irc
 {
+private:
+	void				makeUserJoinChannel(const std::string channel_name, const std::string client_name, int client_fd);
+	std::stringstream&	makeSstream(const std::string msg) const;
+	void				fail(const std::string msg) const;
+	void				ok() const;
+
+
 public:
+//con- and destructers
 	TestServer() :Irc("TestServer", "password") {}
 	TestServer(const std::string name, const std::string password): Irc(name, password) {}
 	~TestServer() {}
@@ -13,10 +21,7 @@ public:
 	void	makingNewChannel();
 	void	addingTooManyUsers();
 
-
-
-private:
-	void	makeUserJoinChannel(const std::string channel_name, const std::string client_name, int client_fd);
-	void	fail(const std::string msg) const;
-	void	ok() const;
+//---part---
+	void	part_tests();
+	void	partChannelNotEmpty()
 };
