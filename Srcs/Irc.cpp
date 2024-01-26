@@ -416,12 +416,16 @@ void Irc::KILL(Client *sender, std::stringstream &sstream)
 {
 	std::string nickname;
 	std::string comment; 
+	client_name_map_iter_t  client_to_kill;
 
 	if (sender->isServerOp() == false)
 		return;
-	nickname = extractWord(sstream); 
+	nickname = extractWord(sstream);
 	comment = extractWord(sstream);
-
+	client_to_kill = _client_names.find(nickname);
+	if (client_to_kill == _client_names.end())
+		_replier.sendError(ERR_NOSUCHNICK, sender, nickname);
+	
 }
 
 void Irc::setOperatorHost(const std::string& hostname)
