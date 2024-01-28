@@ -6,7 +6,6 @@ class TestServer: public Irc
 {
 private:
 	void				makeUserJoinChannel(const std::string channel_name, const std::string client_name, int client_fd);
-	std::stringstream	makeSstream(const std::string msg);
 	void				fail(const std::string msg) const;
 	void				ok() const;
 
@@ -27,15 +26,9 @@ public:
 	void	CheckingAmmountOfChannels(const size_t &expected_ch_ammount, const size_t &expected_ch_ammount_in_clients, const int &fd);
 	void	CheckingWrongListInput();
 
-
 //---client---
 	void	client_test();
 
-
-private:
-	void	makeUserJoinChannel(const std::string channel_name, const std::string client_name, int client_fd);
-	void	fail(const std::string msg) const;
-	void	ok() const;
 //---part---
 	void	part_tests();
 	void	partChannelNotEmpty();

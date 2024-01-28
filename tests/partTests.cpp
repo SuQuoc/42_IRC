@@ -5,19 +5,21 @@ void	TestServer::partChannelNotEmpty()
 	TestServer 	serv;
 	Channel		*channel;
 	Client		*elena;
+	std::string			channel_name;
+	std::stringstream	sstream(channel_name);
 
-	serv.makeUserJoinChannel("#channel", "Sara", 5);
-	serv.makeUserJoinChannel("#channel", "Elena", 6);
+	serv.makeUserJoinChannel(channel_name, "Sara", 5);
+	serv.makeUserJoinChannel(channel_name, "Elena", 6);
 
-	channel = serv._channels.find("#channel")->second;
+	channel = serv._channels.find(channel_name)->second;
 	elena = serv._client_names.find("Elena")->second;
-	serv.PART(elena, makeSstream("#channel"));
+	serv.PART(elena, sstream);
 
 	if (channel->isInChannel(elena) == true)
 		return (fail("client wasn't removed from channel-vector"));
 	if (elena->isInChannel(channel) == true)
 		return (fail("channel wasn't removed from channel-vector in client"));
-	if (serv._channels.find("#channel") == serv._channels.end())
+	if (serv._channels.find(channel_name) == serv._channels.end())
 		return (fail("channel should not be deleted"));
 	ok();
 }
@@ -31,7 +33,10 @@ void	TestServer::fromTooManyUsersToChannelEmpty()
 	for (int i = 0; i < MAX_CLIENTS + 3; i++)
 		serv.makeUserJoinChannel("#channel", std::to_string(i), 5 + i);
 	for (int i = 0; i < MAX_CLIENTS; i++)
-		serv.PART(serv._client_fds.find(i)->second, makeSstream("#channel"));
+	{
+		std::stringstream	sstream("#channel");
+		serv.PART(serv._client_fds.find(i)->second, sstream);
+	}
 	
 	if (serv._channels.find("#channel") != serv._channels.end())
 		return (fail("channel should be deleted"));
