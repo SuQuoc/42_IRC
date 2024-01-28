@@ -20,6 +20,9 @@ public:
 	void	AddServerWithPWandJoin();
 
 
+//---client---
+	void	client_test();
+
 
 private:
 	void	makeUserJoinChannel(const std::string channel_name, const std::string client_name, int client_fd);
