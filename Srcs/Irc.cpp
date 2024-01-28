@@ -63,11 +63,7 @@ void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client
     if (sender->isRegistered()) 
         _replier.sendError(ERR_ALREADYREGISTERED, sender, ""); //already registered
     else if (password == _password)
-	{
 		sender->authenticate();
-		/* command_switch(sender, sstream.str() ,new_client_fd);
-		command_switch(sender, sstream.str() ,new_client_fd); */
-	}
 	else
 	{
 		std::cout << "pw = " << password << std::endl;
@@ -75,7 +71,6 @@ void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client
 		_replier.sendError(ERR_PASSWDMISMATCH, sender, "");
 		//delete Client and the entry from the map if Pw is wrong? --> multiple PASS not possible then
 	}
-	return ;
 }
 
 void Irc::NICK(Client *sender, std::stringstream &sstream)
@@ -84,7 +79,7 @@ void Irc::NICK(Client *sender, std::stringstream &sstream)
     //if (sender->isAuthenticated() == false) //didnt do PASS before NICK 
     //    _replier.sendError(321, sender) and return; //theres no err_code for it
 
-	client_name_map_iter_t it = _client_names.find(nickname); //key may not be used cuz it creates an entry --> actually good for us no?
+	client_name_map_const_it it = getClientIter(nickname); //key may not be used cuz it creates an entry --> actually good for us no?
 	if (it == _client_names.end()) //no one has the nickname
 	{
 		if (sender->setNickname(nickname) != 0)
@@ -114,8 +109,6 @@ void	Irc::USER(Client *sender, std::stringstream &sstream)
 		_replier.sendError(ERR_ALREADYREGISTERED, sender, "");
 		return ;
 	}
-
-	//for loop a lil weird but fine for now
     for (std::vector<std::string>::iterator it = info.begin(); it != info.end(); it++)
 		*it = extractWord(sstream);
     if (sender->setUser(info[0], info[1], info[2], info[3]) == ERR_NEEDMOREPARAMS)
@@ -139,9 +132,15 @@ int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 	{
 		getline(stream_key, channel_key, ',');
 		if(!(channel_name[0] == '#' || channel_name[0] == '&') || channel_name.size() > 200) //check if channel_name is valid
-			return (_replier.sendError(ERR_NOSUCHCHANNEL, sender, channel_name));
+		{
+			_replier.sendError(ERR_NOSUCHCHANNEL, sender, channel_name);
+			continue;
+		}	
 		if (sender->spaceForChannel() == false)
-			return (_replier.sendError(ERR_TOOMANYCHANNELS, sender, channel_name));
+		{
+			_replier.sendError(ERR_TOOMANYCHANNELS, sender, channel_name);
+			continue;
+		}
 		channel_itr = _channels.find(channel_name);
 		if(channel_itr == _channels.end()) // create if channel non exist ?
 			addNewChannelToMap(sender, channel_name);
@@ -165,7 +164,7 @@ int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 
 void	Irc::PART(Client *sender, std::stringstream &sstream) //tested (not thoroughly)
 {
-	channel_map_iter_t	channel_it;
+	Channel*			channel;
 	std::stringstream	channel_name_sstream(extractWord(sstream));
 	std::string			channel_name;
 	std::string			part_msg;
@@ -175,22 +174,22 @@ void	Irc::PART(Client *sender, std::stringstream &sstream) //tested (not thoroug
 	while (cnt < 10 && std::getline(channel_name_sstream, channel_name, ','))
 	{
 		cnt++;
-		channel_it = _channels.find(channel_name);
-		if (channel_it == _channels.end() || channel_it->second == NULL)
+		channel = getChannel(channel_name);
+		if (channel == NULL)
 		{
 			std::cout << "*Error: PART(): channel is not in channel map" << std::endl;
 			_replier.sendError(ERR_NOSUCHCHANNEL, sender, channel_name);
 			continue ;
 		}
 		part_msg = createMsg(sender, "PART", channel_name, "Leaving");
-		err = channel_it->second->rmClient(sender, part_msg);
+		err = channel->rmClient(sender, part_msg);
 		if (err > 0)
 		{
 			std::cout << "*Error: PART(): err > 0" << std::endl;
 			_replier.sendError(static_cast<IRC_ERR>(err), sender, channel_name);
 			continue ;
 		}
-		sender->leaveChannel(channel_it->second);
+		sender->leaveChannel(channel);
 		if (err == -1) //delete channel when empty()
 			rmChannelFromMap(channel_name);
 	}
@@ -231,42 +230,42 @@ void	Irc::QUIT(Client *sender, std::stringstream &sstream)
 
 void	Irc::KICK(Client *sender, std::stringstream &sstream)
 {
-	client_name_map_iter_t	user_to_kick;
-	channel_map_iter_t		channel_it;
+	Client*					user_to_kick;
+	Channel*				channel;
 	std::string	channel_name(extractWord(sstream));
-	std::string	user_name(extractWord(sstream));
+	std::string	nickname(extractWord(sstream));
 	std::string	msg(extractWord(sstream));
 	int			err;
 
 	if (msg.empty())
-		msg = user_name;
-	if (channel_name.empty() || user_name.empty())
+		msg = nickname;
+	if (channel_name.empty() || nickname.empty())
 	{
 		_replier.sendError(ERR_NEEDMOREPARAMS, sender, "KICK");
 		return ;
 	}
-	channel_it = _channels.find(channel_name);
-	if (channel_it == _channels.end())
+	channel = getChannel(channel_name);
+	if (channel == NULL)
 	{
 		_replier.sendError(ERR_NOSUCHCHANNEL, sender, channel_name);
 		return ;
 	}
-	user_to_kick = _client_names.find(user_name);
-	if (user_to_kick == _client_names.end())
+	user_to_kick = getClient(nickname);
+	if (user_to_kick == NULL)
 	{
-		_replier.sendError(ERR_NOSUCHNICK, sender, user_name); //ERR-NOSUCHNICK is not in list of numeric replies for kick in protocoll
+		_replier.sendError(ERR_NOSUCHNICK, sender, nickname); //ERR-NOSUCHNICK is not in list of numeric replies for kick in protocoll
 		return ;
 	}
 
-	msg = ":" + sender->getPrefix() + " KICK " + channel_name + " " + user_name + " :" + msg + "\r\n";
-	err = channel_it->second->rmClient(sender, user_to_kick->second, msg);
+	msg = ":" + sender->getPrefix() + " KICK " + channel_name + " " + nickname + " :" + msg + "\r\n";
+	err = channel->rmClient(sender, user_to_kick, msg);
 	if (err > 0)
 	{
 		std::cout << "KICK: > 0" << std::endl;
 		_replier.sendError(static_cast<IRC_ERR>(err), sender, channel_name);
 		return ;
 	}
-	sender->leaveChannel(channel_it->second);
+	sender->leaveChannel(channel);
 	if (err == -1) //delete channel when empty()
 		rmChannelFromMap(channel_name);
 }
@@ -297,22 +296,22 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 			_replier.sendError(ERR_NOTEXTTOSEND, sender, "");
 		else if (recipient.at(0) == '#')
 		{
-			channel_map_iter_t rec_it = _channels.find(recipient);
-			if (rec_it == _channels.end())
+			Channel *channel = getChannel(recipient);
+			if (channel == NULL)
 				_replier.sendError(ERR_NOSUCHCHANNEL, sender, recipient);
 			else
-				rec_it->second->sendMsg(sender, createMsg(sender, "PRIVMSG", recipient, message));
+				channel->sendMsg(sender, createMsg(sender, "PRIVMSG", recipient, message));
 		} //mask?
 		else
 		{
-			client_name_map_iter_t rec_it = _client_names.find(recipient);
-			if (rec_it == _client_names.end())
+			Client *reciever = getClient(recipient);
+			if (reciever == NULL)
 				_replier.sendError(ERR_NOSUCHNICK, sender, "");
 			else
 			{
 				reply = createMsg(sender, "PRIVMSG", recipient, message); //PART uses same method
 				std::cout << "--> Sending: " << reply << std::endl; //out!
-				if (send(rec_it->second->getFd(), reply.c_str(), reply.size(), 0) == -1)
+				if (send(reciever->getFd(), reply.c_str(), reply.size(), 0) == -1)
 					std::cerr << "send() failed" << std::endl;
 			}
 		}
@@ -378,23 +377,20 @@ void Irc::TOPIC(Client *sender, std::stringstream &sstream)
 {
 	std::string channel_name = extractWord(sstream);
 	std::string topic = extractWord(sstream);
-	channel_map_iter_t channel_it;
-	Channel *channel;
+	Channel* 	channel;
 
 	if (channel_name.empty())
-		_replier.sendError(ERR_NEEDMOREPARAMS, sender, "");
+		return (_replier.sendError(ERR_NEEDMOREPARAMS, sender, ""), void());
 
-	channel_it = _channels.find(channel_name);
-	if (channel_it == _channels.end())
+	channel = getChannel(channel_name);
+	if (channel == NULL)
 		return ; //no error listed in protocoll
-	
-	channel = channel_it->second;
 	if (topic.empty()) //only wants 
 	{
 		if (!channel->getTopic().empty())
 		{
-			std::string input = channel_name + " :" + channel->getTopic();
-			_replier.sendRPL(RPL_TOPIC, sender, input);
+			std::string reply = channel_name + " :" + channel->getTopic();
+			_replier.sendRPL(RPL_TOPIC, sender, reply);
 		}
 		else
 			_replier.sendRPL(RPL_NOTOPIC, sender, channel_name);
@@ -406,8 +402,8 @@ void Irc::TOPIC(Client *sender, std::stringstream &sstream)
 			_replier.sendError(static_cast<IRC_ERR>(err), sender, channel_name);
 		else
 		{
-			std::string input = channel_name + " :" + channel->getTopic();
-			_replier.sendRPL(TOPIC_SET, sender, input);
+			std::string reply = channel_name + " :" + channel->getTopic();
+			_replier.sendRPL(TOPIC_SET, sender, reply);
 		}
 	}
 }

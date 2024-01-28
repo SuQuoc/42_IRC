@@ -2,6 +2,7 @@
 
 Client::Client(int fd, const std::string& ip_addr): 
 _fd(fd),
+_channel_count(0),
 _hostname(ip_addr),
 _authenticated(false),
 _registered(false),

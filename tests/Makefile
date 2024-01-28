@@ -5,7 +5,8 @@ CXXFLAGS	= -Wall -Wextra -Werror -MMD -MP -pedantic -g
  
 INCLUDES 	= ../Includes
 
-T_SRCS		= 	joinTests.cpp \
+T_SRCS		= 	clientTests.cpp \
+				joinTests.cpp \
 				main.cpp \
 				partTests.cpp \
 				TestUtils.cpp
@@ -74,7 +75,7 @@ va: all
 	--leak-check=full \
 	--track-origins=yes \
 	--show-leak-kinds=all \
-	./$(NAME) $(ARGS)
+	./$(NAME) $(ARGS) 2> test_errors.log
 
 scan: all
 	scan-build-12 \
