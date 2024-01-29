@@ -7,6 +7,7 @@ class TestServer: public Irc
 private:
 	void	makeUserJoinChannel(const std::string channel_name, const std::string client_name, int client_fd);
 	void	makeUser(const std::string client_name, int client_fd);
+	void	createChannelTestCnt(std::string join_input, size_t ch_max_Aserver, size_t ch_max_client);
 	void	fail(const std::string msg) const;
 	void	ok() const;
 
@@ -27,6 +28,8 @@ public:
 	void	CheckingWrongListInput();
 	void	addChannelWithPWandJoin();
 	void	wrongChannelName();
+	void	tooLongList();
+	void	random_input();
 
 //---part---
 	void	part_tests();
