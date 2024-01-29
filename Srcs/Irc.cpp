@@ -15,7 +15,7 @@ Irc::~Irc() {}
 
 //private methods 
 
-void	Irc::command_switch(Client *sender, const std::string message, const int& new_client_fd) //message-> 'request' better name? for us to discern
+void	Irc::command_switch(Client *sender, const std::string message) //message-> 'request' better name? for us to discern
 {
 	std::cout << "message =" << message << "!" << std::endl;
 
@@ -36,7 +36,7 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 	}
 	if (cmd == "CAP") //we only take the last PASS
 		return ;
-	else if (cmd == "PASS") PASS(sender, sstream, new_client_fd); //we only take the last PASS // client can always try PASS although not registered ?
+	else if (cmd == "PASS") PASS(sender, sstream); //we only take the last PASS // client can always try PASS although not registered ?
 	else if (cmd == "NICK") NICK(sender, sstream);
 	else if (cmd == "USER")	USER(sender, sstream);
 	else if (sender->isRegistered() == false) _replier.sendError(ERR_NOTREGISTERED, sender, ""); //?
@@ -55,9 +55,8 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 
 //methods (commands)
 //---------------------------------COMMANDS--------------------------------------------
-void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client_fd)
+void Irc::PASS(Client *sender, std::stringstream &sstream)
 {
-	(void)new_client_fd;
     std::string password = extractWord(sstream);
     	
     if (sender->isRegistered()) 
@@ -183,7 +182,7 @@ void	Irc::PART(Client *sender, std::stringstream &sstream) //tested (not thoroug
 	int					cnt = 0;
 	int					err;
 
-	while (cnt < 10 && std::getline(channel_name_sstream, channel_name, ','))
+	while (cnt < LIST_LIMIT && std::getline(channel_name_sstream, channel_name, ','))
 	{
 		cnt++;
 		channel = getChannel(channel_name);
@@ -197,7 +196,7 @@ void	Irc::PART(Client *sender, std::stringstream &sstream) //tested (not thoroug
 		err = channel->rmClient(sender, part_msg);
 		if (err > 0)
 		{
-			std::cout << "*Error: PART(): err > 0" << std::endl;
+			std::cerr << "*Error: PART(): err > 0" << std::endl;
 			_replier.sendError(static_cast<IRC_ERR>(err), sender, channel_name);
 			continue ;
 		}
@@ -299,7 +298,7 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 	std::string			reply;
 	int					cnt = 0;
 
-	while (cnt < 10 && std::getline(recip_sstream, recipient, ','))
+	while (cnt < LIST_LIMIT && std::getline(recip_sstream, recipient, ','))
 	{
 		cnt++;
 		if (recipient.empty()) 

@@ -4,6 +4,8 @@
 #include "AServer.hpp"
 #include "IrcReply.hpp"
 
+#define LIST_LIMIT 10
+
 
 class AServer;
 
@@ -17,7 +19,7 @@ private:
 //methods
 	Irc();
 
-	void	command_switch(Client *sender, const std::string message, const int& new_client_fd);
+	void	command_switch(Client *sender, const std::string message);
 	std::string	createMsg(Client *sender, const std::string& cmd, const std::string& recipient, const std::string& msg) const;
 	bool	isChannelNameValid(const std::string &channel_name);
 
@@ -32,7 +34,7 @@ public:
 	void	QUIT(Client *sender, std::stringstream& sstream);
 	void	KICK(Client *sender, std::stringstream& sstream);
 
-	void	PASS(Client *sender, std::stringstream& sstream, const int& new_client_fd);
+	void	PASS(Client *sender, std::stringstream& sstream);
 	void	NICK(Client *sender, std::stringstream& sstream);
 	void	USER(Client *sender, std::stringstream& sstream);
 	void	PRIVMSG(Client *sender, std::stringstream& sstream);

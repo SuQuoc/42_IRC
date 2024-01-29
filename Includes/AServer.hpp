@@ -52,7 +52,7 @@ protected:
 	void	process_event(const int& client_sock);
 	void	failure_exit(const std::string& error_msg); //exits?
 	struct addrinfo*	getIpAdressToBind(const int& port);
-	virtual void	command_switch(Client *sender, const std::string message, const int& new_client_fd) = 0;
+	virtual void	command_switch(Client *sender, const std::string message) = 0;
 
 	void	addNewChannelToMap(Client *sender, const std::string& channel_name);
 	void	addClientToNameMap(std::string user_name, const int& client_fd);

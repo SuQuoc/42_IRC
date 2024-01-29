@@ -5,9 +5,10 @@
 class TestServer: public Irc
 {
 private:
-	void				makeUserJoinChannel(const std::string channel_name, const std::string client_name, int client_fd);
-	void				fail(const std::string msg) const;
-	void				ok() const;
+	void	makeUserJoinChannel(const std::string channel_name, const std::string client_name, int client_fd);
+	void	makeUser(const std::string client_name, int client_fd);
+	void	fail(const std::string msg) const;
+	void	ok() const;
 
 
 public:
@@ -32,6 +33,8 @@ public:
 	void	partChannelNotEmpty();
 	void	partChannelEmpty();
 	void	fromTooManyUsersToChannelEmpty();
+	void	userNotInChannel();
+	void	noSuchChannel();
 
 //---client---
 	void	client_test();
