@@ -4,7 +4,7 @@
 //con- and destructer
 Irc::Irc(const std::string& name, const std::string& password): 
 AServer(name, password),
-_replier(name)
+_replier(_name)
 {
 	_op_host = "OpHost"; 
 	_op_password = "OpPass";

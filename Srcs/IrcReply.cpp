@@ -11,13 +11,10 @@ IrcReply::~IrcReply(){}
 int	IrcReply::sendError(IRC_ERR error, Client* sender, const std::string& input) const
 {
 	std::string err_message;
-	std::string server_name = "AfterLife"; //put in constructor! 
 	std::stringstream error_code;
 
 	error_code << error;
-	//NAME OF THE SERVER
-	// err_message = getName(); //Servername, doesnt end with a space
-	err_message += ":" + server_name + " " + error_code.str() + " " + sender->getNickname() + " ";
+	err_message += ":" + _server_name + " " + error_code.str() + " " + sender->getNickname() + " ";
 	switch (error)
 	{
 		case ERR_NOSUCHNICK:
@@ -111,11 +108,10 @@ int	IrcReply::sendError(IRC_ERR error, Client* sender, const std::string& input)
 void	IrcReply::sendRPL(IRC_ERR error, Client* sender, const std::string& input) const
 {
 	std::string msg;
-	std::string server_name = "AfterLife";
 	std::stringstream error_code;
 
 	error_code << error;
-	msg = ":" + server_name + " " + error_code.str() + " " + sender->getNickname() + " ";
+	msg = ":" + _server_name + " " + error_code.str() + " " + sender->getNickname() + " ";
 	switch (error)
 	{
 		case TOPIC_SET:
@@ -125,7 +121,7 @@ void	IrcReply::sendRPL(IRC_ERR error, Client* sender, const std::string& input) 
 			msg = ":" + sender->getPrefix() + " JOIN " + input + " * :" + sender->getUsername();
 			break;
 		case RPL_WELCOME:
-			msg = ":" + server_name + " 001 " + sender->getNickname() + " :Welcome to the Internet Relay Network, " + input; //input = getPrefix() from Client; <nick>!<user>@<host>
+			msg = ":" + _server_name + " 001 " + sender->getNickname() + " :Welcome to the Internet Relay Network, " + input; //input = getPrefix() from Client; <nick>!<user>@<host>
 			break;
 		case RPL_YOUREOPER:
 			msg += " :You are now an IRC operator";
