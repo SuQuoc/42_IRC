@@ -26,11 +26,12 @@ public:
 	void	CheckingAmmountOfChannels(const size_t &expected_ch_ammount, const size_t &expected_ch_ammount_in_clients, const int &fd);
 	void	CheckingWrongListInput();
 
-//---client---
-	void	client_test();
-
 //---part---
 	void	part_tests();
 	void	partChannelNotEmpty();
+	void	partChannelEmpty();
 	void	fromTooManyUsersToChannelEmpty();
+
+//---client---
+	void	client_test();
 };
