@@ -32,7 +32,7 @@ void	Irc::command_switch(Client *sender, const std::string message) //message-> 
 			//send()
 			return;
 		}
-		std::getline(sstream, cmd, ' ');
+		std::getline(sstream, cmd, ' '); //extractWord?
 	}
 	if (cmd == "CAP") //we only take the last PASS
 		return ;
@@ -275,17 +275,14 @@ void	Irc::KICK(Client *sender, std::stringstream &sstream)
 	err = channel->rmClient(sender, user_to_kick, msg);
 	if (err > 0)
 	{
-		std::cout << "KICK: > 0" << std::endl;
+		std::cerr << "KICK: > 0" << std::endl;
 		_replier.sendError(static_cast<IRC_ERR>(err), sender, channel_name);
 		return ;
 	}
-	sender->leaveChannel(channel);
+	user_to_kick->leaveChannel(channel);
 	if (err == -1) //delete channel when empty()
 		rmChannelFromMap(channel_name);
 }
-
-
-
 
 // ERR_NORECIPIENT
 // ERR_NOTEXTTOSEND 412

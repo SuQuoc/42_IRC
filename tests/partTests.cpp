@@ -1,5 +1,35 @@
 #include "TestServer.hpp"
 
+void	TestServer::partEmptySstream()
+{
+	TestServer 			serv;
+	Client				*elena;
+	std::stringstream	sstream("");
+
+	serv.makeUserJoinChannel("#Channel", "Elena", 5);
+	elena = serv.getClient("Elena");
+	serv.PART(elena, sstream);
+
+	if (elena->getChannelCount() != 1)
+		return (fail("elena should be in one channel"));
+	ok();
+}
+
+void	TestServer::partEmptySpacesSstream()
+{
+	TestServer 			serv;
+	Client				*elena;
+	std::stringstream	sstream("   ");
+
+	serv.makeUserJoinChannel("#Channel", "Elena", 5);
+	elena = serv.getClient("Elena");
+	serv.PART(elena, sstream);
+
+	if (elena->getChannelCount() != 1)
+		return (fail("elena should be in one channel"));
+	ok();
+}
+
 void	TestServer::partChannelNotEmpty()
 {
 	TestServer 	serv;
@@ -139,30 +169,6 @@ void	TestServer::partMultipleChannels()
 	ok();
 }
 
-void	TestServer::emptySstream()
-{
-	TestServer 			serv;
-	Client				*elena;
-	std::stringstream	sstream("");
-
-	serv.makeUser("Elena", 5);
-	elena = serv.getClient("Elena");
-	serv.PART(elena, sstream);
-	ok();
-}
-
-void	TestServer::emptySpacesSstream()
-{
-	TestServer 			serv;
-	Client				*elena;
-	std::stringstream	sstream("   ");
-
-	serv.makeUser("Elena", 5);
-	elena = serv.getClient("Elena");
-	serv.PART(elena, sstream);
-	ok();
-}
-
 void	TestServer::partOverListLimit()
 {
 	TestServer 		serv;
@@ -191,6 +197,10 @@ void TestServer::part_tests()
 {
 	std::cout << "\033[1;33m---PART TESTS---\033[0m" << std::endl;
 
+	std::cout << "empty sstream: ";
+	partEmptySstream();
+	std::cout << "empty sstream with spaces: ";
+	partEmptySpacesSstream();
 	std::cout << "part channel not empty: ";
 	partChannelNotEmpty();
 	std::cout << "part channel empty: ";
@@ -203,10 +213,6 @@ void TestServer::part_tests()
 	noSuchChannel();
 	std::cout << "part multiple channels: ";
 	partMultipleChannels();
-	std::cout << "empty sstream: ";
-	emptySstream();
-	std::cout << "empty sstream with spaces: ";
-	emptySpacesSstream();
 	std::cout << "part over LIST_LIMIT: ";
 	partOverListLimit();
 

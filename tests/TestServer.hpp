@@ -30,15 +30,24 @@ public:
 
 //---part---
 	void	part_tests();
+	void	partEmptySstream();
+	void	partEmptySpacesSstream();
 	void	partChannelNotEmpty();
 	void	partChannelEmpty();
 	void	fromTooManyUsersToChannelEmpty();
 	void	userNotInChannel();
 	void	noSuchChannel();
 	void	partMultipleChannels();
-	void	emptySstream();
-	void	emptySpacesSstream();
 	void	partOverListLimit();
+
+//---kick---
+	void	kick_tests();
+	void	kickEmptySstream();
+	void	kickEmptySpacesSstream();
+	void	kickChannelMember();
+	void	unauthorizedKick();
+	void	kickSelfAndOnlyMember();
+
 //---client---
 	void	client_test();
 };
