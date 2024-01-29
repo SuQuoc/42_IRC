@@ -139,8 +139,8 @@ void TestServer::addChannelWithPWandJoin()
 	Client		*channel_ower;
 	Channel		*channel;
 	Client		*michi;
-	TestServer	serv;
 	Client		*niki;
+	TestServer	serv;
 	
 	serv.makeUserJoinChannel("#pw", "Fiona", 5);
 	channel_ower = serv.getClient("Fiona");
@@ -159,12 +159,34 @@ void TestServer::addChannelWithPWandJoin()
 	if(channel->isInChannel(michi) == true)
 		return (fail("password faild user joined without password"));
 
-	serv.makeUserJoinChannel("#pw nyancat", "Niki", 7);
+	serv.makeUserJoinChannel("#pw 12345", "Herbert", 7);
+	michi = serv.getClient("Herbert");
+	if(!michi)
+		return (fail("user was not created"));
+	if(channel->isInChannel(michi) == true)
+		return (fail("password faild user joined with wrong password"));
+
+	serv.makeUserJoinChannel("#pw nyancat", "Niki", 8);
 	niki = serv.getClient("Niki");
 	if(!niki)
 		return (fail("user was not created"));
 	if(channel->isInChannel(niki) == false)
 		return (fail("password was correct but user did not join"));
+
+	channel->setPassword(channel_ower, "nyancat3", '-');
+	if(channel->getPassword() != "nyancat")
+		return (fail("pw was removed with wrong pw"));
+	
+	channel->setPassword(channel_ower, "nyancat", '-');
+	if(channel->getPassword() == "nyancat")
+		return (fail("pw was not removed"));
+	
+	serv.makeUserJoinChannel("#pw 12345", "Tim", 9);
+	michi = serv.getClient("Tim");
+	if(!michi)
+		return (fail("user was not created"));
+	if(channel->isInChannel(michi) == false)
+		return (fail("user did not join"));
 
 	ok();
 }
