@@ -134,14 +134,30 @@ void TestServer::CheckingWrongListInput()
 	ok();
 }
 
-void TestServer::AddServerWithPWandJoin()
+void TestServer::addServerWithPWandJoin()
 {
 	TestServer	serv;
 	Client		*channel_ower;
 	
 	serv.makeUserJoinChannel("#pw", "Fiona", 5);
-	channel_ower = serv.getClient("fiona");
-	serv._channels.find("#pw")->second->setPassword(channel_ower, "123456", '+');
+	channel_ower = serv.getClient("Fiona");
+	serv._channels.find("#pw")->second->setPassword(channel_ower, "nyancat", '+');
+
+	ok();
+}
+
+void TestServer::wrongChannelName()
+{
+	TestServer	serv;
+
+	serv.makeUserJoinChannel("#,~ch1,*ch2,#bell\a,#ch3,: ch4", "Sandi", 5);
+	serv.CheckingAmmountOfChannels(2, 2, 5);
+
+	serv.makeUserJoinChannel("ä123,#ch1,:#c,h4", "Niko", 6);
+	serv.CheckingAmmountOfChannels(3, 1, 6);
+
+	serv.makeUserJoinChannel("ä123,#ch1,:#c,h4", "Laika", 7);
+	serv.CheckingAmmountOfChannels(3, 1, 7);
 
 	ok();
 }
@@ -160,6 +176,10 @@ void TestServer::join_tests()
 	CheckingChannelNames();
 	std::cout << "checking wrong list input: ";
 	CheckingWrongListInput();
+
+	std::cout << "wrong channel name: ";
+	wrongChannelName();
+
 
 	std::cout << std::endl;
 }

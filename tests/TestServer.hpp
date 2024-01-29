@@ -17,7 +17,8 @@ public:
 	void	CheckingChannelNames();
 	void	CheckingAmmountOfChannels(const size_t &expected_ch_ammount, const size_t &expected_ch_ammount_in_clients, const int &fd);
 	void	CheckingWrongListInput();
-	void	AddServerWithPWandJoin();
+	void	addServerWithPWandJoin();
+	void	wrongChannelName();
 
 
 //---client---

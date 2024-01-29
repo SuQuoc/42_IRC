@@ -120,6 +120,16 @@ void	Irc::USER(Client *sender, std::stringstream &sstream)
 	}
 }
 
+bool Irc::isChannelNameValid(const std::string &channel_name)
+{
+	if(!(channel_name[0] == '#' || channel_name[0] == '&') || channel_name.size() > 200)
+		return (false);
+	for(int i = 0; channel_name[i]; i++)
+		if(channel_name[i] == ' ' || channel_name[i] == ',' || channel_name[i] == '\a')
+			return (false);
+	return (true);
+}
+
 int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 {
 	std::stringstream stream_name(extractWord(sstream));
@@ -132,11 +142,11 @@ int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 	while(getline(stream_name, channel_name, ','))
 	{
 		getline(stream_key, channel_key, ',');
-		if(!(channel_name[0] == '#' || channel_name[0] == '&') || channel_name.size() > 200) //check if channel_name is valid
+		if (isChannelNameValid(channel_name) == false) //check if channel_name is valid
 		{
 			_replier.sendError(ERR_NOSUCHCHANNEL, sender, channel_name);
 			continue;
-		}	
+		}
 		if (sender->spaceForChannel() == false)
 		{
 			_replier.sendError(ERR_TOOMANYCHANNELS, sender, channel_name);
