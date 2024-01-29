@@ -4,7 +4,14 @@
 
 class TestServer: public Irc
 {
+private:
+	void				makeUserJoinChannel(const std::string channel_name, const std::string client_name, int client_fd);
+	void				fail(const std::string msg) const;
+	void				ok() const;
+
+
 public:
+//con- and destructers
 	TestServer() :Irc("TestServer", "password") {}
 	TestServer(const std::string name, const std::string password): Irc(name, password) {}
 	~TestServer() {}
@@ -20,13 +27,12 @@ public:
 	void	addChannelWithPWandJoin();
 	void	wrongChannelName();
 
+//---part---
+	void	part_tests();
+	void	partChannelNotEmpty();
+	void	partChannelEmpty();
+	void	fromTooManyUsersToChannelEmpty();
 
 //---client---
 	void	client_test();
-
-
-private:
-	void	makeUserJoinChannel(const std::string channel_name, const std::string client_name, int client_fd);
-	void	fail(const std::string msg) const;
-	void	ok() const;
 };

@@ -188,7 +188,7 @@ void	Irc::PART(Client *sender, std::stringstream &sstream) //tested (not thoroug
 		channel = getChannel(channel_name);
 		if (channel == NULL)
 		{
-			std::cout << "*Error: PART(): channel is not in channel map" << std::endl;
+			std::cerr << "*Error: PART(): channel is not in channel map" << std::endl;
 			_replier.sendError(ERR_NOSUCHCHANNEL, sender, channel_name);
 			continue ;
 		}
@@ -201,7 +201,7 @@ void	Irc::PART(Client *sender, std::stringstream &sstream) //tested (not thoroug
 			continue ;
 		}
 		sender->leaveChannel(channel);
-		if (err == -1) //delete channel when empty()
+		if (err == DELETE_CHANNEL) //delete channel when empty()
 			rmChannelFromMap(channel_name);
 	}
 	if (cnt == 0)
