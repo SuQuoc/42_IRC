@@ -113,7 +113,7 @@ void testMaxChannels()
 }
 
 
-void TestServer::client_test()
+void TestServer::client_tests()
 {
 	std::cout << "\033[1;33m---CLIENT TESTS---\033[0m" << std::endl;
 

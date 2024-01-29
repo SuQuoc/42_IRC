@@ -6,5 +6,6 @@ int	main()
 
 	test_server.join_tests();
 	test_server.part_tests();
-	test_server.client_test();//doesn't return to main!?
+	test_server.pass_tests();
+	test_server.client_tests();//doesn't return to main!?
 }

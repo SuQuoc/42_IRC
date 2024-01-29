@@ -15,7 +15,7 @@ private:
 
 	IrcReply _replier;
 //methods
-	void	command_switch(Client *sender, const std::string message, const int& new_client_fd);
+	void	command_switch(Client *sender, const std::string message);
 	std::string createMsg(Client *sender, const std::string& cmd, const std::string& recipient, const std::string& msg) const;
 public:
 //con- and destructer
@@ -31,7 +31,7 @@ public:
 	void	QUIT(Client *sender, std::stringstream& sstream);
 	void	KICK(Client *sender, std::stringstream& sstream);
 
-	void	PASS(Client *sender, std::stringstream& sstream, const int& new_client_fd);
+	void	PASS(Client *sender, std::stringstream& sstream);
 	void	NICK(Client *sender, std::stringstream& sstream);
 	void	USER(Client *sender, std::stringstream& sstream);
 	void	PRIVMSG(Client *sender, std::stringstream& sstream);

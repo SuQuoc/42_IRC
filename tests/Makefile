@@ -9,6 +9,7 @@ T_SRCS		= 	clientTests.cpp \
 				joinTests.cpp \
 				main.cpp \
 				partTests.cpp \
+				passTests.cpp \
 				TestUtils.cpp
 
 SRCS		=	Irc.cpp \

@@ -33,5 +33,16 @@ public:
 	void	fromTooManyUsersToChannelEmpty();
 
 //---client---
-	void	client_test();
+	void	client_tests();
+
+//---pass---
+	void	pass_tests();
+	void	correctPW();
+	void	incorrectPW();
+	void	availableNick();
+	void	unavailableNick();
+	void	registerTwoClients();
+	void	wrongNick();
+
+
 };

@@ -15,7 +15,7 @@ Irc::~Irc() {}
 
 //private methods 
 
-void	Irc::command_switch(Client *sender, const std::string message, const int& new_client_fd) //message-> 'request' better name? for us to discern
+void	Irc::command_switch(Client *sender, const std::string message) //message-> 'request' better name? for us to discern
 {
 	std::cout << "message =" << message << "!" << std::endl;
 
@@ -36,7 +36,7 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 	}
 	if (cmd == "CAP") //we only take the last PASS
 		return ;
-	else if (cmd == "PASS") PASS(sender, sstream, new_client_fd); //we only take the last PASS // client can always try PASS although not registered ?
+	else if (cmd == "PASS") PASS(sender, sstream); //we only take the last PASS // client can always try PASS although not registered ?
 	else if (cmd == "NICK") NICK(sender, sstream);
 	else if (cmd == "USER")	USER(sender, sstream);
 	else if (sender->isRegistered() == false) _replier.sendError(ERR_NOTREGISTERED, sender, ""); //?
@@ -55,9 +55,8 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 
 //methods (commands)
 //---------------------------------COMMANDS--------------------------------------------
-void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client_fd)
+void Irc::PASS(Client *sender, std::stringstream &sstream)
 {
-	(void)new_client_fd;
     std::string password = extractWord(sstream);
     	
     if (sender->isRegistered()) 
@@ -76,10 +75,10 @@ void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client
 void Irc::NICK(Client *sender, std::stringstream &sstream)
 {
     std::string nickname = extractWord(sstream);
-    //if (sender->isAuthenticated() == false) //didnt do PASS before NICK 
-    //    _replier.sendError(321, sender) and return; //theres no err_code for it
+    //if (sender->isAuthenticated() == false) //didnt do PASS before
+    //    _replier.sendError(321, sender) and return; //NOTICE message? sendNotice?
 
-	client_name_map_const_it it = getClientIter(nickname); //key may not be used cuz it creates an entry --> actually good for us no?
+	client_name_map_const_it it = getClientIter(nickname);
 	if (it == _client_names.end()) //no one has the nickname
 	{
 		if (sender->setNickname(nickname) != 0)
@@ -93,17 +92,14 @@ void Irc::NICK(Client *sender, std::stringstream &sstream)
 		_replier.sendError(ERR_NICKNAMEINUSE, sender, "");
 		return ;
 	}
-	if (sender->isRegistered())
-	{
-		addClientToNameMap(sender->getNickname(), sender->getFd());
-		_replier.sendRPL(RPL_WELCOME, sender, sender->getUsername());
-	}
+	addClientToNameMap(sender->getNickname(), sender->getFd());
 }
 
 void	Irc::USER(Client *sender, std::stringstream &sstream)
 {
     std::vector<std::string> info(4);
-
+	//if (sender->isAuthenticated() == false) //didnt do PASS before
+    //   return  _replier.sendError(321, sender) and return; //NOTICE message? sendNotice?
 	if (sender->isRegistered())
 	{
 		_replier.sendError(ERR_ALREADYREGISTERED, sender, "");
@@ -114,10 +110,7 @@ void	Irc::USER(Client *sender, std::stringstream &sstream)
     if (sender->setUser(info[0], info[1], info[2], info[3]) == ERR_NEEDMOREPARAMS)
 		_replier.sendError(ERR_NEEDMOREPARAMS, sender, "");
 	if (sender->isRegistered())
-	{
-		addClientToNameMap(sender->getNickname(), sender->getFd());
 		_replier.sendRPL(RPL_WELCOME, sender, sender->getUsername());
-	}
 }
 
 int	Irc::JOIN(Client *sender, std::stringstream &sstream)
