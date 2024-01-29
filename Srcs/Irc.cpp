@@ -132,15 +132,14 @@ bool Irc::isChannelNameValid(const std::string &channel_name)
 
 int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 {
-	std::stringstream stream_name(extractWord(sstream));
-	std::stringstream stream_key(extractWord(sstream));
-	std::string	channel_name;
-	std::string	channel_key;
+	std::stringstream stream_name(extractWord(sstream)), stream_key(extractWord(sstream));
+	std::string	channel_key, channel_name;
+	int cnt = 0, err = 0;
 	Channel *channel;
-	int err;
 
-	while(getline(stream_name, channel_name, ','))
+	while(cnt < LIST_LIMIT && getline(stream_name, channel_name, ','))
 	{
+		cnt++;
 		getline(stream_key, channel_key, ',');
 		if (isChannelNameValid(channel_name) == false) //check if channel_name is valid
 		{
@@ -170,6 +169,8 @@ int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 		sender->joinChannel(channel);
 		channel->sendMsg(NULL, ":" + sender->getPrefix() + " JOIN " + channel_name + " * :" + sender->getUsername() + "\r\n");
 	}
+	if (cnt == 0)
+		_replier.sendError(ERR_NEEDMOREPARAMS, sender, "");
 	return (0);
 }
 

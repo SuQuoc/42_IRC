@@ -117,12 +117,14 @@ void test_multible_clients(int client_ammount)
 }
 
 #include <sstream>
+#include <map>
 
 void MODE(Channel &after_life, Client *sender, std::stringstream &sstream)
 {
 	std::string channel_name;
     std::string argument;
 	std::string word;
+    std::map<char, char> modes;
     char pre_fix;
 	
     std::getline(sstream >> std::ws, channel_name, ' ');
