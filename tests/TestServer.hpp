@@ -35,7 +35,10 @@ public:
 	void	fromTooManyUsersToChannelEmpty();
 	void	userNotInChannel();
 	void	noSuchChannel();
-
+	void	partMultipleChannels();
+	void	emptySstream();
+	void	emptySpacesSstream();
+	void	partOverListLimit();
 //---client---
 	void	client_test();
 };

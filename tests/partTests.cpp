@@ -115,9 +115,77 @@ void	TestServer::noSuchChannel()
 	ok();
 }
 
-//void	TestServer::partMultipleChannels()
-//void	TestServer::emptySstream()
-//void	TestServer::partOverListLimit()
+void	TestServer::partMultipleChannels()
+{
+	TestServer 		serv;
+	Client			*elena;
+	std::string		channels;
+
+	serv.makeUser("Elena", 5);
+	elena = serv.getClient("Elena");
+	for (int i = 0; i < LIST_LIMIT; i++)
+	{
+		std::stringstream	sstream("#" + std::to_string(i));
+		channels += "#" + std::to_string(i) + ",";
+		serv.JOIN(elena, sstream);
+	}
+	if (elena->getChannelCount() != LIST_LIMIT)
+		return (fail("elena should be in LIST_LIMIT(10) channels"));
+	std::stringstream	part_input(channels);
+	serv.PART(elena, part_input);
+	
+	if (elena->getChannelCount() != 0)
+		return (fail("elena should have parted from all channels"));
+	ok();
+}
+
+void	TestServer::emptySstream()
+{
+	TestServer 			serv;
+	Client				*elena;
+	std::stringstream	sstream("");
+
+	serv.makeUser("Elena", 5);
+	elena = serv.getClient("Elena");
+	serv.PART(elena, sstream);
+	ok();
+}
+
+void	TestServer::emptySpacesSstream()
+{
+	TestServer 			serv;
+	Client				*elena;
+	std::stringstream	sstream("   ");
+
+	serv.makeUser("Elena", 5);
+	elena = serv.getClient("Elena");
+	serv.PART(elena, sstream);
+	ok();
+}
+
+void	TestServer::partOverListLimit()
+{
+	TestServer 		serv;
+	Client			*elena;
+	std::string		channels;
+
+	serv.makeUser("Elena", 5);
+	elena = serv.getClient("Elena");
+	for (int i = 0; i < LIST_LIMIT + 5; i++)
+	{
+		std::stringstream	sstream("#" + std::to_string(i));
+		channels += "#" + std::to_string(i) + ",";
+		serv.JOIN(elena, sstream);
+	}
+	if (elena->getChannelCount() != LIST_LIMIT)
+		return (fail("elena should be in LIST_LIMIT(10) channels"));
+	std::stringstream	part_input(channels);
+	serv.PART(elena, part_input);
+	
+	if (elena->getChannelCount() != 0)
+		return (fail("elena should have parted from all channels"));
+	ok();
+}
 
 void TestServer::part_tests()
 {
@@ -133,6 +201,14 @@ void TestServer::part_tests()
 	userNotInChannel();
 	std::cout << "no such Channel: ";
 	noSuchChannel();
+	std::cout << "part multiple channels: ";
+	partMultipleChannels();
+	std::cout << "empty sstream: ";
+	emptySstream();
+	std::cout << "empty sstream with spaces: ";
+	emptySpacesSstream();
+	std::cout << "part over LIST_LIMIT: ";
+	partOverListLimit();
 
 	std::cout << std::endl;
 }

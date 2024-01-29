@@ -204,7 +204,10 @@ void	Irc::PART(Client *sender, std::stringstream &sstream) //tested (not thoroug
 			rmChannelFromMap(channel_name);
 	}
 	if (cnt == 0)
+	{
+		std::cerr << "*Error: PART(): empty sstream" << std::endl;
 		_replier.sendError(ERR_NEEDMOREPARAMS, sender, "");
+	}
 	if (!channel_name_sstream.eof())
 		return ; //_replier.sendError(too many argument in list)!
 }
