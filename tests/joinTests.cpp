@@ -134,14 +134,37 @@ void TestServer::CheckingWrongListInput()
 	ok();
 }
 
-void TestServer::addServerWithPWandJoin()
+void TestServer::addChannelWithPWandJoin()
 {
-	TestServer	serv;
 	Client		*channel_ower;
+	Channel		*channel;
+	Client		*michi;
+	TestServer	serv;
+	Client		*niki;
 	
 	serv.makeUserJoinChannel("#pw", "Fiona", 5);
 	channel_ower = serv.getClient("Fiona");
-	serv._channels.find("#pw")->second->setPassword(channel_ower, "nyancat", '+');
+
+	channel = serv.getChannel("#pw");
+	if(channel == NULL)
+		return (fail("channel was not created"));
+	channel->setPassword(channel_ower, "nyancat", '+');
+	if(channel->getPassword() != "nyancat")
+		return (fail("password was wrong set or empty"));
+	
+	serv.makeUserJoinChannel("#pw", "Michi", 6);
+	michi = serv.getClient("Michi");
+	if(!michi)
+		return (fail("user was not created"));
+	if(channel->isInChannel(michi) == true)
+		return (fail("password faild user joined without password"));
+
+	serv.makeUserJoinChannel("#pw nyancat", "Niki", 7);
+	niki = serv.getClient("Niki");
+	if(!niki)
+		return (fail("user was not created"));
+	if(channel->isInChannel(niki) == false)
+		return (fail("password was correct but user did not join"));
 
 	ok();
 }
@@ -176,9 +199,11 @@ void TestServer::join_tests()
 	CheckingChannelNames();
 	std::cout << "checking wrong list input: ";
 	CheckingWrongListInput();
-
+	std::cout << "add channel with pw and join: ";
+	addChannelWithPWandJoin();
 	std::cout << "wrong channel name: ";
 	wrongChannelName();
+
 
 
 	std::cout << std::endl;
