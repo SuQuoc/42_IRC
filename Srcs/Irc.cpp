@@ -15,7 +15,7 @@ Irc::~Irc() {}
 
 //private methods 
 
-void	Irc::command_switch(Client *sender, const std::string message, const int& new_client_fd) //message-> 'request' better name? for us to discern
+void	Irc::command_switch(Client *sender, const std::string message) //message-> 'request' better name? for us to discern
 {
 	std::cout << "message =" << message << "!" << std::endl;
 
