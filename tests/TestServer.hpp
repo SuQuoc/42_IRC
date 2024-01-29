@@ -35,14 +35,12 @@ public:
 //---client---
 	void	client_tests();
 
-//---pass---
-	void	pass_tests();
+//---registration---
+	void	registration_tests();
 	void	correctPW();
 	void	incorrectPW();
 	void	availableNick();
 	void	unavailableNick();
-	void	registerTwoClients();
 	void	wrongNick();
-
-
+	void	registerTwoClients();
 };

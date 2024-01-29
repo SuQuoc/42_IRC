@@ -163,9 +163,9 @@ void	TestServer::registerTwoClients()
 
 
 
-void	TestServer::pass_tests()
+void	TestServer::registration_tests()
 {
-	std::cout << "\033[1;33m---PASS TESTS---\033[0m" << std::endl;
+	std::cout << "\033[1;33m---PASS-NICK-USER TESTS---\033[0m" << std::endl;
 
 	correctPW();
 	incorrectPW();
