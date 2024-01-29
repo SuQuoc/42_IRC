@@ -4,6 +4,8 @@
 #include "AServer.hpp"
 #include "IrcReply.hpp"
 
+#define LIST_LIMIT = 10
+
 
 class AServer;
 
@@ -31,7 +33,7 @@ public:
 	void	QUIT(Client *sender, std::stringstream& sstream);
 	void	KICK(Client *sender, std::stringstream& sstream);
 
-	void	PASS(Client *sender, std::stringstream& sstream, const int& new_client_fd);
+	void	PASS(Client *sender, std::stringstream& sstream);
 	void	NICK(Client *sender, std::stringstream& sstream);
 	void	USER(Client *sender, std::stringstream& sstream);
 	void	PRIVMSG(Client *sender, std::stringstream& sstream);
