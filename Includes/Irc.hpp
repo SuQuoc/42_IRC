@@ -12,10 +12,11 @@ class AServer;
 class Irc : public AServer
 {
 private:
+	IrcReply _replier;
+	
 	std::string 	_op_host;
 	std::string 	_op_password;
 
-	IrcReply _replier;
 //methods
 	Irc();
 

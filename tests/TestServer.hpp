@@ -41,6 +41,8 @@ public:
 	void	partOverListLimit();
 //---client---
 	void	client_tests();
+	void	testMaxChannelsInClient(); 
+
 
 //---registration---
 	void	registration_tests();
@@ -50,4 +52,12 @@ public:
 	void	unavailableNick();
 	void	wrongNick();
 	void	registerTwoClients();
+
+//---oper---
+	void	oper_tests();
+	void	wrongOperHost();
+	void	wrongOperPW();
+	void	correctOper();
+	void	correctOperDefault();
+	void	twoCorrectOper();
 };
