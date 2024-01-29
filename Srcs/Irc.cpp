@@ -119,44 +119,55 @@ void	Irc::USER(Client *sender, std::stringstream &sstream)
 	}
 }
 
+bool Irc::isChannelNameValid(const std::string &channel_name)
+{
+	if(!(channel_name[0] == '#' || channel_name[0] == '&') || channel_name.size() > 200)
+		return (false);
+	for(int i = 0; channel_name[i]; i++)
+		if(channel_name[i] == ' ' || channel_name[i] == ',' || channel_name[i] == '\a')
+			return (false);
+	return (true);
+}
+
 int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 {
 	std::stringstream stream_name(extractWord(sstream));
 	std::stringstream stream_key(extractWord(sstream));
-	channel_map_iter_t channel_itr;
 	std::string	channel_name;
 	std::string	channel_key;
+	Channel *channel;
+	int err;
 
 	while(getline(stream_name, channel_name, ',')) //LIST_LIMIT?
 	{
 		getline(stream_key, channel_key, ',');
-		if(!(channel_name[0] == '#' || channel_name[0] == '&') || channel_name.size() > 200) //check if channel_name is valid
+		if (isChannelNameValid(channel_name) == false) //check if channel_name is valid
 		{
 			_replier.sendError(ERR_NOSUCHCHANNEL, sender, channel_name);
 			continue;
-		}	
+		}
 		if (sender->spaceForChannel() == false)
 		{
 			_replier.sendError(ERR_TOOMANYCHANNELS, sender, channel_name);
 			continue;
 		}
-		channel_itr = _channels.find(channel_name);
-		if(channel_itr == _channels.end()) // create if channel non exist ?
+		channel = getChannel(channel_name);
+		if(channel == NULL) // create if channel not exist
 			addNewChannelToMap(sender, channel_name);
 		else
 		{
-			int err = channel_itr->second->addClient(sender, channel_key, false);
+			err = channel->addClient(sender, channel_key, false);
 			if(err > 0)
 			{
 				_replier.sendError(static_cast<IRC_ERR>(err), sender, channel_name);
 				continue;
 			}
-			else if(err < 0)
+			if(err < 0)
 				continue;
 		}
-		channel_itr = _channels.find(channel_name);
-		sender->joinChannel(channel_itr->second);
-		channel_itr->second->sendMsg(NULL, ":" + sender->getPrefix() + " JOIN " + channel_name + " * :" + sender->getUsername() + "\r\n");
+		channel = getChannel(channel_name);
+		sender->joinChannel(channel);
+		channel->sendMsg(NULL, ":" + sender->getPrefix() + " JOIN " + channel_name + " * :" + sender->getUsername() + "\r\n");
 	}
 	return (0);
 }

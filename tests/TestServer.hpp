@@ -23,9 +23,10 @@ public:
 	void	addingTooManyUsers();
 	void	addingListOfChannels();
 	void	CheckingChannelNames();
-	void	addingCheckingChannelNames();
 	void	CheckingAmmountOfChannels(const size_t &expected_ch_ammount, const size_t &expected_ch_ammount_in_clients, const int &fd);
 	void	CheckingWrongListInput();
+	void	addChannelWithPWandJoin();
+	void	wrongChannelName();
 
 //---part---
 	void	part_tests();
