@@ -41,7 +41,7 @@ class Channel
 
 		int		changeMode(Client *executor, const char &add, bool &modes);
 		void	sendNonBlock(const int &fd, const std::string &msg);
-		clients_itr	getClient(const std::string _name);
+		clients_itr	getClient(const std::string &name);
 		clients_itr	getClient(const Client *client);
 		Channel();
 
@@ -66,6 +66,7 @@ class Channel
 		const std::string	&getPassword() const;
 		const std::string	&getTopic() const;
 		const std::string	&getName() const;
+		bool	getRestrictTopic() const;
 		bool	getInviteOnly() const;
 		int		size() const;
 

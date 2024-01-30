@@ -1,6 +1,6 @@
 #include "TestServer.hpp"
 
-void	TestServer::makeUserJoinChannel(const std::string channel_name, const std::string client_name, int client_fd)
+void	TestServer::makeUserJoinChannel(const std::string &channel_name, const std::string &client_name, int client_fd)
 {
 	std::stringstream	sstream(channel_name);
 	std::string			nick_name(client_name);
