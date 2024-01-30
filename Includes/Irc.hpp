@@ -42,7 +42,7 @@ public:
 
 	// void	MODE(Client *sender, std::stringstream& sstream);
 	void	TOPIC(Client *sender, std::stringstream& sstream);
-	// void	INVITE(Client *sender, std::stringstream& sstream);
+	int		INVITE(Client *sender, std::stringstream& sstream);
 
 	void	OPER(Client *sender, std::stringstream &sstream);
 	void	KILL(Client *sender, std::stringstream &sstream);

@@ -44,8 +44,8 @@ void	Irc::command_switch(Client *sender, const std::string message) //message-> 
 	else if (cmd == "PART") PART(sender, sstream);
 	else if (cmd == "QUIT") QUIT(sender, sstream);
 	else if (cmd == "KICK") KICK(sender, sstream);
-	else if (cmd == "INVITE") std::cout << "INVITE()" << std::endl; //INVITE();
-	else if (cmd == "MODE") std::cout << "MODE()" << std::endl; //MODE();
+	else if (cmd == "INVITE") INVITE(sender, sstream);
+	else if (cmd == "MODE") std::cout << "MODE()" << std::endl;
 	else if (cmd == "TOPIC") TOPIC(sender, sstream);
 	else if (cmd == "OPER") OPER(sender, sstream);
 	else _replier.sendError(ERR_UNKNOWNCOMMAND, sender, cmd);
@@ -375,26 +375,38 @@ void Irc::TOPIC(Client *sender, std::stringstream &sstream)
 	}
 }
 
-
-//RPL_AWAY
 //RPL_INVITING
 //ERR_NOSUCHNICK
 //ERR_NOTONCHANNEL
 //ERR_USERONCHANNEL
 //ERR_NEEDMOREPARAMS
 //ERR_CHANOPRIVSNEEDED
-//void	INVITE(Client *sender, std::stringstream& sstream)
-//{
-	//check if enough params		//ERR_NEEDMOREPARAMS
-	//check if nick exists			//ERR_NOSUCHNICK
-	//check if channel exists		//ERR_NOSUCHCHANNEL
-	//check if sender is on channel	//ERR_NOTONCHANNEL
-	//check if sender is operator	//ERR_CHANOPRIVISNEEDED
-	//check if nick is on channel	//ERR_USERONCHANNEL
+int	Irc::INVITE(Client *sender, std::stringstream& sstream)
+{	
+	Channel		*channel;
+	Client		*user_to_invite;
+	std::string	nickname(extractWord(sstream));
+	std::string	channel_name(extractWord(sstream));
 
-	//add nick to invite-vector
-	//
-//}
+	user_to_invite = getClient(nickname);
+	channel = getChannel(channel_name);
+	if (nickname.empty() || channel_name.empty())		//check if enough params
+		return (_replier.sendError(ERR_NEEDMOREPARAMS, sender, "INVITE")); //INVITE?
+	if (user_to_invite == NULL)							//check if nick exists
+		return (_replier.sendError(ERR_NOSUCHNICK, sender, nickname));
+	if (channel == NULL)								//check if channel exists
+		return (_replier.sendError(ERR_NOSUCHCHANNEL, sender, channel_name));
+	if (!channel->isInChannel(sender))					//check if sender is on channel
+		return (_replier.sendError(ERR_NOTONCHANNEL, sender, channel_name));
+	if (!channel->isOperator(sender))					//check if sender is operator
+		return (_replier.sendError(ERR_CHANOPRIVSNEEDED, sender, channel_name));
+	if (channel->isInChannel(user_to_invite))			//check if nick is on channel
+		return (_replier.sendError(ERR_USERONCHANNEL, sender, nickname + " " + channel_name));
+
+	channel->addInvited(user_to_invite);
+	protectedSend(user_to_invite->getFd(), ":" + sender->getPrefix() + " INVITE " + nickname + " " + channel_name);
+	return (0);
+}
 
 
 //chose to name the string "host" and not "user" irc protocoll a bit vague

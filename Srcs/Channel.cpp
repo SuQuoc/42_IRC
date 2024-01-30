@@ -19,6 +19,23 @@ Channel::Channel(const Channel &C) : _clients(C._clients), _password(C._password
 }
 Channel::~Channel() {}
 
+
+int Channel::addInvited(Client *client)
+{
+	if (client == NULL)
+		return (-1);
+	if (getInvited(client) == _invited.end())
+		_invited.push_back(client);
+	return (0);
+}
+
+Channel::invited_itr	Channel::getInvited(const Client *client)
+{
+	if (client == NULL)
+		return (_invited.end()); //better than crashing
+	return (std::find(_invited.begin(), _invited.end(), client));
+}
+
 // if sender NULL send to all
 void Channel::sendMsg(const Client *sender, const std::string &msg)
 {
