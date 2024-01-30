@@ -62,4 +62,10 @@ public:
 	void	correctOper();
 	void	correctOperDefault();
 	void	twoCorrectOper();
+
+//---quit---
+	void	quit_tests();
+	void	quitWithMessage();
+	void	quitWithoutMessage();
+	
 };
