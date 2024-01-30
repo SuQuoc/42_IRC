@@ -166,7 +166,7 @@ int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 	return (0);
 }
 
-void	Irc::PART(Client *sender, std::stringstream &sstream) //tested (not thoroughly)
+int	Irc::PART(Client *sender, std::stringstream &sstream)
 {
 	Channel*			channel;
 	std::stringstream	channel_name_sstream(extractWord(sstream));
@@ -181,7 +181,6 @@ void	Irc::PART(Client *sender, std::stringstream &sstream) //tested (not thoroug
 		channel = getChannel(channel_name);
 		if (channel == NULL)
 		{
-			std::cerr << "*Error: PART(): channel is not in channel map" << std::endl;
 			_replier.sendError(ERR_NOSUCHCHANNEL, sender, channel_name);
 			continue ;
 		}
@@ -189,7 +188,6 @@ void	Irc::PART(Client *sender, std::stringstream &sstream) //tested (not thoroug
 		err = channel->rmClient(sender, part_msg);
 		if (err > 0)
 		{
-			std::cerr << "*Error: PART(): err > 0" << std::endl;
 			_replier.sendError(static_cast<IRC_ERR>(err), sender, channel_name);
 			continue ;
 		}
@@ -198,12 +196,10 @@ void	Irc::PART(Client *sender, std::stringstream &sstream) //tested (not thoroug
 			rmChannelFromMap(channel_name);
 	}
 	if (cnt == 0)
-	{
-		std::cerr << "*Error: PART(): empty sstream" << std::endl;
 		_replier.sendError(ERR_NEEDMOREPARAMS, sender, "");
-	}
 	if (!channel_name_sstream.eof())
-		return ; //_replier.sendError(too many argument in list)!
+		return -1; //_replier.sendError(too many argument in list)!
+	return (0);
 }
 
 //cant use PART
@@ -235,7 +231,7 @@ void	Irc::QUIT(Client *sender, std::stringstream &sstream)
 	rmClientFromMaps(sender);
 }
 
-void	Irc::KICK(Client *sender, std::stringstream &sstream)
+int	Irc::KICK(Client *sender, std::stringstream &sstream)
 {
 	Client*					user_to_kick;
 	Channel*				channel;
@@ -247,34 +243,22 @@ void	Irc::KICK(Client *sender, std::stringstream &sstream)
 	if (msg.empty())
 		msg = nickname;
 	if (channel_name.empty() || nickname.empty())
-	{
-		_replier.sendError(ERR_NEEDMOREPARAMS, sender, "KICK");
-		return ;
-	}
+		return (_replier.sendError(ERR_NEEDMOREPARAMS, sender, "KICK"));
 	channel = getChannel(channel_name);
 	if (channel == NULL)
-	{
-		_replier.sendError(ERR_NOSUCHCHANNEL, sender, channel_name);
-		return ;
-	}
+		return (_replier.sendError(ERR_NOSUCHCHANNEL, sender, channel_name));
 	user_to_kick = getClient(nickname);
 	if (user_to_kick == NULL)
-	{
-		_replier.sendError(ERR_NOSUCHNICK, sender, nickname); //ERR-NOSUCHNICK is not in list of numeric replies for kick in protocoll
-		return ;
-	}
+		return (_replier.sendError(ERR_NOSUCHNICK, sender, nickname)); //ERR-NOSUCHNICK is not in list of numeric replies for kick in protocoll
 
 	msg = ":" + sender->getPrefix() + " KICK " + channel_name + " " + nickname + " :" + msg + "\r\n";
 	err = channel->rmClient(sender, user_to_kick, msg);
 	if (err > 0)
-	{
-		std::cerr << "KICK: > 0" << std::endl;
-		_replier.sendError(static_cast<IRC_ERR>(err), sender, channel_name);
-		return ;
-	}
+		return (_replier.sendError(static_cast<IRC_ERR>(err), sender, channel_name));
 	user_to_kick->leaveChannel(channel);
 	if (err == -1) //delete channel when empty()
 		rmChannelFromMap(channel_name);
+	return (0);
 }
 
 // ERR_NORECIPIENT
@@ -324,9 +308,6 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 		_replier.sendError(ERR_NORECIPIENT, sender, "PRIVMSG");
 }
 
-//void Irc::MODE(Client *sender, std::stringstream &sstream);
-//void Irc::TOPIC(Client *sender, std::stringstream &sstream);
-//void Irc::INVITE(Client *sender, std::stringstream &sstream);
 
 // void Irc::disconnectClient(int client_fd) //pure virtual or put this as a normal function in AServer
 // {
@@ -350,27 +331,6 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 
 
 
-//chose to name the string "host" and not "user" irc protocoll a bit vague
-//find it a bit weird to check the IP is valid IP for IRC operator but nit check if the cmd was send by that IP
-void Irc::OPER(Client *sender, std::stringstream &sstream)
-{
-	std::cout << "Executing OPER()" << std::endl;
-	std::string	host = extractWord(sstream); 
-	std::string	pw = extractWord(sstream);
-	
-	if (host.empty() || pw.empty())
-		_replier.sendError(ERR_NEEDMOREPARAMS, sender, "");
-	else if (host != _op_host && sender->getHost() != _op_host)
-		_replier.sendError(ERR_NOOPERHOST, sender, "");
-	else if (pw != _op_password)
-		_replier.sendError(ERR_PASSWDMISMATCH, sender, "");
-	else
-	{
-		sender->elevateToServOp(); //what if send in next line fails?
-		_replier.sendRPL(RPL_YOUREOPER, sender, "");
-		std::cout << "INFO: " << sender->getPrefix() << " is now server op, chaos is coming!" << std::endl; //out?
-	}
-}
 
 std::string Irc::createMsg(Client *sender, const std::string& cmd, const std::string& recipient, const std::string& msg) const
 {
@@ -412,6 +372,50 @@ void Irc::TOPIC(Client *sender, std::stringstream &sstream)
 			std::string reply = channel_name + " :" + channel->getTopic();
 			_replier.sendRPL(TOPIC_SET, sender, reply);
 		}
+	}
+}
+
+
+//RPL_AWAY
+//RPL_INVITING
+//ERR_NOSUCHNICK
+//ERR_NOTONCHANNEL
+//ERR_USERONCHANNEL
+//ERR_NEEDMOREPARAMS
+//ERR_CHANOPRIVSNEEDED
+//void	INVITE(Client *sender, std::stringstream& sstream)
+//{
+	//check if enough params		//ERR_NEEDMOREPARAMS
+	//check if nick exists			//ERR_NOSUCHNICK
+	//check if channel exists		//ERR_NOSUCHCHANNEL
+	//check if sender is on channel	//ERR_NOTONCHANNEL
+	//check if sender is operator	//ERR_CHANOPRIVISNEEDED
+	//check if nick is on channel	//ERR_USERONCHANNEL
+
+	//add nick to invite-vector
+	//
+//}
+
+
+//chose to name the string "host" and not "user" irc protocoll a bit vague
+//find it a bit weird to check the IP is valid IP for IRC operator but nit check if the cmd was send by that IP
+void Irc::OPER(Client *sender, std::stringstream &sstream)
+{
+	std::cout << "Executing OPER()" << std::endl;
+	std::string	host = extractWord(sstream); 
+	std::string	pw = extractWord(sstream);
+	
+	if (host.empty() || pw.empty())
+		_replier.sendError(ERR_NEEDMOREPARAMS, sender, "");
+	else if (host != _op_host && sender->getHost() != _op_host)
+		_replier.sendError(ERR_NOOPERHOST, sender, "");
+	else if (pw != _op_password)
+		_replier.sendError(ERR_PASSWDMISMATCH, sender, "");
+	else
+	{
+		sender->elevateToServOp(); //what if send in next line fails?
+		_replier.sendRPL(RPL_YOUREOPER, sender, "");
+		std::cout << "INFO: " << sender->getPrefix() << " is now server op, chaos is coming!" << std::endl; //out?
 	}
 }
 

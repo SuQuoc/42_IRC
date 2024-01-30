@@ -31,9 +31,9 @@ public:
 
 //methods (commands)
 	int		JOIN(Client *sender, std::stringstream& sstream);
-	void	PART(Client *sender, std::stringstream& sstream);
+	int		PART(Client *sender, std::stringstream& sstream);
 	void	QUIT(Client *sender, std::stringstream& sstream);
-	void	KICK(Client *sender, std::stringstream& sstream);
+	int		KICK(Client *sender, std::stringstream& sstream);
 
 	void	PASS(Client *sender, std::stringstream& sstream);
 	void	NICK(Client *sender, std::stringstream& sstream);
@@ -43,6 +43,7 @@ public:
 	// void	MODE(Client *sender, std::stringstream& sstream);
 	void	TOPIC(Client *sender, std::stringstream& sstream);
 	// void	INVITE(Client *sender, std::stringstream& sstream);
+
 	void	OPER(Client *sender, std::stringstream &sstream);
 	void	KILL(Client *sender, std::stringstream &sstream);
 
