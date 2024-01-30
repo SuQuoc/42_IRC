@@ -4,11 +4,10 @@
 //con- and destructer
 Irc::Irc(const std::string& name, const std::string& password): 
 AServer(name, password),
-_replier(name)
-{
-	_op_host = "OpHost"; 
-	_op_password = "OpPass";
-}
+_replier(_name),
+_op_host("OpHost"),
+_op_password("OpPass")
+{}
 /* Irc::Irc(const Irc& I);
 Irc::Irc operator=(const Irc& I); */
 Irc::~Irc() {}
@@ -75,10 +74,10 @@ void Irc::PASS(Client *sender, std::stringstream &sstream)
 void Irc::NICK(Client *sender, std::stringstream &sstream)
 {
     std::string nickname = extractWord(sstream);
-    //if (sender->isAuthenticated() == false) //didnt do PASS before NICK 
-    //    _replier.sendError(321, sender) and return; //theres no err_code for it
+    //if (sender->isAuthenticated() == false) //didnt do PASS before
+    //    _replier.sendError(321, sender) and return; //NOTICE message? sendNotice?
 
-	client_name_map_const_it it = getClientIter(nickname); //key may not be used cuz it creates an entry --> actually good for us no?
+	client_name_map_const_it it = getClientIter(nickname);
 	if (it == _client_names.end()) //no one has the nickname
 	{
 		if (sender->setNickname(nickname) != 0)
@@ -92,17 +91,14 @@ void Irc::NICK(Client *sender, std::stringstream &sstream)
 		_replier.sendError(ERR_NICKNAMEINUSE, sender, "");
 		return ;
 	}
-	if (sender->isRegistered())
-	{
-		addClientToNameMap(sender->getNickname(), sender->getFd());
-		_replier.sendRPL(RPL_WELCOME, sender, sender->getUsername());
-	}
+	addClientToNameMap(sender->getNickname(), sender->getFd());
 }
 
 void	Irc::USER(Client *sender, std::stringstream &sstream)
 {
     std::vector<std::string> info(4);
-
+	//if (sender->isAuthenticated() == false) //didnt do PASS before
+    //   return  _replier.sendError(321, sender) and return; //NOTICE message? sendNotice?
 	if (sender->isRegistered())
 	{
 		_replier.sendError(ERR_ALREADYREGISTERED, sender, "");
@@ -113,10 +109,7 @@ void	Irc::USER(Client *sender, std::stringstream &sstream)
     if (sender->setUser(info[0], info[1], info[2], info[3]) == ERR_NEEDMOREPARAMS)
 		_replier.sendError(ERR_NEEDMOREPARAMS, sender, "");
 	if (sender->isRegistered())
-	{
-		addClientToNameMap(sender->getNickname(), sender->getFd());
 		_replier.sendRPL(RPL_WELCOME, sender, sender->getUsername());
-	}
 }
 
 bool Irc::isChannelNameValid(const std::string &channel_name)
@@ -335,7 +328,7 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 //void Irc::TOPIC(Client *sender, std::stringstream &sstream);
 //void Irc::INVITE(Client *sender, std::stringstream &sstream);
 
-// void Irc::clientDied(int client_fd) //pure virtual or put this as a normal function in AServer
+// void Irc::disconnectClient(int client_fd) //pure virtual or put this as a normal function in AServer
 // {
 // 	std::string	channel_name;
 // 	int err;
@@ -356,10 +349,13 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 //}
 
 
+
+//chose to name the string "host" and not "user" irc protocoll a bit vague
+//find it a bit weird to check the IP is valid IP for IRC operator but nit check if the cmd was send by that IP
 void Irc::OPER(Client *sender, std::stringstream &sstream)
 {
 	std::cout << "Executing OPER()" << std::endl;
-	std::string	host = extractWord(sstream); //chose to name the string "host" and not "user" irc protocoll a bit vague
+	std::string	host = extractWord(sstream); 
 	std::string	pw = extractWord(sstream);
 	
 	if (host.empty() || pw.empty())
@@ -372,7 +368,7 @@ void Irc::OPER(Client *sender, std::stringstream &sstream)
 	{
 		sender->elevateToServOp(); //what if send in next line fails?
 		_replier.sendRPL(RPL_YOUREOPER, sender, "");
-		std::cout << "INFO: " << sender->getPrefix() << " is now server op, chaos is coming!" << std::endl;
+		std::cout << "INFO: " << sender->getPrefix() << " is now server op, chaos is coming!" << std::endl; //out?
 	}
 }
 
@@ -417,6 +413,29 @@ void Irc::TOPIC(Client *sender, std::stringstream &sstream)
 			_replier.sendRPL(TOPIC_SET, sender, reply);
 		}
 	}
+}
+
+//483 ERR_CANTKILLSERVER; how do u even trigger this? not covered
+void Irc::KILL(Client *sender, std::stringstream &sstream)
+{
+	std::string nickname;
+	std::string comment; 
+	Client*  client_to_kill;
+
+	if (sender->isServerOp() == false)
+		return (_replier.sendError(ERR_NOPRIVILEGES, sender, nickname), void());
+
+	nickname = extractWord(sstream);
+	if (nickname.empty())
+		_replier.sendError(ERR_NEEDMOREPARAMS, sender, nickname);
+	
+	comment = extractWord(sstream);
+
+	client_to_kill = getClient(nickname);
+	if (client_to_kill == NULL)
+		_replier.sendError(ERR_NOSUCHNICK, sender, nickname);
+	
+	//disconnectClient(client_to_kill, comment); 
 }
 
 void Irc::setOperatorHost(const std::string& hostname)

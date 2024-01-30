@@ -1,33 +1,6 @@
 #include "TestServer.hpp"
 #include <cassert>
 
-/* void TestServer::pass_tests()
-{
-	std::cout << "\033[1;33m---PASS TESTS---\033[0m" << std::endl;
-
- 	TestServer	serv;
-    Client		client(1, "1");
-    std::stringstream ss("already authenticated");
-    int fd = 0;
-
-    // Test case where client is already registered
-    client.authenticate();
-    serv.PASS(&client, ss, fd);
-    
-    // Test case where password is correct
-    client.deauthenticate();
-    ss << "correct_password";
-    serv.PASS(&client, ss, fd);
-
-    // Test case where password is incorrect
-    ss.clear();
-    ss << "incorrect_password";
-    serv.PASS(&client, ss, fd);
-
-	std::cout << std::endl;
-} */
-
-
 void testClientInitialization() 
 {
     int socketFd = 123;
@@ -83,44 +56,73 @@ void testChannelOperations()
 	std::cout << "joining and leaving a channel: ";
 }
 
-void testMaxChannels() 
+void TestServer::testMaxChannelsInClient() 
 {
-    Client client(789, "172.16.0.1");
+    std::cout << "joining more than 10 channels: ";
+    TestServer serv;
+
+    Client client(5, "172.16.0.1");
     std::vector<Channel> channels;
 
     // Create 11 channels
-    for (int i = 1; i <= 11; ++i) {
-        channels.push_back(Channel(&client, "#channel" + std::to_string(i)));
+    for (int i = 1; i <= 10; i++) {
+        std::string channel_name = "#channel" + std::to_string(i);
+        channels.push_back(Channel(&client, channel_name));
     }
 
     // Attempt to join 11 channels
-    // for (const auto& channel : channels) {
-        // client.joinChannel(&channel);
-    // }
+    for (auto& channel : channels) {
+        client.joinChannel(&channel);
+    }
 
     // Check that the client is in the first 10 channels
-    for (int i = 1; i <= 10; ++i) {
-        assert(client.isInChannel(&channels[i - 1]));
+    for (int i = 1; i <= 10; i++) {
+        if (client.isInChannel(&channels[i - 1]) == false)
+            return(fail("client is not in channel"));
     }
 
     // Check that the client is not in the 11th channel
-    assert(!client.isInChannel(&channels[10]));
+    if (client.isInChannel(&(channels[10])) == true)
+        return(fail("client should not be in 11th channel"));
 
-    // Check that the client's channel count is 10
-    assert(client.getChannelCount() == 10);
-
-    std::cout << "joining more than 10 channels: ";
+    if (client.getChannelCount() != 10)
+        fail("client should have 10 channels");
 }
 
 
-void TestServer::client_test()
+void TestServer::testLeavingOverMaxChannels() 
+{
+    std::cout << "leaving more than 10 channels: ";
+    TestServer serv;
+
+    Client client(5, "172.16.0.1");
+    std::vector<Channel> channels;
+
+    // Create 11 channels
+    for (int i = 1; i <= 10; i++) {
+        std::string channel_name = "#channel" + std::to_string(i);
+        channels.push_back(Channel(&client, channel_name));
+    }
+
+    // Attempt to join 11 channels
+    for (auto& channel : channels) {
+        client.joinChannel(&channel);
+    }
+
+    //----------------------------------------------
+    for (int i = 1; i <= 11; i++) {
+        client.leaveChannel(&channels[i - 1]);
+        if (i == 3 && client.getChannelCount() != 7)
+            return(fail("client should have 7 channels"));
+    }
+
+    if (client.getChannelCount() != 0)
+        return(fail("client should have 0 channels"));
+}
+
+void TestServer::client_tests()
 {
 	std::cout << "\033[1;33m---CLIENT TESTS---\033[0m" << std::endl;
-
- 	TestServer	serv;
-    Client		client(1, "1");
-
-	Channel		channel1(&client, "#channel1");
 
 	testClientInitialization();
 	ok();
@@ -130,4 +132,8 @@ void TestServer::client_test()
 	ok();
 	testChannelOperations();
 	ok();
+    testMaxChannelsInClient();
+    ok();
+    testLeavingOverMaxChannels();
+    ok();
 }

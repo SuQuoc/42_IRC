@@ -8,8 +8,12 @@ INCLUDES 	= ../Includes
 T_SRCS		= 	clientTests.cpp \
 				joinTests.cpp \
 				kickTests.cpp \
+				killTests.cpp \
 				main.cpp \
+				operTests.cpp \
 				partTests.cpp \
+				passTests.cpp \
+				quitTests.cpp \
 				TestUtils.cpp
 
 SRCS		=	Irc.cpp \

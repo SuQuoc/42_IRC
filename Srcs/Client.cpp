@@ -42,11 +42,8 @@ void Client::elevateToServOp() {_server_op = true;}
 
 int Client::setNickname(const std::string& name)
 {
-	if (name.size() > 9 || containsForbiddenChars(name, " ,*?!@$:.#"))
-	{
-		std::cout << "432 Erreonous nickname" << std::endl;
+	if (name.size() > 9 || containsForbiddenChars(name, " ,*?!@$:.#"))		
 		return ERR_ERRONEUSNICKNAME;
-	}
 	_nickname = name;
 	_prefix = _nickname + "!" + _username + "@" + _hostname; //a lil ick but working
 	if (_authenticated && !_nickname.empty() && !_username.empty())

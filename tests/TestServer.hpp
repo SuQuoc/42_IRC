@@ -49,5 +49,36 @@ public:
 	void	kickSelfAndOnlyMember();
 
 //---client---
-	void	client_test();
+	void	client_tests();
+	void	testMaxChannelsInClient();
+	void	testLeavingOverMaxChannels();
+
+
+
+//---registration---
+	void	registration_tests();
+	void	correctPW();
+	void	incorrectPW();
+	void	availableNick();
+	void	unavailableNick();
+	void	wrongNick();
+	void	registerTwoClients();
+
+//---oper---
+	void	oper_tests();
+	void	wrongOperHost();
+	void	wrongOperPW();
+	void	correctOper();
+	void	correctOperDefault();
+	void	twoCorrectOper();
+
+//---quit---
+	void	quit_tests();
+	void	quitWithMessage();
+	void	quitWithoutMessage();
+//---kill---
+	void	kill_tests();
+	void	succesfulKill();
+	void 	notAnIrcOper();
+
 };
