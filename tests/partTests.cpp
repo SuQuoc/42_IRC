@@ -1,5 +1,35 @@
 #include "TestServer.hpp"
 
+void	TestServer::partEmptySstream()
+{
+	TestServer 			serv;
+	Client				*elena;
+	std::stringstream	sstream("");
+
+	serv.makeUserJoinChannel("#Channel", "Elena", 5);
+	elena = serv.getClient("Elena");
+	serv.PART(elena, sstream);
+
+	if (elena->getChannelCount() != 1)
+		return (fail("elena should be in one channel"));
+	ok();
+}
+
+void	TestServer::partEmptySpacesSstream()
+{
+	TestServer 			serv;
+	Client				*elena;
+	std::stringstream	sstream("   ");
+
+	serv.makeUserJoinChannel("#Channel", "Elena", 5);
+	elena = serv.getClient("Elena");
+	serv.PART(elena, sstream);
+
+	if (elena->getChannelCount() != 1)
+		return (fail("elena should be in one channel"));
+	ok();
+}
+
 void	TestServer::partChannelNotEmpty()
 {
 	TestServer 	serv;
@@ -115,14 +145,62 @@ void	TestServer::noSuchChannel()
 	ok();
 }
 
-//void	TestServer::partMultipleChannels()
-//void	TestServer::emptySstream()
-//void	TestServer::partOverListLimit()
+void	TestServer::partMultipleChannels()
+{
+	TestServer 		serv;
+	Client			*elena;
+	std::string		channels;
+
+	serv.makeUser("Elena", 5);
+	elena = serv.getClient("Elena");
+	for (int i = 0; i < LIST_LIMIT; i++)
+	{
+		std::stringstream	sstream("#" + std::to_string(i));
+		channels += "#" + std::to_string(i) + ",";
+		serv.JOIN(elena, sstream);
+	}
+	if (elena->getChannelCount() != LIST_LIMIT)
+		return (fail("elena should be in LIST_LIMIT(10) channels"));
+	std::stringstream	part_input(channels);
+	serv.PART(elena, part_input);
+	
+	if (elena->getChannelCount() != 0)
+		return (fail("elena should have parted from all channels"));
+	ok();
+}
+
+void	TestServer::partOverListLimit()
+{
+	TestServer 		serv;
+	Client			*elena;
+	std::string		channels;
+
+	serv.makeUser("Elena", 5);
+	elena = serv.getClient("Elena");
+	for (int i = 0; i < LIST_LIMIT + 5; i++)
+	{
+		std::stringstream	sstream("#" + std::to_string(i));
+		channels += "#" + std::to_string(i) + ",";
+		serv.JOIN(elena, sstream);
+	}
+	if (elena->getChannelCount() != LIST_LIMIT)
+		return (fail("elena should be in LIST_LIMIT(10) channels"));
+	std::stringstream	part_input(channels);
+	serv.PART(elena, part_input);
+	
+	if (elena->getChannelCount() != 0)
+		return (fail("elena should have parted from all channels"));
+	ok();
+}
 
 void TestServer::part_tests()
 {
 	std::cout << "\033[1;33m---PART TESTS---\033[0m" << std::endl;
 
+	std::cout << "empty sstream: ";
+	partEmptySstream();
+	std::cout << "empty sstream with spaces: ";
+	partEmptySpacesSstream();
 	std::cout << "part channel not empty: ";
 	partChannelNotEmpty();
 	std::cout << "part channel empty: ";
@@ -133,6 +211,10 @@ void TestServer::part_tests()
 	userNotInChannel();
 	std::cout << "no such Channel: ";
 	noSuchChannel();
+	std::cout << "part multiple channels: ";
+	partMultipleChannels();
+	std::cout << "part over LIST_LIMIT: ";
+	partOverListLimit();
 
 	std::cout << std::endl;
 }

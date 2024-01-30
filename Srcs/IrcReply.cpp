@@ -11,13 +11,10 @@ IrcReply::~IrcReply(){}
 int	IrcReply::sendError(IRC_ERR error, Client* sender, const std::string& input) const
 {
 	std::string err_message;
-	std::string server_name = "AfterLife"; //put in constructor! 
 	std::stringstream error_code;
 
 	error_code << error;
-	//NAME OF THE SERVER
-	// err_message = getName(); //Servername, doesnt end with a space
-	err_message += ":" + server_name + " " + error_code.str() + " " + sender->getNickname() + " ";
+	err_message += ":" + _server_name + " " + error_code.str() + " " + sender->getNickname() + " ";
 	switch (error)
 	{
 		case ERR_NOSUCHNICK:
@@ -93,7 +90,10 @@ int	IrcReply::sendError(IRC_ERR error, Client* sender, const std::string& input)
 			err_message += input + ":Unknown MODE flag"; //input?
 			break;
 		case ERR_NOOPERHOST:
-			err_message += input + ":No O-lines for your host"; //input?
+			err_message += ":No O-lines for your host";
+			break;
+		case ERR_NOPRIVILEGES:
+			err_message += ":Permission Denied- You're not an IRC operator";
 			break;
 		default:
 			std::cout << "CANT HAPPEN DUE TO ENUM" << std::endl;
@@ -102,7 +102,7 @@ int	IrcReply::sendError(IRC_ERR error, Client* sender, const std::string& input)
 	err_message += "\r\n";
 	if(send(sender->getFd(), err_message.c_str(), err_message.size(), 0) == -1) //--> turn this to a seperat function that sends in a while loop, others outside of switch can also use it 
 	{
-		std::cerr << "Error send faild in Irc_error." << std::endl;
+		std::cerr << "Error send failed in Irc_error." << std::endl;
 		return(-1);
 	}
 	return (0);
@@ -111,11 +111,10 @@ int	IrcReply::sendError(IRC_ERR error, Client* sender, const std::string& input)
 void	IrcReply::sendRPL(IRC_ERR error, Client* sender, const std::string& input) const
 {
 	std::string msg;
-	std::string server_name = "AfterLife";
 	std::stringstream error_code;
 
 	error_code << error;
-	msg = ":" + server_name + " " + error_code.str() + " " + sender->getNickname() + " ";
+	msg = ":" + _server_name + " " + error_code.str() + " " + sender->getNickname() + " ";
 	switch (error)
 	{
 		case TOPIC_SET:
@@ -125,7 +124,7 @@ void	IrcReply::sendRPL(IRC_ERR error, Client* sender, const std::string& input) 
 			msg = ":" + sender->getPrefix() + " JOIN " + input + " * :" + sender->getUsername();
 			break;
 		case RPL_WELCOME:
-			msg = ":" + server_name + " 001 " + sender->getNickname() + " :Welcome to the Internet Relay Network, " + input; //input = getPrefix() from Client; <nick>!<user>@<host>
+			msg = ":" + _server_name + " 001 " + sender->getNickname() + " :Welcome to the Internet Relay Network, " + input; //input = getPrefix() from Client; <nick>!<user>@<host>
 			break;
 		case RPL_YOUREOPER:
 			msg += " :You are now an IRC operator";
