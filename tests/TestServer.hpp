@@ -47,11 +47,10 @@ public:
 	void	kickChannelMember();
 	void	unauthorizedKick();
 	void	kickSelfAndOnlyMember();
-
-//---client---
-	void	client_tests();
-	void	testMaxChannelsInClient();
-	void	testLeavingOverMaxChannels();
+	void	userToKickNotInChannel();
+	void	userToKickNotInMap();
+	void	channelNotInMap();
+	void	senderNotInChannel();
 
 //---registration---
 	void	registration_tests();
@@ -80,4 +79,8 @@ public:
 	void	succesfulKill();
 	void 	notAnIrcOper();
 
+//---client---
+	void	client_tests();
+	void	testMaxChannelsInClient();
+	void	testLeavingOverMaxChannels();
 };
