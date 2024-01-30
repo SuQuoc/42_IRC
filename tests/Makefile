@@ -11,12 +11,11 @@ T_SRCS		= 	clientTests.cpp \
 				kickTests.cpp \
 				killTests.cpp \
 				main.cpp \
+				modeTests.cpp \
 				operTests.cpp \
 				partTests.cpp \
 				passTests.cpp \
 				quitTests.cpp \
-				TestUtils.cpp \
-				modeTests.cpp \
 				TestUtils.cpp
 
 SRCS		=	Irc.cpp \

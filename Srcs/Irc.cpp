@@ -512,7 +512,7 @@ int Irc::MODE(Client *sender, std::stringstream &sstream)
 			}
             else if(word[i] == 'l' /* && modes_map.find(word[i]) != modes_map.end() */)
             {
-				if(pre_fix == '+')				// does it cut out always need to test ???????????????????????/
+				if(pre_fix == '+')				// does it cut out always need to test ???????????????????????
                 	std::getline(sstream >> std::ws, argument, ' ');
 				if(limit_code == 324)		// topic was set no changes ?????????????????????????????
 					continue ;
@@ -539,7 +539,7 @@ int Irc::MODE(Client *sender, std::stringstream &sstream)
 
 	for(std::map< std::string, std::pair<char, int> >::iterator o_itr = o_name_code_map.begin(); o_itr != o_name_code_map.end(); o_itr++)
 	{
-		std::cout << o_itr->second.first << o_itr->first << std::endl;
+		_replier.sendError()
 		if(o_itr->second.second == 324)
 			std::cout << o_itr->second.first << o_itr->first << std::endl;
 	}

@@ -70,7 +70,7 @@ fun: all
 	funcheck -a \
 	./$(NAME) $(ARGS)
 
-tester:
+tester: all
 	make va -C ./tests
 
 -include $(DEPS)
