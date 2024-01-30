@@ -64,10 +64,9 @@ void Irc::PASS(Client *sender, std::stringstream &sstream)
 		sender->authenticate();
 	else
 	{
-		std::cout << "pw = " << password << std::endl;
 		sender->deauthenticate();
 		_replier.sendError(ERR_PASSWDMISMATCH, sender, "");
-		//delete Client and the entry from the map if Pw is wrong? --> multiple PASS not possible then
+		disconnectClient(sender, "Wrong password"); //delete Client and the entry from the map if Pw is wrong? --> multiple PASS not possible then
 	}
 }
 
@@ -92,6 +91,8 @@ void Irc::NICK(Client *sender, std::stringstream &sstream)
 		return ;
 	}
 	addClientToNameMap(sender->getNickname(), sender->getFd());
+	if (sender->isRegistered())
+		_replier.sendRPL(RPL_WELCOME, sender, sender->getUsername());
 }
 
 void	Irc::USER(Client *sender, std::stringstream &sstream)
@@ -213,26 +214,11 @@ void	Irc::PART(Client *sender, std::stringstream &sstream) //tested (not thoroug
 // 		or if the channel doesnt exist
 void	Irc::QUIT(Client *sender, std::stringstream &sstream)
 {
-	std::string	channel_name;
-	std::string	msg = extractWord(sstream);
-	Channel		*channel; 
-	int err;
-	if (msg.empty())
-		msg = "disconnected"; //where will the entire message be concatinated? in channel?
-	
-	std::vector<Channel *> channels = sender->getAllChannels();
-	for (std::vector<Channel *>::iterator it = channels.begin(); it != channels.end(); it++)
-	{
-		channel = (*it); 
-		if (!channel) //necessary? checking if the channel is in map or null seems overkill, since this case should never happen
-			continue ;
-		// sender->leaveChannel(channel); //unecessary ?? he will leave entire server
-		channel_name = channel->getName();
-		err = channel->rmClient(sender, "Leaving");
-		if (err == -1) //exchange -1 with CHANNEL_DEAD, and use rmClient with a message
-			rmChannelFromMap(channel_name);		
-	}
-	rmClientFromMaps(sender);
+	std::string	comment = extractWord(sstream);
+	if (comment.empty())
+		comment = "Leaving";
+
+	disconnectClient(sender, createMsg(sender, "QUIT", "", comment));
 }
 
 void	Irc::KICK(Client *sender, std::stringstream &sstream)
@@ -377,9 +363,13 @@ void Irc::OPER(Client *sender, std::stringstream &sstream)
 
 std::string Irc::createMsg(Client *sender, const std::string& cmd, const std::string& recipient, const std::string& msg) const
 {
-    if (!sender)
+    std::string message;
+	if (!sender)
         return msg;
-    std::string message = ":" + sender->getPrefix() + " " + cmd + " " + recipient + " :" + msg + "\r\n"; //PART uses same method -> extra function?
+	if (recipient.empty())
+		message = ":" + sender->getPrefix() + " " + cmd + " :" + msg + "\r\n";
+    else
+		message = ":" + sender->getPrefix() + " " + cmd + " " + recipient + " :" + msg + "\r\n"; //PART uses same method -> extra function?
     return message;
 }
 
@@ -432,13 +422,12 @@ void Irc::KILL(Client *sender, std::stringstream &sstream)
 	if (nickname.empty())
 		_replier.sendError(ERR_NEEDMOREPARAMS, sender, nickname);
 	
-	comment = extractWord(sstream);
-
 	client_to_kill = getClient(nickname);
 	if (client_to_kill == NULL)
 		_replier.sendError(ERR_NOSUCHNICK, sender, nickname);
 	
-	//disconnectClient(client_to_kill, comment); 
+	comment = extractWord(sstream);
+	disconnectClient(client_to_kill, comment); 
 }
 
 void Irc::setOperatorHost(const std::string& hostname)

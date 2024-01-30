@@ -79,28 +79,27 @@ void	AServer::accept_connection()
 }
 
 
-void	AServer::disconnect_client(const int& client_fd)
+void	AServer::disconnectClient(const int& client_fd)
 {
-	Client *client = getClient(client_fd);
-	(void)(client);
-	// disconnectClient(Client *client, "lost connection, bye bye, see you in the AfterLife");
+	disconnectClient(getClient(client_fd), "lost connection, bye bye, see you in the AfterLife");
 }
 
-// void	AServer::disconnectClient(Client *client, const std::string& msg)
-// {
-	// std::vector<Channel *> channels = client->getAllChannels();
-	// for (std::vector<Channel *>::iterator it = channels.begin(); it != channels.end(); it++)
-	// {
-		// Channel *channel = (*it); 
-		// if (!channel) //necessary? checking if the channel is in map or null seems overkill, since this case should never happen
-			// continue ;
-		/* client->leaveChannel(channel); //unecessary ?? he will leave entire server */
-		// int err = channel->rmClient(client, msg);
-		// if (err == -1) //exchange -1 with CHANNEL_DEAD, and use rmClient with a message
-			// rmChannelFromMap(channel->getName());		
-	// }
-	// rmClientFromMaps(client);
-// }
+void	AServer::disconnectClient(Client *client, const std::string& msg)
+{
+	if (!client) return;
+
+	std::vector<Channel *> channels = client->getAllChannels();
+	for (std::vector<Channel *>::iterator it = channels.begin(); it != channels.end(); it++)
+	{
+		Channel *channel = (*it);
+		if (!channel) //necessary? checking if the channel is in map or null seems overkill, since this case should never happen
+			continue ;
+		int err = channel->rmClient(client, msg);
+		if (err == -1) //exchange -1 with CHANNEL_DEAD, and use rmClient with a message
+			rmChannelFromMap(channel->getName());		
+	}
+	rmClientFromMaps(client);
+}
 
 void	AServer::process_event(const int& client_fd)
 {
@@ -120,8 +119,9 @@ void	AServer::process_event(const int& client_fd)
 			std::cerr << "Error: couldn't recieve data :" << std::strerror(errno) << std::endl;
 			return ;
 		case (0):
-			//disconnect_client(client_fd);
-			close(client_fd);
+			std::cerr << "DISCONNECTING CLIENT here????" << std::endl;
+			disconnectClient(client_fd); //ctrl+c at netcat
+			// close(client_fd);
 			return ;
 		case (1):
 			return ;
@@ -169,14 +169,17 @@ void 	AServer::rmClientFromMaps(Client *client) //necessary? we always have fd i
 	if (!client) return;
 
 	client_fd_map_iter_t it = _client_fds.find(client->getFd());
+	client_name_map_iter_t it2 = _client_names.find(client->getNickname());
 	if (it == _client_fds.end())
 		return;
-	client_name_map_iter_t it2 = _client_names.find(client->getNickname());
-	if (it2 == _client_names.end()) //this should never be triggered
-		return;
+
 	_client_fds.erase(it);
-	_client_names.erase(it2);
 	delete client;
+	
+	//this will only be triggerd if the client didnt finish registration before losing connection
+	if (it2 == _client_names.end()) 
+		return;
+	_client_names.erase(it2);
 }
 
 void 	AServer::rmClientFromMaps(int client_fd)
@@ -303,8 +306,11 @@ void	AServer::epollLoop()
 				std::cin >> str;
 			else if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN))) //???????????????
 			{
-				close(events[i].data.fd); //Irc::QUIT() with a "client died" message ??!!
-				//clientDied() QUIT(); //writing own function similar to QUIT? it has to resolve the fd to the client
+				// dont know when this is getting triggered
+				// maybe internet loss? wouldnt make sense
+				std::cerr << "DISCONNECTING CLIENT here????" << std::endl;
+				disconnectClient(events[i].data.fd); //this case wont be triggered by ctrl-c at netcat
+				// close(events[i].data.fd);
 			}
 			else
 				process_event(events[i].data.fd); //recv

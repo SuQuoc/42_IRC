@@ -27,18 +27,18 @@ void TestServer::incorrectPW()
 	std::cout << "incorrect password: ";
 
 	TestServer 	serv("Testserver", "password");
-	serv.addNewClientToFdMap(5, "127.0.0.0");
+	serv.makeUserJoinChannel("#family", "elena", 5);
 	
 	std::string	password("wrong_password");
 	std::stringstream	sstream(password);
 
 	Client *client = serv.getClient(5);
 	serv.PASS(client, sstream);
-
-	if (client != NULL) //set it to NULL after deletion in program
+	if (serv.getClient(5) != NULL || serv.getClient("elena") != NULL) //set it to NULL after deletion in program
 		return (fail("client should be deleted"));
-	if (client->isAuthenticated())
-		return (fail("password was incorrect, client should NOT be authenticated"));
+
+	// if (client->isAuthenticated()) //doenst work because client is deleted
+		// return (fail("password was incorrect, client should NOT be authenticated"));
 	ok();
 }
 
