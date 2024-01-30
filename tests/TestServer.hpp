@@ -67,5 +67,9 @@ public:
 	void	quit_tests();
 	void	quitWithMessage();
 	void	quitWithoutMessage();
-	
+//---kill---
+	void	kill_tests();
+	void	succesfulKill();
+	void 	notAnIrcOper();
+
 };
