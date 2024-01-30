@@ -1,12 +1,17 @@
 NAME		= tester
 ARGS 		= 
-CXX			= c++
+CXX			= @c++
 CXXFLAGS	= -Wall -Wextra -Werror -MMD -MP -pedantic -g
  
 INCLUDES 	= ../Includes
 
-T_SRCS		= 	joinTests.cpp \
+T_SRCS		= 	clientTests.cpp \
+				joinTests.cpp \
+				kickTests.cpp \
 				main.cpp \
+				operTests.cpp \
+				partTests.cpp \
+				passTests.cpp \
 				TestUtils.cpp
 
 SRCS		=	Irc.cpp \
@@ -69,11 +74,13 @@ $(TEST_DIR)/%.o: $(TEST_DIR)/%.cpp
 	$(CXX) -I$(INCLUDES) -c $< -o $@
 
 va: all
-	valgrind \
+	@echo "\n\033[0;34mstart tester with valgrind...\033[0m\n"
+	@valgrind \
 	--leak-check=full \
 	--track-origins=yes \
 	--show-leak-kinds=all \
 	./$(NAME) $(ARGS) 2> test_errors.log
+	@echo
 
 scan: all
 	scan-build-12 \

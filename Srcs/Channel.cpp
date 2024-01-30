@@ -6,7 +6,7 @@ _restrict_topic(true),
 _invite_only(false),
 _max_clients(MAX_CLIENTS)
 {
-	if(owner == NULL)
+	if (owner == NULL)
 	{
 		std::cerr << "* Error: owner is NULL (in channel constructor)" << std::endl;
 		return ;
@@ -29,11 +29,11 @@ void Channel::sendMsg(const Client *sender, const std::string &msg)
 	} */
 	/* if(getClient(sender) == _clients.end())
 		return ; //return error code */
-	for(clients_itr itr = _clients.begin(); itr != _clients.end(); itr++)
+	for (clients_itr itr = _clients.begin(); itr != _clients.end(); itr++)
 	{
-		if(sender && itr->members == sender)
+		if (sender && itr->members == sender)
 			continue ;
-		if(send(itr->members->getFd(), msg.c_str(), msg.size(), 0) == -1)
+		if (send(itr->members->getFd(), msg.c_str(), msg.size(), 0) == -1)
 		{
 			/* std::cerr << "send faild in channel.cpp" << std::endl;
 			strerror(errno);
@@ -47,12 +47,12 @@ int	Channel::rmClient(const Client *executor, const Client *rm_client, const std
 {
 	clients_itr itr;
 
-	if(!executor || !rm_client)
+	if (!executor || !rm_client)
 		return (-2);  //should never happen
 	itr = getClient(executor);
-	if(itr == _clients.end())
+	if (itr == _clients.end())
 		return ERR_USERNOTINCHANNEL;
-	if(itr->is_operator == false)
+	if (itr->is_operator == false)
 		return ERR_CHANOPRIVSNEEDED;
 	return (rmClient(rm_client, leaving_msg));
 }
@@ -62,10 +62,10 @@ int	Channel::rmClient(const Client *rm_client, const std::string &leaving_msg) /
 {
 	clients_itr itr;
 
-	if(!rm_client)
+	if (!rm_client)
 		return (-2); //should never happen
 	itr = getClient(rm_client);
-	if(itr == _clients.end())
+	if (itr == _clients.end())
 		return (ERR_NOTONCHANNEL);
 	sendMsg(NULL, leaving_msg);
 	_clients.erase(itr);
@@ -78,30 +78,30 @@ int	Channel::rmClient(const Client *rm_client, const std::string &leaving_msg) /
 // -2 is already in channel
 int	Channel::addClient(Client *new_client, const std::string &password, bool is_operator)
 {
-	if(new_client == NULL)
+	if (new_client == NULL)
 	{
 		std::cerr << "Error addMember(): new_client is NULL" << std::endl;
-		return -1; // -1 if client is NULL
+		return (-1); // -1 if client is NULL
 	}
-	if(size() >= _max_clients)
+	if (size() >= _max_clients)
 		return ERR_CHANNELISFULL;
-	if(getClient(new_client) != _clients.end())
+	if (getClient(new_client) != _clients.end())
 	{
 		std::cerr << "Error client" << new_client->getUsername() << " is already in this channel." << std::endl;
-		return -2; // -2 is already in channel
+		return (-2); // -2 is already in channel
 	}
-	if(_password.empty() == false && _password != password)
+	if (_password.empty() == false && _password != password)
 		return ERR_BADCHANNELKEY;
 	struct Member_t member;
 	member.is_operator = is_operator;
 	member.members = new_client;
 	_clients.push_back(member);
-	return 0;
+	return (0);
 }
 
 bool	Channel::isOperator(const Client *client)
 {
-	if(getClient(client)->is_operator == true)
+	if (getClient(client)->is_operator == true)
 		return true;
 	return false;
 }
@@ -109,12 +109,12 @@ bool	Channel::isOperator(const Client *client)
 //return true if user is member of this channel
 bool Channel::isInChannel(const Client *client)
 {
-	if(client == NULL)
+	if (client == NULL)
 	{
 		std::cout << "Error client is NULL isInChannel()" << std::endl;
 		return false;
 	}
-	if(getClient(client) == _clients.end())
+	if (getClient(client) == _clients.end())
 		return false;
 	return true;
 }
@@ -129,14 +129,14 @@ int	Channel::setPassword(Client *executor, const std::string &password, const ch
 
 	client = getClient(executor);
 	// send msg ???? youre not a channel operator
-	if(client == _clients.end() || client->is_operator == false)
+	if (client == _clients.end() || client->is_operator == false)
 		return ERR_CHANOPRIVSNEEDED; // = 481 ERR_NOPRIVILEGES
-	if(add == '+' && _password.empty() == true) // send msg if already set
+	if (add == '+' && _password.empty() == true) // send msg if already set
 	{
 		_password = password;
 		return RPL_CHANNELMODEIS;
 	}
-	if(add == '-' && password == _password)
+	if (add == '-' && password == _password)
 	{
 		_password.clear();
 		return RPL_CHANNELMODEIS;
@@ -149,14 +149,14 @@ int	Channel::setTopic(const std::string &name, const std::string &topic)
 	clients_itr client;
 
 	client = getClient(name);
-	if(client == _clients.end())
+	if (client == _clients.end())
 		return ERR_NOTONCHANNEL;
-	if(_restrict_topic == false)
+	if (_restrict_topic == false)
 	{
 		_topic = topic;
 		return TOPIC_SET;
 	}
-	if(_restrict_topic == true && client->is_operator == true)
+	if (_restrict_topic == true && client->is_operator == true)
 	{
 		_topic = topic;
 		return TOPIC_SET;
@@ -167,7 +167,7 @@ int	Channel::setTopic(const std::string &name, const std::string &topic)
 //			getter
 std::vector<Channel::Member_t>::iterator Channel::getClient(const Client *client)
 {
-	for(clients_itr itr = _clients.begin(); itr != _clients.end(); itr++)
+	for (clients_itr itr = _clients.begin(); itr != _clients.end(); itr++)
 		if(itr->members == client)
 			return itr;
 	return _clients.end();
@@ -175,8 +175,8 @@ std::vector<Channel::Member_t>::iterator Channel::getClient(const Client *client
 
 std::vector<Channel::Member_t>::iterator Channel::getClient(const std::string _name)
 {
-	for(clients_itr itr = _clients.begin(); itr != _clients.end(); itr++)
-		if(itr->members->getNickname() == _name)
+	for (clients_itr itr = _clients.begin(); itr != _clients.end(); itr++)
+		if (itr->members->getNickname() == _name)
 			return itr;
 	return _clients.end();
 }
@@ -189,46 +189,46 @@ int Channel::size() const { return _clients.size(); }
 //returns -1 if not a + or - in add, otherwise error code if fails
 int Channel::changeMode(Client *executor, const char &add, bool &modes)
 {
-	if(getClient(executor)->is_operator == false)
+	if (getClient(executor)->is_operator == false)
 		return ERR_NOPRIVILEGES;     //ERR_NOPRIVILEGES
-	if(add == '+' && modes == false)
+	if (add == '+' && modes == false)
 	{
 		modes = true;	// 324     RPL_CHANNELMODEIS
 		return RPL_CHANNELMODEIS;
 	}
-	else if(add == '-' && modes == true)
+	else if (add == '-' && modes == true)
 	{
 		modes = false;	// 324     RPL_CHANNELMODEIS
 		return RPL_CHANNELMODEIS;
 	}
-	return(CH_SUCCESS);
+	return (CH_SUCCESS);
 }
 
 int Channel::setOperator(Client *executor, const char &add, const std::string &name)
 {
 	clients_itr itr;
 
-	if(getClient(executor) == _clients.end())
+	if (getClient(executor) == _clients.end())
 		return ERR_NOTONCHANNEL;		// :server-name 442 your-nickname #channel :You're not on that channel
-	if(getClient(executor)->is_operator == false)
+	if (getClient(executor)->is_operator == false)
 		return ERR_CHANOPRIVSNEEDED;     //ERR_NOPRIVILEGES
-	if(getClient(name) == _clients.end())
+	if (getClient(name) == _clients.end())
 		return ERR_USERNOTINCHANNEL;
-	if(add == '+')
+	if (add == '+')
 	{
 		if(itr->is_operator == true)
 			return 491; //:server-name 491 your-nickname #channel :You're already an operator
 		itr->is_operator = true;
 		return RPL_CHANNELMODEIS;
 	}
-	else if(add == '-')
+	else if (add == '-')
 	{
 		if(itr->is_operator == false)
 			return 491; // :server-name 491 your-nickname #channel :They are not an operator
 		itr->is_operator = true;	// 324     RPL_CHANNELMODEIS
 		return RPL_CHANNELMODEIS;
 	}
-	return(CH_SUCCESS);
+	return (CH_SUCCESS);
 }
 
 //multible modes a possilbe like +adasd
@@ -253,5 +253,5 @@ int Channel::modesSwitch(Client *executor, const char &add, const char &ch_modes
 	}
 	/* else if(mode == 'o' && (itr = getClient(argument)) != _clients.end())
 		itr->is_operator = true; */
-	return 0;
+	return (0);
 }

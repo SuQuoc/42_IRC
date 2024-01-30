@@ -33,6 +33,7 @@ protected:
 	const std::string	_password;
 	int		_epoll_fd;
 	int		_sock_fd;
+
 	//server name? --> passed in constructor
 	typedef std::map<std::string, Channel*>::iterator	channel_map_iter_t;
 	typedef std::map<std::string, Client*>::iterator	client_name_map_iter_t;
@@ -44,13 +45,14 @@ protected:
 //Canonical Form
 	AServer(); //? 
 	AServer(const std::string& name, const std::string& password);
+
 //methods
 	void	accept_connection();
 	void	disconnect_client(const int& client_fd);
 	void	process_event(const int& client_sock);
 	void	failure_exit(const std::string& error_msg); //exits?
 	struct addrinfo*	getIpAdressToBind(const int& port);
-	virtual void	command_switch(Client *sender, const std::string message, const int& new_client_fd) = 0;
+	virtual void	command_switch(Client *sender, const std::string message) = 0;
 
 	void	addNewChannelToMap(Client *sender, const std::string& channel_name);
 	void	addClientToNameMap(std::string user_name, const int& client_fd);
@@ -59,14 +61,17 @@ protected:
 	void 	rmClientFromMaps(Client *client); 
 	void 	rmClientFromMaps(int client_fd);
 	void 	rmChannelFromMap(const std::string& channel_name);
+
 //getters
-	client_fd_map_const_it	getClientIter(int fd) const;
-	client_name_map_const_it		getClientIter(const std::string& name) const;
+	client_fd_map_const_it		getClientIter(int fd) const;
+	client_name_map_const_it	getClientIter(const std::string& name) const;
 	channel_map_const_it		getChannelIter(const std::string& name) const;
 
 	Client*		getClient(int fd) const;
 	Client*		getClient(const std::string& name) const;
 	Channel*	getChannel(const std::string& name) const;
+
+
 public:
 //con- and destructer
 	

@@ -134,6 +134,79 @@ void TestServer::CheckingWrongListInput()
 	ok();
 }
 
+void TestServer::addChannelWithPWandJoin()
+{
+	Client		*channel_ower;
+	Channel		*channel;
+	Client		*michi;
+	Client		*niki;
+	TestServer	serv;
+	
+	serv.makeUserJoinChannel("#pw", "Fiona", 5);
+	channel_ower = serv.getClient("Fiona");
+
+	channel = serv.getChannel("#pw");
+	if(channel == NULL)
+		return (fail("channel was not created"));
+	channel->setPassword(channel_ower, "nyancat", '+');
+	if(channel->getPassword() != "nyancat")
+		return (fail("password was wrong set or empty"));
+	
+	serv.makeUserJoinChannel("#pw", "Michi", 6);
+	michi = serv.getClient("Michi");
+	if(!michi)
+		return (fail("user was not created"));
+	if(channel->isInChannel(michi) == true)
+		return (fail("password faild user joined without password"));
+
+	serv.makeUserJoinChannel("#pw 12345", "Herbert", 7);
+	michi = serv.getClient("Herbert");
+	if(!michi)
+		return (fail("user was not created"));
+	if(channel->isInChannel(michi) == true)
+		return (fail("password faild user joined with wrong password"));
+
+	serv.makeUserJoinChannel("#pw nyancat", "Niki", 8);
+	niki = serv.getClient("Niki");
+	if(!niki)
+		return (fail("user was not created"));
+	if(channel->isInChannel(niki) == false)
+		return (fail("password was correct but user did not join"));
+
+	channel->setPassword(channel_ower, "nyancat3", '-');
+	if(channel->getPassword() != "nyancat")
+		return (fail("pw was removed with wrong pw"));
+	
+	channel->setPassword(channel_ower, "nyancat", '-');
+	if(channel->getPassword() == "nyancat")
+		return (fail("pw was not removed"));
+	
+	serv.makeUserJoinChannel("#pw 12345", "Tim", 9);
+	michi = serv.getClient("Tim");
+	if(!michi)
+		return (fail("user was not created"));
+	if(channel->isInChannel(michi) == false)
+		return (fail("user did not join"));
+
+	ok();
+}
+
+void TestServer::wrongChannelName()
+{
+	TestServer	serv;
+
+	serv.makeUserJoinChannel("#,~ch1,*ch2,#bell\a,#ch3,: ch4", "Sandi", 5);
+	serv.CheckingAmmountOfChannels(2, 2, 5);
+
+	serv.makeUserJoinChannel("ä123,#ch1,:#c,h4", "Niko", 6);
+	serv.CheckingAmmountOfChannels(3, 1, 6);
+
+	serv.makeUserJoinChannel("ä123,#ch1,:#c,h4", "Laika", 7);
+	serv.CheckingAmmountOfChannels(3, 1, 7);
+
+	ok();
+}
+
 void TestServer::join_tests()
 {
 	std::cout << "\033[1;33m---JOIN TESTS---\033[0m" << std::endl;
@@ -148,6 +221,12 @@ void TestServer::join_tests()
 	CheckingChannelNames();
 	std::cout << "checking wrong list input: ";
 	CheckingWrongListInput();
+	std::cout << "add channel with pw and join: ";
+	addChannelWithPWandJoin();
+	std::cout << "wrong channel name: ";
+	wrongChannelName();
+
+
 
 	std::cout << std::endl;
 }

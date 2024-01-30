@@ -4,18 +4,17 @@
 //con- and destructer
 Irc::Irc(const std::string& name, const std::string& password): 
 AServer(name, password),
-_replier(name)
-{
-	_op_host = "OpHost"; 
-	_op_password = "OpPass";
-}
+_replier(_name),
+_op_host("OpHost"),
+_op_password("OpPass")
+{}
 /* Irc::Irc(const Irc& I);
 Irc::Irc operator=(const Irc& I); */
 Irc::~Irc() {}
 
 //private methods 
 
-void	Irc::command_switch(Client *sender, const std::string message, const int& new_client_fd) //message-> 'request' better name? for us to discern
+void	Irc::command_switch(Client *sender, const std::string message) //message-> 'request' better name? for us to discern
 {
 	std::cout << "message =" << message << "!" << std::endl;
 
@@ -36,7 +35,7 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 	}
 	if (cmd == "CAP") //we only take the last PASS
 		return ;
-	else if (cmd == "PASS") PASS(sender, sstream, new_client_fd); //we only take the last PASS // client can always try PASS although not registered ?
+	else if (cmd == "PASS") PASS(sender, sstream); //we only take the last PASS // client can always try PASS although not registered ?
 	else if (cmd == "NICK") NICK(sender, sstream);
 	else if (cmd == "USER")	USER(sender, sstream);
 	else if (sender->isRegistered() == false) _replier.sendError(ERR_NOTREGISTERED, sender, ""); //?
@@ -55,9 +54,8 @@ void	Irc::command_switch(Client *sender, const std::string message, const int& n
 
 //methods (commands)
 //---------------------------------COMMANDS--------------------------------------------
-void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client_fd)
+void Irc::PASS(Client *sender, std::stringstream &sstream)
 {
-	(void)new_client_fd;
     std::string password = extractWord(sstream);
     	
     if (sender->isRegistered()) 
@@ -76,10 +74,10 @@ void Irc::PASS(Client *sender, std::stringstream &sstream, const int& new_client
 void Irc::NICK(Client *sender, std::stringstream &sstream)
 {
     std::string nickname = extractWord(sstream);
-    //if (sender->isAuthenticated() == false) //didnt do PASS before NICK 
-    //    _replier.sendError(321, sender) and return; //theres no err_code for it
+    //if (sender->isAuthenticated() == false) //didnt do PASS before
+    //    _replier.sendError(321, sender) and return; //NOTICE message? sendNotice?
 
-	client_name_map_const_it it = getClientIter(nickname); //key may not be used cuz it creates an entry --> actually good for us no?
+	client_name_map_const_it it = getClientIter(nickname);
 	if (it == _client_names.end()) //no one has the nickname
 	{
 		if (sender->setNickname(nickname) != 0)
@@ -93,17 +91,14 @@ void Irc::NICK(Client *sender, std::stringstream &sstream)
 		_replier.sendError(ERR_NICKNAMEINUSE, sender, "");
 		return ;
 	}
-	if (sender->isRegistered())
-	{
-		addClientToNameMap(sender->getNickname(), sender->getFd());
-		_replier.sendRPL(RPL_WELCOME, sender, sender->getUsername());
-	}
+	addClientToNameMap(sender->getNickname(), sender->getFd());
 }
 
 void	Irc::USER(Client *sender, std::stringstream &sstream)
 {
     std::vector<std::string> info(4);
-
+	//if (sender->isAuthenticated() == false) //didnt do PASS before
+    //   return  _replier.sendError(321, sender) and return; //NOTICE message? sendNotice?
 	if (sender->isRegistered())
 	{
 		_replier.sendError(ERR_ALREADYREGISTERED, sender, "");
@@ -114,51 +109,60 @@ void	Irc::USER(Client *sender, std::stringstream &sstream)
     if (sender->setUser(info[0], info[1], info[2], info[3]) == ERR_NEEDMOREPARAMS)
 		_replier.sendError(ERR_NEEDMOREPARAMS, sender, "");
 	if (sender->isRegistered())
-	{
-		addClientToNameMap(sender->getNickname(), sender->getFd());
 		_replier.sendRPL(RPL_WELCOME, sender, sender->getUsername());
-	}
+}
+
+bool Irc::isChannelNameValid(const std::string &channel_name)
+{
+	if(!(channel_name[0] == '#' || channel_name[0] == '&') || channel_name.size() > 200)
+		return (false);
+	for(int i = 0; channel_name[i]; i++)
+		if(channel_name[i] == ' ' || channel_name[i] == ',' || channel_name[i] == '\a')
+			return (false);
+	return (true);
 }
 
 int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 {
-	std::stringstream stream_name(extractWord(sstream));
-	std::stringstream stream_key(extractWord(sstream));
-	channel_map_iter_t channel_itr;
-	std::string	channel_name;
-	std::string	channel_key;
+	std::stringstream stream_name(extractWord(sstream)), stream_key(extractWord(sstream));
+	std::string	channel_key, channel_name;
+	int cnt = 0, err = 0;
+	Channel *channel;
 
-	while(getline(stream_name, channel_name, ','))
+	while(cnt < LIST_LIMIT && getline(stream_name, channel_name, ','))
 	{
+		cnt++;
 		getline(stream_key, channel_key, ',');
-		if(!(channel_name[0] == '#' || channel_name[0] == '&') || channel_name.size() > 200) //check if channel_name is valid
+		if (isChannelNameValid(channel_name) == false) //check if channel_name is valid
 		{
 			_replier.sendError(ERR_NOSUCHCHANNEL, sender, channel_name);
 			continue;
-		}	
+		}
 		if (sender->spaceForChannel() == false)
 		{
 			_replier.sendError(ERR_TOOMANYCHANNELS, sender, channel_name);
 			continue;
 		}
-		channel_itr = _channels.find(channel_name);
-		if(channel_itr == _channels.end()) // create if channel non exist ?
+		channel = getChannel(channel_name);
+		if(channel == NULL) // create if channel not exist
 			addNewChannelToMap(sender, channel_name);
 		else
 		{
-			int err = channel_itr->second->addClient(sender, channel_key, false);
+			err = channel->addClient(sender, channel_key, false);
 			if(err > 0)
 			{
 				_replier.sendError(static_cast<IRC_ERR>(err), sender, channel_name);
 				continue;
 			}
-			else if(err < 0)
+			if(err < 0)
 				continue;
 		}
-		channel_itr = _channels.find(channel_name);
-		sender->joinChannel(channel_itr->second);
-		channel_itr->second->sendMsg(NULL, ":" + sender->getPrefix() + " JOIN " + channel_name + " * :" + sender->getUsername() + "\r\n");
+		channel = getChannel(channel_name);
+		sender->joinChannel(channel);
+		channel->sendMsg(NULL, ":" + sender->getPrefix() + " JOIN " + channel_name + " * :" + sender->getUsername() + "\r\n");
 	}
+	if (cnt == 0)
+		_replier.sendError(ERR_NEEDMOREPARAMS, sender, "");
 	return (0);
 }
 
@@ -171,13 +175,13 @@ void	Irc::PART(Client *sender, std::stringstream &sstream) //tested (not thoroug
 	int					cnt = 0;
 	int					err;
 
-	while (cnt < 10 && std::getline(channel_name_sstream, channel_name, ','))
+	while (cnt < LIST_LIMIT && std::getline(channel_name_sstream, channel_name, ','))
 	{
 		cnt++;
 		channel = getChannel(channel_name);
 		if (channel == NULL)
 		{
-			std::cout << "*Error: PART(): channel is not in channel map" << std::endl;
+			std::cerr << "*Error: PART(): channel is not in channel map" << std::endl;
 			_replier.sendError(ERR_NOSUCHCHANNEL, sender, channel_name);
 			continue ;
 		}
@@ -185,16 +189,19 @@ void	Irc::PART(Client *sender, std::stringstream &sstream) //tested (not thoroug
 		err = channel->rmClient(sender, part_msg);
 		if (err > 0)
 		{
-			std::cout << "*Error: PART(): err > 0" << std::endl;
+			std::cerr << "*Error: PART(): err > 0" << std::endl;
 			_replier.sendError(static_cast<IRC_ERR>(err), sender, channel_name);
 			continue ;
 		}
 		sender->leaveChannel(channel);
-		if (err == -1) //delete channel when empty()
+		if (err == DELETE_CHANNEL) //delete channel when empty()
 			rmChannelFromMap(channel_name);
 	}
 	if (cnt == 0)
+	{
+		std::cerr << "*Error: PART(): empty sstream" << std::endl;
 		_replier.sendError(ERR_NEEDMOREPARAMS, sender, "");
+	}
 	if (!channel_name_sstream.eof())
 		return ; //_replier.sendError(too many argument in list)!
 }
@@ -287,7 +294,7 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 	std::string			reply;
 	int					cnt = 0;
 
-	while (cnt < 10 && std::getline(recip_sstream, recipient, ','))
+	while (cnt < LIST_LIMIT && std::getline(recip_sstream, recipient, ','))
 	{
 		cnt++;
 		if (recipient.empty()) 

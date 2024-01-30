@@ -23,7 +23,7 @@ OBJS 		= $(addprefix $(OBJ_DIR)/, $(OBJFILES))
 
 DEPS 		:= $(OBJS:.o=.d)
 
-.PHONY: all clean fclean re run va scan fun
+.PHONY: all clean fclean re run va scan fun tester
 
 #Build___________________________________________________________
 all: $(OBJ_DIR) $(NAME)
@@ -70,6 +70,8 @@ fun: all
 	funcheck -a \
 	./$(NAME) $(ARGS)
 
+tester:
+	make va -C ./tests
 
 -include $(DEPS)
 

@@ -133,7 +133,7 @@ void	AServer::process_event(const int& client_fd)
 				sender->loadMsgBuf(str); //take str as reference
 				str = sender->readMsgBuf();
 				if (!str.empty())
-					command_switch(sender, str, client_fd); //what if fd is not in map?
+					command_switch(sender, str); //what if fd is not in map?
 			}
 	}
 }
