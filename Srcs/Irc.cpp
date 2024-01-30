@@ -432,3 +432,109 @@ void Irc::setOperatorPW(const std::string& password)
 		return;
 	_op_password = password; 
 }
+
+//returns 403 no such channel, returns 442 not on channel
+int Irc::MODE(Client *sender, std::stringstream &sstream)
+{
+	std::string channel_name, argument, word;
+    /* std::map< char, std::pair<char, std::string> > modes_map; */
+    std::map< std::string, std::pair<char, int> > o_name_code_map;
+	Channel *channel;
+    char pre_fix;
+
+    std::getline(sstream >> std::ws, channel_name, ' ');
+	channel = getChannel(channel_name); //  test it ????????????????????
+	if(channel == NULL)
+	{
+		_replier.sendError(ERR_NOSUCHCHANNEL, sender, channel_name);
+		return ERR_NOSUCHCHANNEL;
+	}
+	if(channel->isInChannel(sender) == false)					//  test it ????????????????????
+	{
+		_replier.sendError(ERR_NOTONCHANNEL, sender, channel_name);
+		return ERR_NOTONCHANNEL;
+	}
+
+
+	// send just the errors after the loop??????????????
+	int inv_code = -42;
+	int topic_code = -42;
+	int limit_code = -42;
+	int operartor_code = -42;
+
+	while(std::getline(sstream >> std::ws, word, ' '))
+    {
+        if(word[0] == ':')
+        {
+            std::string line;
+            std::getline(sstream, line);
+            word.erase(word.begin());
+            word.append(line);
+        }
+        pre_fix = '+';
+        for(size_t i = 0; i < word.size(); i++)
+        {
+			if(channel->isOperator(sender) == false)
+				break ;
+			argument.clear();
+            if(word[i] == '+' || word[i] == '-') // add here for <ws>: ? if we have one just call a funktion that handals this separate
+            {
+                pre_fix = word[i];
+                i++;
+            }
+            if(word[i] == 'i')
+            {
+                /* modes_map[word[i]] = std::pair<char,std::string>(pre_fix, ""); */
+				inv_code = channel->modesSwitch(sender, pre_fix, word[i], "");
+            }
+			else if(word[i] == 't')
+            {
+				topic_code = channel->modesSwitch(sender, pre_fix, word[i], "");
+			}
+            else if(word[i] == 'l' /* && modes_map.find(word[i]) != modes_map.end() */)
+            {
+				if(pre_fix == '+')				// does it cut out always need to test ???????????????????????/
+                	std::getline(sstream >> std::ws, argument, ' ');
+				if(limit_code == 324)		// topic was set no changes ?????????????????????????????
+					continue ;
+				topic_code = channel->modesSwitch(sender, pre_fix, word[i], "");
+
+                /* modes_map[word[i]] = std::pair<char,std::string>(pre_fix, argument); */
+            }
+            else if(word[i] == 'o')
+            {
+				std::getline(sstream >> std::ws, argument, ' ');
+				operartor_code = channel->modesSwitch(sender, pre_fix, word[i], argument);
+				std::cout << operartor_code << std::endl;
+				o_name_code_map[argument] = std::pair<char, int>(pre_fix, operartor_code);
+                /* mode_o_map[argument] = pre_fix; */
+            }
+            else if(word[i] == 'k' /* && modes_map.find(word[i]) != modes_map.end() */) // k is deferent triggers error?
+            {
+                std::getline(sstream >> std::ws, argument, ' ');
+                /* channel->modesSwitch(sender, pre_fix, word[i], argument); */
+                std::cout << pre_fix << word[i] << " " << argument << std::endl;
+            }
+        }
+    }
+
+	for(std::map< std::string, std::pair<char, int> >::iterator o_itr = o_name_code_map.begin(); o_itr != o_name_code_map.end(); o_itr++)
+	{
+		std::cout << o_itr->second.first << o_itr->first << std::endl;
+		if(o_itr->second.second == 324)
+			std::cout << o_itr->second.first << o_itr->first << std::endl;
+	}
+	
+
+    /* for(std::map<std::string, char>::iterator map_it = mode_o_map.begin(); map_it != mode_o_map.end(); map_it++)
+	{
+        std::cout << channel->modesSwitch(sender, map_it->second, 'o', map_it->first) << std::endl;
+	}
+
+    for(std::map<char, std::pair<char,std::string> >::iterator map_it = modes_map.begin(); map_it != modes_map.end(); map_it++)
+    {
+		std::cout << channel->modesSwitch(sender, map_it->second.first, map_it->first, map_it->second.second) << std::endl;
+	}    
+	*/
+	return (0);
+}
