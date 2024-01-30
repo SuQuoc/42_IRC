@@ -53,8 +53,6 @@ public:
 	void	testMaxChannelsInClient();
 	void	testLeavingOverMaxChannels();
 
-
-
 //---registration---
 	void	registration_tests();
 	void	correctPW();
@@ -76,6 +74,7 @@ public:
 	void	quit_tests();
 	void	quitWithMessage();
 	void	quitWithoutMessage();
+
 //---kill---
 	void	kill_tests();
 	void	succesfulKill();
