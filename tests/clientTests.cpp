@@ -58,6 +58,7 @@ void testChannelOperations()
 
 void TestServer::testMaxChannelsInClient() 
 {
+    std::cout << "joining more than 10 channels: ";
     TestServer serv;
 
     Client client(5, "172.16.0.1");
@@ -67,26 +68,56 @@ void TestServer::testMaxChannelsInClient()
     for (int i = 1; i <= 10; i++) {
         std::string channel_name = "#channel" + std::to_string(i);
         channels.push_back(Channel(&client, channel_name));
-        std::cout << channels[i - 1].getName() << std::endl;
     }
 
     // Attempt to join 11 channels
-    for (auto channel : channels) 
+    for (auto& channel : channels) {
         client.joinChannel(&channel);
+    }
 
     // Check that the client is in the first 10 channels
     for (int i = 1; i <= 10; i++) {
-        if (client.isInChannel(&(channels[i - 1])) == true)
-            fail("client is not in channel");
+        if (client.isInChannel(&channels[i - 1]) == false)
+            return(fail("client is not in channel"));
     }
 
     // Check that the client is not in the 11th channel
     if (client.isInChannel(&(channels[10])) == true)
-        fail("client should not be in 11th channel");
+        return(fail("client should not be in 11th channel"));
 
     if (client.getChannelCount() != 10)
         fail("client should have 10 channels");
-    std::cout << "joining more than 10 channels: " << client.getChannelCount() << std::endl;
+}
+
+
+void TestServer::testLeavingOverMaxChannels() 
+{
+    std::cout << "leaving more than 10 channels: ";
+    TestServer serv;
+
+    Client client(5, "172.16.0.1");
+    std::vector<Channel> channels;
+
+    // Create 11 channels
+    for (int i = 1; i <= 10; i++) {
+        std::string channel_name = "#channel" + std::to_string(i);
+        channels.push_back(Channel(&client, channel_name));
+    }
+
+    // Attempt to join 11 channels
+    for (auto& channel : channels) {
+        client.joinChannel(&channel);
+    }
+
+    //----------------------------------------------
+    for (int i = 1; i <= 11; i++) {
+        client.leaveChannel(&channels[i - 1]);
+        if (i == 3 && client.getChannelCount() != 7)
+            return(fail("client should have 7 channels"));
+    }
+
+    if (client.getChannelCount() != 0)
+        return(fail("client should have 0 channels"));
 }
 
 void TestServer::client_tests()
@@ -103,5 +134,6 @@ void TestServer::client_tests()
 	ok();
     testMaxChannelsInClient();
     ok();
-   
+    testLeavingOverMaxChannels();
+    ok();
 }

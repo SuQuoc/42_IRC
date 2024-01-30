@@ -41,7 +41,9 @@ public:
 	void	partOverListLimit();
 //---client---
 	void	client_tests();
-	void	testMaxChannelsInClient(); 
+	void	testMaxChannelsInClient();
+	void	testLeavingOverMaxChannels();
+
 
 
 //---registration---
