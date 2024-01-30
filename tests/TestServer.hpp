@@ -92,5 +92,7 @@ public:
 //---mode---
 	void	mode_tests();
 	void	basicTest();
-	void 	iTests();
+	void	tTest(const std::string &mode);
+	void	iTest(const std::string &mode);
+	void 	lTest();
 };

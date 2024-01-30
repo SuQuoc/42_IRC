@@ -37,39 +37,82 @@ void TestServer::basicTest()
     ok();
 }
 
-void TestServer::iTests()
+void TestServer::tTest(const std::string &mode)
 {
     TestServer serv;
     Client *client;
     Channel *channel;
 
-    client = serv.crateUserAndChannelRunMode("#Duskwood", "Legolas", "#Duskwood +i", 5);
+
+    client = serv.crateUserAndChannelRunMode("#Duskwood", "Legolas", "#Duskwood +" + mode, 5);
     channel = serv.getChannel("#Duskwood");
-    if(channel->getInviteOnly() == false)
-        return (fail("invite only should be true"));        // should send 324
+    if(channel->getRestrictTopic() == false)
+        return (fail(mode + " should be true 01"));        // should send 324
 
-    serv.runMode(client, "#Duskwood -i");
-    if(channel->getInviteOnly() == true)
-        return (fail("invite only should be false"));
+    serv.runMode(client, "#Duskwood -" + mode);
+    if(channel->getRestrictTopic() == true)
+        return (fail(mode + " should be false 02"));
 
-    serv.runMode(client, "#Duskwood -i");                   // should trigger 0
-    if(channel->getInviteOnly() == true)
-        return (fail("invite only should be false"));
+    serv.runMode(client, "#Duskwood -" + mode);                   // should trigger 0
+    if(channel->getRestrictTopic() == true)
+        return (fail(mode + " should be false 03"));
 
-    serv.runMode(client, "#Duskwood -i asd asdas3e32 qwsd32er23r i");              // test this line!!!!!??? // should send 324
-    if(channel->getInviteOnly() == false)
-        return (fail("invite only should be true"));
+    serv.runMode(client, "#Duskwood -" + mode + " asd asdas3e32 qwsd32er23r " + mode);              // test this line!!!!!??? // should send 324
+    if(channel->getRestrictTopic() == false)
+        return (fail(mode + " should be true 04"));
 
-    serv.runMode(client, "#Duskwood +i");                   // should return 0
-    if(channel->getInviteOnly() == false)
-        return (fail("invite only should be true"));
+    serv.runMode(client, "#Duskwood +" + mode);                   // should return 0
+    if(channel->getRestrictTopic() == false)
+        return (fail(mode + " should be true 05"));
 
     // should rm opaerator Legolas and send ERR_NOPRIVILEGES 481
-    serv.runMode(client, "#Duskwood -oi Legolas"); 
+    serv.runMode(client, "#Duskwood -o" + mode + " Legolas"); 
     if(channel->isOperator(client) == true)
-        return (fail("client Legolas is still operator after -o Legolas"));
+        return (fail("client Legolas is still operator after -o Legolas 06"));
+    if(channel->getRestrictTopic() == false)
+        return (fail(mode + "should be true 07"));
+    ok();
+}
+
+void TestServer::iTest(const std::string &mode)
+{
+    TestServer serv;
+    Client *client;
+    Channel *channel;
+
+
+    client = serv.crateUserAndChannelRunMode("#Duskwood", "Legolas", "#Duskwood +" + mode, 5);
+    channel = serv.getChannel("#Duskwood");
     if(channel->getInviteOnly() == false)
-        return (fail("invite only should be true"));
+        return (fail(mode + " should be true 01"));        // should send 324
+
+    serv.runMode(client, "#Duskwood -" + mode);
+    if(channel->getInviteOnly() == true)
+        return (fail(mode + " should be false 02"));
+
+    serv.runMode(client, "#Duskwood -" + mode);                   // should trigger 0
+    if(channel->getInviteOnly() == true)
+        return (fail(mode + " should be false 03"));
+
+    serv.runMode(client, "#Duskwood -" + mode + " asd asdas3e32 qwsd32er23r " + mode);              // test this line!!!!!??? // should send 324
+    if(channel->getInviteOnly() == false)
+        return (fail(mode + " should be true 04"));
+
+    serv.runMode(client, "#Duskwood +" + mode);                   // should return 0
+    if(channel->getInviteOnly() == false)
+        return (fail(mode + " should be true 05"));
+
+    // should rm opaerator Legolas and send ERR_NOPRIVILEGES 481
+    serv.runMode(client, "#Duskwood -o" + mode + " Legolas"); 
+    if(channel->isOperator(client) == true)
+        return (fail("client Legolas is still operator after -o Legolas 06"));
+    if(channel->getInviteOnly() == false)
+        return (fail(mode + "should be true 07"));
+    ok();
+}
+
+void TestServer::lTest()
+{
     ok();
 }
 
@@ -79,7 +122,11 @@ void TestServer::mode_tests()
 
     std::cout << "basic test: ";
     basicTest();
-    /* std::cout << "invite only test: ";
-    iTests(); */
+    std::cout << "restrict topic test: ";
+    tTest("t");
+    std::cout << "invite only test: ";
+    iTest("i");
+    std::cout << "channel limit test: ";
+    lTest();
     std::cout << std::endl;
 }

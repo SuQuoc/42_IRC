@@ -479,17 +479,10 @@ int Irc::MODE(Client *sender, std::stringstream &sstream)
 	int inv_code = -42;
 	int topic_code = -42;
 	int limit_code = -42;
-	int operartor_code = -42;
+	int operartor_code = -42;	
 
-	while(std::getline(sstream >> std::ws, word, ' '))
+	while((word = extractWord(sstream)).empty() == false)
     {
-        if(word[0] == ':')
-        {
-            std::string line;
-            std::getline(sstream, line);
-            word.erase(word.begin());
-            word.append(line);
-        }
         pre_fix = '+';
         for(size_t i = 0; i < word.size(); i++)
         {
@@ -539,11 +532,20 @@ int Irc::MODE(Client *sender, std::stringstream &sstream)
 
 	for(std::map< std::string, std::pair<char, int> >::iterator o_itr = o_name_code_map.begin(); o_itr != o_name_code_map.end(); o_itr++)
 	{
-		_replier.sendError()
-		if(o_itr->second.second == 324)
+		if(o_itr->second.second > 0)
 			std::cout << o_itr->second.first << o_itr->first << std::endl;
+		//_replier.sendError(static_cast<IRC_ERR>(o_itr->second.second), sender, ""); //fix err codes!!
 	}
-	
+	if(inv_code > 0)
+		std::cout << inv_code << std::endl;
+		//_replier.sendError(static_cast<IRC_ERR>(o_itr->second.second), sender, ""); //fix err codes!!
+	if(topic_code > 0)
+		std::cout << topic_code << std::endl;
+		//_replier.sendError(static_cast<IRC_ERR>(o_itr->second.second), sender, ""); //fix err codes!!
+	if(limit_code > 0)
+		std::cout << topic_code << std::endl;
+	return (0);
+
 
     /* for(std::map<std::string, char>::iterator map_it = mode_o_map.begin(); map_it != mode_o_map.end(); map_it++)
 	{
@@ -555,5 +557,4 @@ int Irc::MODE(Client *sender, std::stringstream &sstream)
 		std::cout << channel->modesSwitch(sender, map_it->second.first, map_it->first, map_it->second.second) << std::endl;
 	}    
 	*/
-	return (0);
 }
