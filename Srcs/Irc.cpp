@@ -472,44 +472,44 @@ int Irc::MODE(Client *sender, std::stringstream &sstream)
             else if(word[i] == 'l' /* && modes_map.find(word[i]) != modes_map.end() */)
             {
 				if(pre_fix == '+')				// does it cut out always need to test ???????????????????????
-                	std::getline(sstream >> std::ws, argument, ' ');
+                	argument = extractWord(sstream);
 				if(limit_code == 324)		// topic was set no changes ?????????????????????????????
 					continue ;
-				topic_code = channel->modesSwitch(sender, pre_fix, word[i], "");
+				limit_code = channel->modesSwitch(sender, pre_fix, word[i], "");
 
                 /* modes_map[word[i]] = std::pair<char,std::string>(pre_fix, argument); */
             }
             else if(word[i] == 'o')
             {
-				std::getline(sstream >> std::ws, argument, ' ');
+				argument = extractWord(sstream);
 				operartor_code = channel->modesSwitch(sender, pre_fix, word[i], argument);
-				std::cout << operartor_code << std::endl;
+				/* std::cout << operartor_code << std::endl; */
 				o_name_code_map[argument] = std::pair<char, int>(pre_fix, operartor_code);
                 /* mode_o_map[argument] = pre_fix; */
             }
             else if(word[i] == 'k' /* && modes_map.find(word[i]) != modes_map.end() */) // k is deferent triggers error?
             {
-                std::getline(sstream >> std::ws, argument, ' ');
+                argument = extractWord(sstream);
                 /* channel->modesSwitch(sender, pre_fix, word[i], argument); */
-                std::cout << pre_fix << word[i] << " " << argument << std::endl;
+                /* std::cout << pre_fix << word[i] << " " << argument << std::endl; */
             }
         }
     }
 
 	for(std::map< std::string, std::pair<char, int> >::iterator o_itr = o_name_code_map.begin(); o_itr != o_name_code_map.end(); o_itr++)
 	{
-		if(o_itr->second.second > 0)
-			std::cout << o_itr->second.first << o_itr->first << std::endl;
+		/* if(o_itr->second.second > 0)
+			std::cout << o_itr->second.first << o_itr->first << std::endl; */
 		//_replier.sendError(static_cast<IRC_ERR>(o_itr->second.second), sender, ""); //fix err codes!!
 	}
-	if(inv_code > 0)
-		std::cout << inv_code << std::endl;
+	/* if(inv_code > 0)
+		std::cout << inv_code << std::endl; */
 		//_replier.sendError(static_cast<IRC_ERR>(o_itr->second.second), sender, ""); //fix err codes!!
-	if(topic_code > 0)
-		std::cout << topic_code << std::endl;
+	/* if(topic_code > 0)
+		std::cout << topic_code << std::endl; */
 		//_replier.sendError(static_cast<IRC_ERR>(o_itr->second.second), sender, ""); //fix err codes!!
-	if(limit_code > 0)
-		std::cout << topic_code << std::endl;
+	/* if(limit_code > 0)
+		std::cout << topic_code << std::endl; */
 	return (0);
 
 

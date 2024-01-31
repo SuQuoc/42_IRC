@@ -143,26 +143,6 @@ int	Channel::setPassword(Client *executor, const std::string &password, const ch
 	}
 	return ERR_KEYSET; // 467 ERR_KEYSET
 }
-//sucess = 1001 TOPIC_SET
-int	Channel::setTopic(const std::string &name, const std::string &topic)
-{
-	clients_itr client;
-
-	client = getClient(name);
-	if (client == _clients.end())
-		return ERR_NOTONCHANNEL;
-	if (_restrict_topic == false)
-	{
-		_topic = topic;
-		return TOPIC_SET;
-	}
-	if (_restrict_topic == true && client->is_operator == true)
-	{
-		_topic = topic;
-		return TOPIC_SET;
-	}
-	return ERR_CHANOPRIVSNEEDED;
-}
 
 //			getter
 std::vector<Channel::Member_t>::iterator Channel::getClient(const Client *client)
@@ -180,6 +160,7 @@ std::vector<Channel::Member_t>::iterator Channel::getClient(const std::string &n
 			return itr;
 	return _clients.end();
 }
+
 const std::string &Channel::getTopic() const { return _topic; }
 const std::string &Channel::getPassword() const { return _password; }
 const std::string &Channel::getName() const { return _name; }
@@ -203,6 +184,27 @@ int Channel::changeMode(Client *executor, const char &add, bool &modes)
 		return RPL_CHANNELMODEIS;
 	}
 	return (CH_SUCCESS);
+}
+
+//sucess = 1001 TOPIC_SET
+int	Channel::setTopic(const std::string &name, const std::string &topic)
+{
+	clients_itr client;
+
+	client = getClient(name);
+	if (client == _clients.end())
+		return ERR_NOTONCHANNEL;
+	if (_restrict_topic == false)
+	{
+		_topic = topic;
+		return TOPIC_SET;
+	}
+	if (_restrict_topic == true && client->is_operator == true)
+	{
+		_topic = topic;
+		return TOPIC_SET;
+	}
+	return ERR_CHANOPRIVSNEEDED;
 }
 
 int Channel::setOperator(Client *executor, const char &add, const std::string &name)
@@ -240,8 +242,8 @@ int Channel::modesSwitch(Client *executor, const char &add, const char &ch_modes
 {
 	enum color { SET_RESTRICT_TOPIC = 't', SET_INVITE_ONLY = 'i', SET_KEY = 'k', SET_OPERATOR = 'o' };
 
-	std::cout << "prefix = " << add << " / mode = " << ch_modes << std::endl;
-	std::cout << "Argument = " << argument << std::endl;
+	/* std::cout << "prefix = " << add << " / mode = " << ch_modes << std::endl;
+	std::cout << "Argument = " << argument << std::endl; */
 	switch (ch_modes)
 	{
 	case SET_RESTRICT_TOPIC:
