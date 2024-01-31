@@ -495,16 +495,16 @@ int Irc::MODE(Client *sender, std::stringstream &sstream)
             else if(word[i] == 'l' /* && modes_map.find(word[i]) != modes_map.end() */)
             {
 				if(pre_fix == '+')				// does it cut out always need to test ???????????????????????
-                	std::getline(sstream >> std::ws, argument, ' ');
+                	argument = extractWord(sstream);
 				if(limit_code == 324)		// topic was set no changes ?????????????????????????????
 					continue ;
-				topic_code = channel->modesSwitch(sender, pre_fix, word[i], "");
+				limit_code = channel->modesSwitch(sender, pre_fix, word[i], "");
 
                 /* modes_map[word[i]] = std::pair<char,std::string>(pre_fix, argument); */
             }
             else if(word[i] == 'o')
             {
-				std::getline(sstream >> std::ws, argument, ' ');
+				argument = extractWord(sstream);
 				operartor_code = channel->modesSwitch(sender, pre_fix, word[i], argument);
 				/* std::cout << operartor_code << std::endl; */
 				o_name_code_map[argument] = std::pair<char, int>(pre_fix, operartor_code);
@@ -512,7 +512,7 @@ int Irc::MODE(Client *sender, std::stringstream &sstream)
             }
             else if(word[i] == 'k' /* && modes_map.find(word[i]) != modes_map.end() */) // k is deferent triggers error?
             {
-                std::getline(sstream >> std::ws, argument, ' ');
+                argument = extractWord(sstream);
                 /* channel->modesSwitch(sender, pre_fix, word[i], argument); */
                 /* std::cout << pre_fix << word[i] << " " << argument << std::endl; */
             }
