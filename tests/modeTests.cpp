@@ -1,21 +1,5 @@
 #include "TestServer.hpp"
 
-Client* TestServer::crateUserAndChannelRunMode(const std::string &channelname, const std::string &username, const std::string &line, int fd)
-{
-    Client *client;
-
-    makeUserJoinChannel(channelname, username, fd);
-    client = getClient(username);
-    runMode(client, line);
-    return (client);
-}
-
-void TestServer::runMode(Client *client, const std::string &line)
-{
-    std::stringstream stream(line);
-    MODE(client, stream);
-}
-
 void TestServer::basicTest()
 {
     TestServer serv;
@@ -44,7 +28,7 @@ void TestServer::tTest(const std::string &mode)
     Channel *channel;
 
 
-    client = serv.crateUserAndChannelRunMode("#Duskwood", "Legolas", "#Duskwood +" + mode, 5);
+    client = serv.createUserAndChannelRunMode("#Duskwood", "Legolas", "#Duskwood +" + mode, 5);
     channel = serv.getChannel("#Duskwood");
     if(channel->getRestrictTopic() == false)
         return (fail(mode + " should be true 01"));        // should send 324
@@ -81,7 +65,7 @@ void TestServer::iTest(const std::string &mode)
     Client      *client;
 
 
-    client = serv.crateUserAndChannelRunMode("#Duskwood", "Legolas", "#Duskwood +" + mode, 5);
+    client = serv.createUserAndChannelRunMode("#Duskwood", "Legolas", "#Duskwood +" + mode, 5);
     ch = serv.getChannel("#Duskwood");
     if(ch->getInviteOnly() == false)
         return (fail(mode + " should be true 01"));        // should send 324

@@ -225,15 +225,9 @@ void	TestServer::createChannelTestCnt(std::string join_input, size_t ch_max_Aser
 
 	serv.makeUserJoinChannel(join_input, "Dany", 5);
 	if(serv._channels.size() != ch_max_Aserver)
-	{
 		fail("over LIST_LIMIT in Aserver");
-		std::exit(1);
-	}
-	if(serv.getClient("Dany")->getAllChannels().size() != ch_max_client)
-	{
+	else if(serv.getClient("Dany")->getAllChannels().size() != ch_max_client)
 		fail("over LIST_LIMIT in _channles in Client");
-		std::exit(2);
-	}
 }
 
 void	TestServer::random_input()
@@ -251,6 +245,100 @@ void	TestServer::random_input()
 	createChannelTestCnt(":&,:&,:&,:& :2312312    dsdsa asdasd sadasd", 1, 1);
 	ok();
 }
+
+void	TestServer::joinInviteOnlyChannel()
+{
+	TestServer	serv;
+	Channel		*channel;
+	Client		*elena;
+	Client		*sara = serv.createUserAndChannelRunMode("#channel", "sara", "#channel +i", 5);
+
+	serv.makeUser("elena", 6);
+	serv.runInvite(sara, "elena    #channel");
+	channel = serv.getChannel("#channel");
+	elena = serv.getClient("elena");
+
+
+	if (channel->isInvited(elena) == false)
+		return (fail("elena should be invited"));
+	if (channel->getInviteOnly() == false)
+		return (fail("channel should be invite only"));
+
+	serv.runJoin(elena, "#channel");
+	
+	if (channel->isInChannel(elena) == false)
+		return (fail("elena should be in channel"));
+	if (channel->isInvited(elena) == true)
+		return (fail("elena shouldn't be invited anymore"));
+	
+	ok();
+}
+
+void	TestServer::joinAboveUserLimit()
+{
+	TestServer	serv;
+	Channel		*channel;
+	Client		*elena;
+	Client		*sara = serv.createUserAndChannelRunMode("#channel", "sara", "#channel +l 1", 5);
+
+	serv.makeUser("elena", 6);
+	serv.runInvite(sara, "elena #channel");
+	channel = serv.getChannel("#channel");
+	elena = serv.getClient("elena");
+
+	if (channel->getMaxClients() != 1)
+		return (fail("user limit should be 1"));
+	if (channel->isInvited(elena) == false)
+		return (fail("elena should be invited"));
+
+	serv.runJoin(elena, "#channel");
+	
+	if (channel->isInChannel(elena) == false)
+		return (fail("elena should be in channel"));
+	if (channel->isInvited(elena) == true)
+		return (fail("elena shouldn't be invited anymore"));
+	
+	ok();
+}
+
+void	TestServer::joinAboveUserLimitInvited()
+{
+	TestServer 	serv;
+	Channel		*channel;
+	Client		*sara;
+	Client		*op;
+
+	for (int i = 0; i < MAX_CLIENTS; i++)
+		serv.makeUserJoinChannel("#channel", std::to_string(i), 5 + i);
+	serv.makeUser("sara", 109);
+
+	channel = serv.getChannel("#channel");
+	sara = serv.getClient("sara");
+	op = serv.getClient("0");
+	serv.runInvite(op, "sara #channel");
+
+	if (channel->isInvited(sara) == false)
+		return (fail("sara should be invited"));
+	
+	serv.runJoin(sara, "#channel");
+	if (sara->isInChannel(channel) == true)
+		return (fail("channel shouldn't be in channel-vector"));
+	if (channel->isInChannel(sara) == true)
+		return (fail("sara shouldn't be in client-vector"));
+
+	serv.runMode(op, "#channel +i");
+	if (channel->isInvited(sara) == false)
+		return (fail("sara should still be invited"));
+
+	serv.runKick(op, "#channel 1");
+	serv.runJoin(sara, "#channel");
+	if (sara->isInChannel(channel) == false)
+		return (fail("channel should be in channel-vector"));
+	if (channel->isInChannel(sara) == false)
+		return (fail("sara should be in client-vector"));
+	ok();
+}
+
 
 void	TestServer::join_tests()
 {
@@ -272,8 +360,14 @@ void	TestServer::join_tests()
 	wrongChannelName();
 	std::cout << "too long list: ";
 	tooLongList();
-	std::cout << "random input";
+	std::cout << "random input: ";
 	random_input();
+	std::cout << "join invite only channel: ";
+	joinInviteOnlyChannel();
+	std::cout << "join channel with full user limit: ";
+	joinAboveUserLimit();
+	std::cout << "join channel with full user limit but invited: ";
+	joinAboveUserLimitInvited();
 
 	std::cout << std::endl;
 }

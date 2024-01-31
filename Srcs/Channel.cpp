@@ -190,6 +190,7 @@ const std::string &Channel::getPassword() const { return _password; }
 const std::string &Channel::getName() const { return _name; }
 bool Channel::getRestrictTopic() const { return _restrict_topic; }
 bool Channel::getInviteOnly() const { return _invite_only; }
+int Channel::getMaxClients() const { return _max_clients; }
 int Channel::size() const { return _clients.size(); }
 
 //returns -1 if not a + or - in add, otherwise error code if fails

@@ -10,8 +10,11 @@ private:
 	void	createChannelTestCnt(std::string join_input, size_t ch_max_Aserver, size_t ch_max_client);
 	void	fail(const std::string msg) const;
 	void	ok() const;
+	int		runJoin(Client *client, const std::string& msg);
+	int		runKick(Client *client, const std::string& msg);
+	int		runInvite(Client *client, const std::string& msg);
 	void	runMode(Client *client, const std::string &line);
-	Client*	crateUserAndChannelRunMode(const std::string &channelname, const std::string &username, const std::string &line, int fd);
+	Client*	createUserAndChannelRunMode(const std::string &channelname, const std::string &username, const std::string &line, int fd);
 
 
 public:
@@ -32,6 +35,9 @@ public:
 	void	wrongChannelName();
 	void	tooLongList();
 	void	random_input();
+	void	joinInviteOnlyChannel();
+	void	joinAboveUserLimit();
+	void	joinAboveUserLimitInvited();
 
 //---part---
 	void	part_tests();

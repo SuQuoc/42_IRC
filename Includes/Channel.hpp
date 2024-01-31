@@ -73,6 +73,7 @@ class Channel
 		const std::string	&getName() const;
 		bool	getRestrictTopic() const;
 		bool	getInviteOnly() const;
+		int		getMaxClients() const;
 		int		size() const;
 
 		int modesSwitch(Client *executor, const char &add, const char &mode, const std::string &argument);

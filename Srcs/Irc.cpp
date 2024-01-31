@@ -45,7 +45,7 @@ void	Irc::command_switch(Client *sender, const std::string message) //message-> 
 	else if (cmd == "QUIT") QUIT(sender, sstream);
 	else if (cmd == "KICK") KICK(sender, sstream);
 	else if (cmd == "INVITE") INVITE(sender, sstream);
-	else if (cmd == "MODE") std::cout << "MODE()" << std::endl;
+	else if (cmd == "MODE") MODE(sender, sstream);
 	else if (cmd == "TOPIC") TOPIC(sender, sstream);
 	else if (cmd == "OPER") OPER(sender, sstream);
 	else _replier.sendError(ERR_UNKNOWNCOMMAND, sender, cmd);

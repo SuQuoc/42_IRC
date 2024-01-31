@@ -7,6 +7,7 @@ INCLUDES 	= ../Includes
 T_INCLUDES	= ./
 
 T_SRCS		= 	clientTests.cpp \
+				inviteTests.cpp \
 				joinTests.cpp \
 				kickTests.cpp \
 				killTests.cpp \
