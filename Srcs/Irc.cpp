@@ -445,30 +445,24 @@ void Irc::setOperatorPW(const std::string& password)
 int Irc::MODE(Client *sender, std::stringstream &sstream)
 {
 	std::string channel_name, argument, word;
-    /* std::map< char, std::pair<char, std::string> > modes_map; */
     std::map< std::string, std::pair<char, int> > o_name_code_map;
 	Channel *channel;
     char pre_fix;
 
-    std::getline(sstream >> std::ws, channel_name, ' ');
-	channel = getChannel(channel_name); //  test it ????????????????????
+    channel_name = extractWord(sstream);
+	channel = getChannel(channel_name);
 	if(channel == NULL)
-	{
-		_replier.sendError(ERR_NOSUCHCHANNEL, sender, channel_name);
-		return ERR_NOSUCHCHANNEL;
-	}
-	if(channel->isInChannel(sender) == false)					//  test it ????????????????????
-	{
-		_replier.sendError(ERR_NOTONCHANNEL, sender, channel_name);
-		return ERR_NOTONCHANNEL;
-	}
-
-
+		return(_replier.sendError(ERR_NOSUCHCHANNEL, sender, channel_name));
+	if(channel->isInChannel(sender) == false)
+		return(_replier.sendError(ERR_NOTONCHANNEL, sender, channel_name));
+	if(channel->isOperator(sender) == false)
+		return(_replier.sendError(ERR_CHANOPRIVSNEEDED, sender, channel_name));
 	// send just the errors after the loop??????????????
+	int key_code = -42;
 	int inv_code = -42;
 	int topic_code = -42;
 	int limit_code = -42;
-	int operartor_code = -42;	
+	int operartor_code = -42;
 
 	while((word = extractWord(sstream)).empty() == false)
     {
@@ -484,38 +478,38 @@ int Irc::MODE(Client *sender, std::stringstream &sstream)
                 i++;
             }
             if(word[i] == 'i')
-            {
-                /* modes_map[word[i]] = std::pair<char,std::string>(pre_fix, ""); */
-				inv_code = channel->modesSwitch(sender, pre_fix, word[i], "");
-            }
+				inv_code = channel->modesSwitch(pre_fix, word[i], "");
 			else if(word[i] == 't')
+				topic_code = channel->modesSwitch(pre_fix, word[i], "");
+            else if(word[i] == 'l' )
             {
-				topic_code = channel->modesSwitch(sender, pre_fix, word[i], "");
-			}
-            else if(word[i] == 'l' /* && modes_map.find(word[i]) != modes_map.end() */)
-            {
-				if(pre_fix == '+')				// does it cut out always need to test ???????????????????????
+				if(pre_fix == '+')
                 	argument = extractWord(sstream);
-				if(limit_code == 324)		// topic was set no changes ?????????????????????????????
+				if(limit_code == 324)
 					continue ;
-				limit_code = channel->modesSwitch(sender, pre_fix, word[i], "");
-
-                /* modes_map[word[i]] = std::pair<char,std::string>(pre_fix, argument); */
+				channel->setMaxClients(argument, pre_fix);
             }
             else if(word[i] == 'o')
             {
-				argument = extractWord(sstream);
-				operartor_code = channel->modesSwitch(sender, pre_fix, word[i], argument);
-				/* std::cout << operartor_code << std::endl; */
+				argument = extractWord(sstream);					
+				channel->setOperator(pre_fix, getClient(argument));
 				o_name_code_map[argument] = std::pair<char, int>(pre_fix, operartor_code);
-                /* mode_o_map[argument] = pre_fix; */
             }
-            else if(word[i] == 'k' /* && modes_map.find(word[i]) != modes_map.end() */) // k is deferent triggers error?
+            else if(word[i] == 'k') // k is deferent triggers error?
             {
                 argument = extractWord(sstream);
-                /* channel->modesSwitch(sender, pre_fix, word[i], argument); */
-                /* std::cout << pre_fix << word[i] << " " << argument << std::endl; */
-            }
+				if(key_code > 0)
+					continue ;
+				key_code = channel->setPassword(argument, pre_fix);
+				if(key_code == RPL_CHANNELMODEIS)
+					channel->sendMsg(sender, ":" + sender->getPrefix() + " MODE " + channel_name + " " + pre_fix + "k " + argument + "\r\n");
+				if(key_code == ERR_KEYSET)
+					_replier.sendError(ERR_KEYSET, sender, argument);
+				if(key_code == ERR_NEEDMOREPARAMS)
+					_replier.sendError(ERR_NEEDMOREPARAMS, sender, "MODE");
+			}
+			else
+				_replier.sendError(ERR_UNKNOWNMODE, sender, argument = word[i]);
         }
     }
 	
@@ -531,45 +525,29 @@ int Irc::MODE(Client *sender, std::stringstream &sstream)
 			o_args_str.append(1, o_itr->second.first);
 			o_args_str += "o";
 			o_set_names += " " + o_itr->first;
-			std::cout << o_itr->second.first << o_itr->first << std::endl;
+			std::cerr << o_itr->second.first << o_itr->first << std::endl;
 		}
-		else if (error_code  == ERR_NOTONCHANNEL || error_code  == ERR_CHANOPRIVSNEEDED)
+		else if (error_code == ERR_USERNOTINCHANNEL)
 		{
-			std::cout << "send " << error_code << channel_name << std::endl;
-			_replier.sendError(error_code, sender, channel_name);
+			std::cerr << "send " << error_code << channel_name << std::endl;
+			_replier.sendError(error_code, sender, o_itr->first + " " + channel_name);
 		}
-		else if (error_code  == ERR_CHANOPRIVSNEEDED)
-		{
-			std::cout << "send " << error_code << o_itr->first + " " + channel_name << std::endl;
-			_replier.sendError(error_code, sender,  o_itr->first + " " + channel_name);
-		}
-		//_replier.sendError(static_cast<IRC_ERR>(o_itr->second.second), sender, ""); //fix err codes!!
+		else if (error_code == ERR_NOSUCHNICK)
+			_replier.sendError(error_code, sender, o_itr->first);
 	}
 	if(o_args_str.empty() == false)
 	{
-		std::cout << ":" + sender->getPrefix() + " MODE " + channel_name + " " + o_args_str + o_set_names;
+		std::cerr << ":" + sender->getPrefix() + " MODE " + channel_name + " " + o_args_str + o_set_names;
 		channel->sendMsg(sender, ":" + sender->getPrefix() + " MODE " + channel_name + " " + o_args_str + o_set_names + "\r\n");
 	}
 
 	if(inv_code > 0)
-		std::cout << inv_code << std::endl;
+		std::cerr << inv_code << std::endl;
 		//_replier.sendError(static_cast<IRC_ERR>(o_itr->second.second), sender, ""); //fix err codes!!
 	if(topic_code > 0)
-		std::cout << topic_code << std::endl;
+		std::cerr << topic_code << std::endl;
 		//_replier.sendError(static_cast<IRC_ERR>(o_itr->second.second), sender, ""); //fix err codes!!
 	if(limit_code > 0)
-		std::cout << topic_code << std::endl;
+		std::cerr << topic_code << std::endl;
 	return (0);
-
-
-    /* for(std::map<std::string, char>::iterator map_it = mode_o_map.begin(); map_it != mode_o_map.end(); map_it++)
-	{
-        std::cout << channel->modesSwitch(sender, map_it->second, 'o', map_it->first) << std::endl;
-	}
-
-    for(std::map<char, std::pair<char,std::string> >::iterator map_it = modes_map.begin(); map_it != modes_map.end(); map_it++)
-    {
-		std::cout << channel->modesSwitch(sender, map_it->second.first, map_it->first, map_it->second.second) << std::endl;
-	}    
-	*/
 }
