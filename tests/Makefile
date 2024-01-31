@@ -1,7 +1,7 @@
 NAME		= tester
 ARGS 		= 
 CXX			= @c++
-CXXFLAGS	= -Wall -Wextra -Werror -MMD -MP -pedantic -g
+CXXFLAGS	= -Wall -Wextra -Werror -MMD -MP -g
  
 INCLUDES 	= ../Includes
 T_INCLUDES	= ./

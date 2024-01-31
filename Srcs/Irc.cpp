@@ -519,20 +519,34 @@ int Irc::MODE(Client *sender, std::stringstream &sstream)
         }
     }
 
+	std::string o_args_str;
+	std::string o_set_names;
+
 	for(std::map< std::string, std::pair<char, int> >::iterator o_itr = o_name_code_map.begin(); o_itr != o_name_code_map.end(); o_itr++)
 	{
-		/* if(o_itr->second.second > 0)
-			std::cout << o_itr->second.first << o_itr->first << std::endl; */
+		if(o_itr->second.second == 324)
+		{
+			o_args_str.append(1, o_itr->second.first);
+			o_args_str += "o";
+			o_set_names += " " + o_itr->first;
+			std::cout << o_itr->second.first << o_itr->first << std::endl;
+		}
 		//_replier.sendError(static_cast<IRC_ERR>(o_itr->second.second), sender, ""); //fix err codes!!
 	}
-	/* if(inv_code > 0)
-		std::cout << inv_code << std::endl; */
+	if(o_args_str.empty() == false)
+	{
+		std::cout << ":" + sender->getPrefix() + " MODE " + channel_name + " " + o_args_str + o_set_names;
+		channel->sendMsg(sender, ":" + sender->getPrefix() + " MODE " + channel_name + " " + o_args_str + o_set_names + "\r\n");
+	}
+
+	if(inv_code > 0)
+		std::cout << inv_code << std::endl;
 		//_replier.sendError(static_cast<IRC_ERR>(o_itr->second.second), sender, ""); //fix err codes!!
-	/* if(topic_code > 0)
-		std::cout << topic_code << std::endl; */
+	if(topic_code > 0)
+		std::cout << topic_code << std::endl;
 		//_replier.sendError(static_cast<IRC_ERR>(o_itr->second.second), sender, ""); //fix err codes!!
-	/* if(limit_code > 0)
-		std::cout << topic_code << std::endl; */
+	if(limit_code > 0)
+		std::cout << topic_code << std::endl;
 	return (0);
 
 
