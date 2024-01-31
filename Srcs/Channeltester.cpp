@@ -121,12 +121,11 @@ void test_multible_clients(int client_ammount)
 
 void MODE(Channel &after_life, Client *sender, std::stringstream &sstream)
 {
-	std::string channel_name;
-    std::string argument;
-	std::string word;
-    std::map<char, char> modes;
+	std::string channel_name, argument, word;
+    std::map< char, std::pair<char, std::string> > modes_map;
+    std::map< std::string, char> mode_o_map;
     char pre_fix;
-	
+
     std::getline(sstream >> std::ws, channel_name, ' ');
 	while(std::getline(sstream >> std::ws, word, ' '))
     {
@@ -145,12 +144,22 @@ void MODE(Channel &after_life, Client *sender, std::stringstream &sstream)
                 pre_fix = word[i];
                 i++;
             }
-            if(word[i] == 'i' || word[i] == 't') // all without arguments! protect for non prefix ( +  or - )
+            else if(word[i] == 'i' || word[i] == 't') // all without arguments! protect for non prefix ( +  or - )
             {
-                after_life.modesSwitch(sender, pre_fix, word[i], "");
                 std::cout << word[i] << std::endl;
+                modes_map[word[i]] = std::pair<char,std::string>(pre_fix, "");
             }
-            else if(word[i] == 'k')
+            else if(word[i] == 'l' && modes_map.find(word[i]) != modes_map.end())
+            {
+                std::getline(sstream >> std::ws, argument, ' ');
+                modes_map[word[i]] = std::pair<char,std::string>(pre_fix, argument);
+            }
+            else if(word[i] == 'o') // all without arguments! protect for non prefix ( +  or - )
+            {
+                std::getline(sstream >> std::ws, argument, ' ');
+                mode_o_map[argument] = pre_fix;
+            }
+            else if(word[i] == 'k' && modes_map.find(word[i]) != modes_map.end()) // k is deferent triggers error?
             {
                 std::getline(sstream >> std::ws, argument, ' ');
                 after_life.modesSwitch(sender, pre_fix, word[i], argument);
@@ -158,6 +167,11 @@ void MODE(Channel &after_life, Client *sender, std::stringstream &sstream)
             }
         }
     }
+    for(std::map<char, std::pair<char,std::string> >::iterator map_it = modes_map.begin(); map_it != modes_map.end(); map_it++)
+        after_life.modesSwitch(sender, map_it->second.first, map_it->first, map_it->second.second);
+
+    for(std::map<std::string, char>::iterator map_it = mode_o_map.begin(); map_it != mode_o_map.end(); map_it++)
+        after_life.modesSwitch(sender, map_it->second, 'o', map_it->first);
 }
 
 int main()

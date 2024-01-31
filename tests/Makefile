@@ -4,12 +4,14 @@ CXX			= @c++
 CXXFLAGS	= -Wall -Wextra -Werror -MMD -MP -pedantic -g
  
 INCLUDES 	= ../Includes
+T_INCLUDES	= ./
 
 T_SRCS		= 	clientTests.cpp \
 				joinTests.cpp \
 				kickTests.cpp \
 				killTests.cpp \
 				main.cpp \
+				modeTests.cpp \
 				operTests.cpp \
 				partTests.cpp \
 				passTests.cpp \
@@ -34,6 +36,7 @@ T_OBJFILES 	= $(T_SRCS:.cpp=.o)
 T_OBJS 		= $(addprefix $(OBJ_DIR)/, $(T_OBJFILES))
 
 DEPS 		:= $(OBJS:.o=.d)
+T_DEPS 		:= $(T_OBJS:.o=.d)
 
 .PHONY: all clean fclean re run va scan fun
 
@@ -48,7 +51,7 @@ $(NAME): $(OBJS) $(T_OBJS)
 	@echo "$(GREEN)Executable \"$(NAME)\" succesfully created.$(NC)"
 
 $(OBJ_DIR)/%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -MMD -MP -I$(INCLUDES) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -MMD -MP -I$(T_INCLUDES) -c $< -o $@
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MP -I$(INCLUDES) -c $< -o $@
@@ -93,7 +96,7 @@ fun: all
 	./$(NAME) $(ARGS)
 
 
--include $(DEPS)
+-include $(DEPS) $(T_DEPS)
 
 #COLORS_____________________________________________________________
 RED			=	\033[0;31m

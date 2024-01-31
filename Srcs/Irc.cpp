@@ -64,10 +64,9 @@ void Irc::PASS(Client *sender, std::stringstream &sstream)
 		sender->authenticate();
 	else
 	{
-		std::cout << "pw = " << password << std::endl;
 		sender->deauthenticate();
 		_replier.sendError(ERR_PASSWDMISMATCH, sender, "");
-		//delete Client and the entry from the map if Pw is wrong? --> multiple PASS not possible then
+		disconnectClient(sender, "Wrong password"); //delete Client and the entry from the map if Pw is wrong? --> multiple PASS not possible then
 	}
 }
 
@@ -92,6 +91,8 @@ void Irc::NICK(Client *sender, std::stringstream &sstream)
 		return ;
 	}
 	addClientToNameMap(sender->getNickname(), sender->getFd());
+	if (sender->isRegistered())
+		_replier.sendRPL(RPL_WELCOME, sender, sender->getUsername());
 }
 
 void	Irc::USER(Client *sender, std::stringstream &sstream)
@@ -209,26 +210,11 @@ int	Irc::PART(Client *sender, std::stringstream &sstream)
 // 		or if the channel doesnt exist
 void	Irc::QUIT(Client *sender, std::stringstream &sstream)
 {
-	std::string	channel_name;
-	std::string	msg = extractWord(sstream);
-	Channel		*channel; 
-	int err;
-	if (msg.empty())
-		msg = "disconnected"; //where will the entire message be concatinated? in channel?
-	
-	std::vector<Channel *> channels = sender->getAllChannels();
-	for (std::vector<Channel *>::iterator it = channels.begin(); it != channels.end(); it++)
-	{
-		channel = (*it); 
-		if (!channel) //necessary? checking if the channel is in map or null seems overkill, since this case should never happen
-			continue ;
-		// sender->leaveChannel(channel); //unecessary ?? he will leave entire server
-		channel_name = channel->getName();
-		err = channel->rmClient(sender, "Leaving");
-		if (err == -1) //exchange -1 with CHANNEL_DEAD, and use rmClient with a message
-			rmChannelFromMap(channel_name);		
-	}
-	rmClientFromMaps(sender);
+	std::string	comment = extractWord(sstream);
+	if (comment.empty())
+		comment = "Leaving";
+
+	disconnectClient(sender, createMsg(sender, "QUIT", "", comment));
 }
 
 int	Irc::KICK(Client *sender, std::stringstream &sstream)
@@ -334,9 +320,13 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 
 std::string Irc::createMsg(Client *sender, const std::string& cmd, const std::string& recipient, const std::string& msg) const
 {
-    if (!sender)
+    std::string message;
+	if (!sender)
         return msg;
-    std::string message = ":" + sender->getPrefix() + " " + cmd + " " + recipient + " :" + msg + "\r\n"; //PART uses same method -> extra function?
+	if (recipient.empty())
+		message = ":" + sender->getPrefix() + " " + cmd + " :" + msg + "\r\n";
+    else
+		message = ":" + sender->getPrefix() + " " + cmd + " " + recipient + " :" + msg + "\r\n"; //PART uses same method -> extra function?
     return message;
 }
 
@@ -445,13 +435,12 @@ void Irc::KILL(Client *sender, std::stringstream &sstream)
 	if (nickname.empty())
 		_replier.sendError(ERR_NEEDMOREPARAMS, sender, nickname);
 	
-	comment = extractWord(sstream);
-
 	client_to_kill = getClient(nickname);
 	if (client_to_kill == NULL)
 		_replier.sendError(ERR_NOSUCHNICK, sender, nickname);
 	
-	//disconnectClient(client_to_kill, comment); 
+	comment = extractWord(sstream);
+	disconnectClient(client_to_kill, comment); 
 }
 
 void Irc::setOperatorHost(const std::string& hostname)
@@ -466,4 +455,111 @@ void Irc::setOperatorPW(const std::string& password)
 	if (containsForbiddenChars(password, " 	\r\n")) //could just use isValidPassword() from main?
 		return;
 	_op_password = password; 
+}
+
+//returns 403 no such channel, returns 442 not on channel
+int Irc::MODE(Client *sender, std::stringstream &sstream)
+{
+	std::string channel_name, argument, word;
+    /* std::map< char, std::pair<char, std::string> > modes_map; */
+    std::map< std::string, std::pair<char, int> > o_name_code_map;
+	Channel *channel;
+    char pre_fix;
+
+    std::getline(sstream >> std::ws, channel_name, ' ');
+	channel = getChannel(channel_name); //  test it ????????????????????
+	if(channel == NULL)
+	{
+		_replier.sendError(ERR_NOSUCHCHANNEL, sender, channel_name);
+		return ERR_NOSUCHCHANNEL;
+	}
+	if(channel->isInChannel(sender) == false)					//  test it ????????????????????
+	{
+		_replier.sendError(ERR_NOTONCHANNEL, sender, channel_name);
+		return ERR_NOTONCHANNEL;
+	}
+
+
+	// send just the errors after the loop??????????????
+	int inv_code = -42;
+	int topic_code = -42;
+	int limit_code = -42;
+	int operartor_code = -42;	
+
+	while((word = extractWord(sstream)).empty() == false)
+    {
+        pre_fix = '+';
+        for(size_t i = 0; i < word.size(); i++)
+        {
+			if(channel->isOperator(sender) == false)
+				break ;
+			argument.clear();
+            if(word[i] == '+' || word[i] == '-') // add here for <ws>: ? if we have one just call a funktion that handals this separate
+            {
+                pre_fix = word[i];
+                i++;
+            }
+            if(word[i] == 'i')
+            {
+                /* modes_map[word[i]] = std::pair<char,std::string>(pre_fix, ""); */
+				inv_code = channel->modesSwitch(sender, pre_fix, word[i], "");
+            }
+			else if(word[i] == 't')
+            {
+				topic_code = channel->modesSwitch(sender, pre_fix, word[i], "");
+			}
+            else if(word[i] == 'l' /* && modes_map.find(word[i]) != modes_map.end() */)
+            {
+				if(pre_fix == '+')				// does it cut out always need to test ???????????????????????
+                	argument = extractWord(sstream);
+				if(limit_code == 324)		// topic was set no changes ?????????????????????????????
+					continue ;
+				limit_code = channel->modesSwitch(sender, pre_fix, word[i], "");
+
+                /* modes_map[word[i]] = std::pair<char,std::string>(pre_fix, argument); */
+            }
+            else if(word[i] == 'o')
+            {
+				argument = extractWord(sstream);
+				operartor_code = channel->modesSwitch(sender, pre_fix, word[i], argument);
+				/* std::cout << operartor_code << std::endl; */
+				o_name_code_map[argument] = std::pair<char, int>(pre_fix, operartor_code);
+                /* mode_o_map[argument] = pre_fix; */
+            }
+            else if(word[i] == 'k' /* && modes_map.find(word[i]) != modes_map.end() */) // k is deferent triggers error?
+            {
+                argument = extractWord(sstream);
+                /* channel->modesSwitch(sender, pre_fix, word[i], argument); */
+                /* std::cout << pre_fix << word[i] << " " << argument << std::endl; */
+            }
+        }
+    }
+
+	for(std::map< std::string, std::pair<char, int> >::iterator o_itr = o_name_code_map.begin(); o_itr != o_name_code_map.end(); o_itr++)
+	{
+		/* if(o_itr->second.second > 0)
+			std::cout << o_itr->second.first << o_itr->first << std::endl; */
+		//_replier.sendError(static_cast<IRC_ERR>(o_itr->second.second), sender, ""); //fix err codes!!
+	}
+	/* if(inv_code > 0)
+		std::cout << inv_code << std::endl; */
+		//_replier.sendError(static_cast<IRC_ERR>(o_itr->second.second), sender, ""); //fix err codes!!
+	/* if(topic_code > 0)
+		std::cout << topic_code << std::endl; */
+		//_replier.sendError(static_cast<IRC_ERR>(o_itr->second.second), sender, ""); //fix err codes!!
+	/* if(limit_code > 0)
+		std::cout << topic_code << std::endl; */
+	return (0);
+
+
+    /* for(std::map<std::string, char>::iterator map_it = mode_o_map.begin(); map_it != mode_o_map.end(); map_it++)
+	{
+        std::cout << channel->modesSwitch(sender, map_it->second, 'o', map_it->first) << std::endl;
+	}
+
+    for(std::map<char, std::pair<char,std::string> >::iterator map_it = modes_map.begin(); map_it != modes_map.end(); map_it++)
+    {
+		std::cout << channel->modesSwitch(sender, map_it->second.first, map_it->first, map_it->second.second) << std::endl;
+	}    
+	*/
 }

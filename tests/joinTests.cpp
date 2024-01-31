@@ -207,7 +207,52 @@ void TestServer::wrongChannelName()
 	ok();
 }
 
-void TestServer::join_tests()
+void TestServer::tooLongList()
+{
+	TestServer serv;
+
+	serv.makeUserJoinChannel("#1,#2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12", "Dany", 5);
+	if(serv._channels.size() != LIST_LIMIT)
+		return (fail("over LIST_LIMIT in Aserver"));
+	if(serv.getClient("Dany")->getAllChannels().size() != LIST_LIMIT)
+		return (fail("over LIST_LIMIT in _channles in Client"));
+	ok();
+}
+
+void	TestServer::createChannelTestCnt(std::string join_input, size_t ch_max_Aserver, size_t ch_max_client)
+{
+	TestServer serv;
+
+	serv.makeUserJoinChannel(join_input, "Dany", 5);
+	if(serv._channels.size() != ch_max_Aserver)
+	{
+		fail("over LIST_LIMIT in Aserver");
+		std::exit(1);
+	}
+	if(serv.getClient("Dany")->getAllChannels().size() != ch_max_client)
+	{
+		fail("over LIST_LIMIT in _channles in Client");
+		std::exit(2);
+	}
+}
+
+void	TestServer::random_input()
+{
+	createChannelTestCnt("#1,#:2 a", 2, 2);
+	createChannelTestCnt(":#123123", 1, 1);
+	createChannelTestCnt("#:::::::  2312 2132 1123 12321 324324 32134 12.._:sdsaöüö+", 1, 1);
+	createChannelTestCnt("#123 #214314 312321 ***321 ", 1, 1);
+	createChannelTestCnt("    #123 ,#123", 1, 1);
+	createChannelTestCnt("324983290ruhf0i#wjhßßßr12ßeoßopeqwßü,#123", 1, 1);
+	createChannelTestCnt("&123,&13123213 123 123", 2, 2);
+	createChannelTestCnt("213123,123213,12321 #123213,&312321", 0, 0);
+	createChannelTestCnt("#,#,#,#,#,#,#,#,#,#,#", 1, 1);
+	createChannelTestCnt("&,&,&,&", 1, 1);
+	createChannelTestCnt(":&,:&,:&,:& :2312312    dsdsa asdasd sadasd", 1, 1);
+	ok();
+}
+
+void	TestServer::join_tests()
 {
 	std::cout << "\033[1;33m---JOIN TESTS---\033[0m" << std::endl;
 
@@ -225,8 +270,10 @@ void TestServer::join_tests()
 	addChannelWithPWandJoin();
 	std::cout << "wrong channel name: ";
 	wrongChannelName();
-
-
+	std::cout << "too long list: ";
+	tooLongList();
+	std::cout << "random input";
+	random_input();
 
 	std::cout << std::endl;
 }

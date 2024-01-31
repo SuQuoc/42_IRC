@@ -40,7 +40,7 @@ public:
 	void	USER(Client *sender, std::stringstream& sstream);
 	void	PRIVMSG(Client *sender, std::stringstream& sstream);
 
-	// void	MODE(Client *sender, std::stringstream& sstream);
+	int		MODE(Client *sender, std::stringstream& sstream);
 	void	TOPIC(Client *sender, std::stringstream& sstream);
 	int		INVITE(Client *sender, std::stringstream& sstream);
 
