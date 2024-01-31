@@ -27,7 +27,7 @@ void	Irc::command_switch(Client *sender, const std::string message) //message-> 
 	{
 		if (cmd != sender->getPrefix())
 		{
-			std::cout << "YOU are a imposter" << std::endl; //"n!u@" nothing after @ should work; scared bc hexchat has some weird domain after @ :@1321.32133.3213.IRC
+			std::cout << "YOU are a imposter" << std::endl;
 			//send()
 			return;
 		}
@@ -217,7 +217,7 @@ void	Irc::QUIT(Client *sender, std::stringstream &sstream)
 	std::string	comment = extractWord(sstream);
 	if (comment.empty())
 		comment = "Leaving";
-	disconnectClient(sender, createMsg(sender, "QUIT", "", comment));
+	disconnectClient(sender, createMsg(sender, "QUIT", "", comment)); //?? what if he had another cmd after that our program would fail
 }
 
 void	Irc::KICK(Client *sender, std::stringstream &sstream)
@@ -400,7 +400,7 @@ int Irc::KILL(Client *sender, std::stringstream &sstream)
 		return (_replier.sendError(ERR_NOSUCHNICK, sender, nickname));
 	
 	comment = extractWord(sstream);
-	disconnectClient(client_to_kill, comment); 
+	disconnectClient(client_to_kill, comment); //what about killing himself? and another command after that??
 	return (0);
 }
 
