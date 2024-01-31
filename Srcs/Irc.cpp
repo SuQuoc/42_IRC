@@ -123,6 +123,7 @@ bool Irc::isChannelNameValid(const std::string &channel_name)
 	return (true);
 }
 
+
 int	Irc::JOIN(Client *sender, std::stringstream &sstream)
 {
 	std::stringstream stream_name(extractWord(sstream)), stream_key(extractWord(sstream));
@@ -291,9 +292,6 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 	if (cnt == 0)
 		_replier.sendError(ERR_NORECIPIENT, sender, "PRIVMSG");
 }
-
-
-
 
 std::string Irc::createMsg(Client *sender, const std::string& cmd, const std::string& recipient, const std::string& msg) const
 {
