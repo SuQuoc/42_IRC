@@ -55,6 +55,7 @@ class Channel
 		~Channel();
 
 		int		addInvited(Client *client);
+		bool	isInvited(const Client*client);
 		int		rmClient(const Client *executor, const Client *rm_client, const std::string &leaving_msg);
 		int		addClient(Client *new_client, const std::string &password, bool is_operator);
 		int		rmClient(const Client *rm_client, const std::string &leaving_msg);
