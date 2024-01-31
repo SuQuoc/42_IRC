@@ -518,18 +518,30 @@ int Irc::MODE(Client *sender, std::stringstream &sstream)
             }
         }
     }
-
+	
+	IRC_ERR error_code;
 	std::string o_args_str;
 	std::string o_set_names;
 
-	for(std::map< std::string, std::pair<char, int> >::iterator o_itr = o_name_code_map.begin(); o_itr != o_name_code_map.end(); o_itr++)
+	for (std::map< std::string, std::pair<char, int> >::iterator o_itr = o_name_code_map.begin(); o_itr != o_name_code_map.end(); o_itr++)
 	{
-		if(o_itr->second.second == 324)
+		error_code = static_cast<IRC_ERR>(o_itr->second.second);
+		if (error_code  == 324)
 		{
 			o_args_str.append(1, o_itr->second.first);
 			o_args_str += "o";
 			o_set_names += " " + o_itr->first;
 			std::cout << o_itr->second.first << o_itr->first << std::endl;
+		}
+		else if (error_code  == ERR_NOTONCHANNEL || error_code  == ERR_CHANOPRIVSNEEDED)
+		{
+			std::cout << "send " << error_code << channel_name << std::endl;
+			_replier.sendError(error_code, sender, channel_name);
+		}
+		else if (error_code  == ERR_CHANOPRIVSNEEDED)
+		{
+			std::cout << "send " << error_code << o_itr->first + " " + channel_name << std::endl;
+			_replier.sendError(error_code, sender,  o_itr->first + " " + channel_name);
 		}
 		//_replier.sendError(static_cast<IRC_ERR>(o_itr->second.second), sender, ""); //fix err codes!!
 	}

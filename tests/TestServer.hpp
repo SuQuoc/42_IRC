@@ -5,8 +5,8 @@
 class TestServer: public Irc
 {
 private:
-	void	makeUserJoinChannel(const std::string &channel_name, const std::string &client_name, int client_fd);
-	void	makeUser(const std::string client_name, int client_fd);
+	Client*	makeUserJoinChannel(const std::string &channel_name, const std::string &client_name, int client_fd);
+	Client*	makeUser(const std::string client_name, int client_fd);
 	void	createChannelTestCnt(std::string join_input, size_t ch_max_Aserver, size_t ch_max_client);
 	void	fail(const std::string msg) const;
 	void	ok() const;
@@ -95,4 +95,6 @@ public:
 	void	tTest(const std::string &mode);
 	void	iTest(const std::string &mode);
 	void 	lTest();
+	void	runModeCheckOperator(Client *client, Client *client_target, Channel *ch, std::string run_line, std::string error_msg, bool trigger_error, bool &error);
+	void	oTest();
 };
