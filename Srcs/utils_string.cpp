@@ -51,3 +51,11 @@ std::string extractWord(std::stringstream& sstream)
 		std::getline(sstream, word, ' ');
 	return (word);
 }
+
+int protectedSend(int fd, std::string msg)
+{
+    msg += "\r\n";
+    if (send(fd, msg.c_str(), msg.size(), 0)) // need better protaction ????!!!!
+        return (-1);
+    return (0);
+}

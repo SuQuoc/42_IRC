@@ -34,3 +34,37 @@ void	TestServer::ok() const
 {
 	std::cout << "\033[0;92m OK\033[0m" << std::endl;
 }
+
+int	TestServer::runJoin(Client *client, const std::string& msg)
+{
+	std::stringstream	sstream(msg);
+	return (JOIN(client, sstream));
+}
+
+int	TestServer::runKick(Client *client, const std::string& msg)
+{
+	std::stringstream	sstream(msg);
+	return (KICK(client, sstream));
+}
+
+int	TestServer::runInvite(Client *client, const std::string& msg)
+{
+	std::stringstream	sstream(msg);
+	return (INVITE(client, sstream));
+}
+
+void	TestServer::runMode(Client *client, const std::string &line)
+{
+	std::stringstream	stream(line);
+	MODE(client, stream);
+}
+
+Client*	TestServer::createUserAndChannelRunMode(const std::string &channelname, const std::string &username, const std::string &line, int fd)
+{
+	Client	*client;
+
+	makeUserJoinChannel(channelname, username, fd);
+	client = getClient(username);
+	runMode(client, line);
+	return (client);
+}

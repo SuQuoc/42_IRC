@@ -27,7 +27,8 @@ class Channel
 			bool is_operator;
 		};
 
-		std::vector<Member_t> _clients;
+		std::vector<Member_t>	_clients;
+		std::vector<Client*>	_invited;
 		std::string	_password;			//if pw is empty channel is in non password mode
 		std::string	_topic;
 		std::string	_name;
@@ -38,11 +39,13 @@ class Channel
 		int	_max_clients;
 
 		typedef	std::vector<Channel::Member_t>::iterator clients_itr;
+		typedef	std::vector<Client*>::iterator invited_itr;
 
 		int		changeMode(Client *executor, const char &add, bool &modes);
 		void	sendNonBlock(const int &fd, const std::string &msg);
 		clients_itr	getClient(const std::string &name);
 		clients_itr	getClient(const Client *client);
+		invited_itr	getInvited(const Client *client);
 		Channel();
 
 	public:
@@ -51,6 +54,8 @@ class Channel
 		Channel(const Channel &C);
 		~Channel();
 
+		int		addInvited(Client *client);
+		bool	isInvited(const Client*client);
 		int		rmClient(const Client *executor, const Client *rm_client, const std::string &leaving_msg);
 		int		addClient(Client *new_client, const std::string &password, bool is_operator);
 		int		rmClient(const Client *rm_client, const std::string &leaving_msg);
@@ -68,6 +73,7 @@ class Channel
 		const std::string	&getName() const;
 		bool	getRestrictTopic() const;
 		bool	getInviteOnly() const;
+		int		getMaxClients() const;
 		int		size() const;
 
 		int modesSwitch(Client *executor, const char &add, const char &mode, const std::string &argument);

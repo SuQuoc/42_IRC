@@ -19,6 +19,30 @@ Channel::Channel(const Channel &C) : _clients(C._clients), _password(C._password
 }
 Channel::~Channel() {}
 
+
+int Channel::addInvited(Client *client)
+{
+	if (client == NULL)
+		return (-1);
+	if (isInvited(client) == false)
+		_invited.push_back(client);
+	return (0);
+}
+
+Channel::invited_itr	Channel::getInvited(const Client *client)
+{
+	if (client == NULL)
+		return (_invited.end()); //better than crashing
+	return (std::find(_invited.begin(), _invited.end(), client));
+}
+
+bool	Channel::isInvited(const Client*client)
+{
+	if (getInvited(client) == _invited.end())
+		return (false);
+	return (true);
+}
+
 // if sender NULL send to all
 void Channel::sendMsg(const Client *sender, const std::string &msg)
 {
@@ -78,24 +102,24 @@ int	Channel::rmClient(const Client *rm_client, const std::string &leaving_msg) /
 // -2 is already in channel
 int	Channel::addClient(Client *new_client, const std::string &password, bool is_operator)
 {
+	struct Member_t member;
+	bool			invited = isInvited(new_client);
+
 	if (new_client == NULL)
-	{
-		std::cerr << "Error addMember(): new_client is NULL" << std::endl;
 		return (-1); // -1 if client is NULL
-	}
-	if (size() >= _max_clients)
-		return ERR_CHANNELISFULL;
 	if (getClient(new_client) != _clients.end())
-	{
-		std::cerr << "Error client" << new_client->getNickname() << " is already in this channel." << std::endl;
 		return (-2); // -2 is already in channel
-	}
+	if (invited == false && _invite_only == true)
+		return (ERR_INVITEONLYCHAN);
+	if (size() >= MAX_CLIENTS || (invited == false && size() >= _max_clients))
+		return (ERR_CHANNELISFULL);
 	if (_password.empty() == false && _password != password)
 		return ERR_BADCHANNELKEY;
-	struct Member_t member;
 	member.is_operator = is_operator;
 	member.members = new_client;
 	_clients.push_back(member);
+	if (invited == true)
+		_invited.erase(getInvited(new_client));
 	return (0);
 }
 
@@ -166,6 +190,7 @@ const std::string &Channel::getPassword() const { return _password; }
 const std::string &Channel::getName() const { return _name; }
 bool Channel::getRestrictTopic() const { return _restrict_topic; }
 bool Channel::getInviteOnly() const { return _invite_only; }
+int Channel::getMaxClients() const { return _max_clients; }
 int Channel::size() const { return _clients.size(); }
 
 //returns -1 if not a + or - in add, otherwise error code if fails
