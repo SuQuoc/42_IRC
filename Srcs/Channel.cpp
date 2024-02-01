@@ -257,12 +257,12 @@ int Channel::setOperator(const char &add, Client *client)
 	if (add == '+' && client_it->is_operator == false)
 	{
 		client_it->is_operator = true;
-		return RPL_CHANNELMODEIS;
+		return MODE_SET_PLUS;
 	}
 	else if (add == '-' && client_it->is_operator == true)
 	{
 		client_it->is_operator = false;	// 324     RPL_CHANNELMODEIS
-		return RPL_CHANNELMODEIS;
+		return MODE_SET_MINUS;
 	}
 	return (CH_SUCCESS);
 }

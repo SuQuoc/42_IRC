@@ -49,7 +49,9 @@ enum IRC_ERR
     //own codes!
     RPL_JOIN = 1000,
     TOPIC_SET = 1001,
-    RPL_INVITED = 1002
+    RPL_INVITED = 1002,
+    MODE_SET_PLUS = 1003,
+    MODE_SET_MINUS = 1004
 };
 
 class IrcReply

@@ -435,8 +435,12 @@ void Irc::setOperatorPW(const std::string& password)
 //returns 403 no such channel, returns 442 not on channel
 int Irc::MODE(Client *sender, std::stringstream &sstream)
 {
+    std::map< std::string, int> operator_rpl_map;
 	std::string channel_name, argument, word;
-    std::map< std::string, std::pair<char, int> > o_name_code_map;
+	int topic_code = -42;
+	int limit_code = -42;
+	int key_code = -42;
+	int inv_code = -42;
 	Channel *channel;
     char pre_fix;
 
@@ -449,11 +453,6 @@ int Irc::MODE(Client *sender, std::stringstream &sstream)
 	if(channel->isOperator(sender) == false)
 		return(_replier.sendError(ERR_CHANOPRIVSNEEDED, sender, channel_name));
 	// send just the errors after the loop??????????????
-	int key_code = -42;
-	int inv_code = -42;
-	int topic_code = -42;
-	int limit_code = -42;
-	int operartor_code = -42;
 
 	while((word = extractWord(sstream)).empty() == false)
     {
@@ -476,15 +475,14 @@ int Irc::MODE(Client *sender, std::stringstream &sstream)
             {
 				if(pre_fix == '+')
                 	argument = extractWord(sstream);
-				if(limit_code == 324)
+				if(limit_code == MODE_SET_PLUS || limit_code == MODE_SET_MINUS)
 					continue ;
-				channel->setMaxClients(argument, pre_fix);
+				limit_code = channel->setMaxClients(argument, pre_fix);
             }
             else if(word[i] == 'o')
             {
 				argument = extractWord(sstream);					
-				channel->setOperator(pre_fix, getClient(argument));
-				o_name_code_map[argument] = std::pair<char, int>(pre_fix, operartor_code);
+				operator_rpl_map[argument] = channel->setOperator(pre_fix, getClient(argument));
             }
             else if(word[i] == 'k') // k is deferent triggers error?
             {
@@ -503,42 +501,46 @@ int Irc::MODE(Client *sender, std::stringstream &sstream)
 				_replier.sendError(ERR_UNKNOWNMODE, sender, argument = word[i]);
         }
     }
-	
-	IRC_ERR error_code;
-	std::string o_args_str;
-	std::string o_set_names;
+	operatorsSendSetModeToChannel(channel, sender, operator_rpl_map);
+	sendSetModeToChannel(channel, sender, inv_code, topic_code);
+	return (0);
+}
 
-	for (std::map< std::string, std::pair<char, int> >::iterator o_itr = o_name_code_map.begin(); o_itr != o_name_code_map.end(); o_itr++)
+void Irc::operatorsSendSetModeToChannel(Channel *channel, Client *sender, std::map< std::string, int> operator_rpl_map)
+{
+	IRC_ERR error_code;
+	std::string o_modes_str, o_set_names;
+
+	for (std::map< std::string, int>::iterator o_itr = operator_rpl_map.begin(); o_itr != operator_rpl_map.end(); o_itr++)
 	{
-		error_code = static_cast<IRC_ERR>(o_itr->second.second);
-		if (error_code  == 324)
+		error_code = static_cast<IRC_ERR>(o_itr->second);
+		if (error_code == MODE_SET_PLUS)
 		{
-			o_args_str.append(1, o_itr->second.first);
-			o_args_str += "o";
+			o_modes_str += "+o";
 			o_set_names += " " + o_itr->first;
-			std::cerr << o_itr->second.first << o_itr->first << std::endl;
+		}
+		else if (error_code == MODE_SET_MINUS)
+		{
+			o_modes_str += "-o";
+			o_set_names += " " + o_itr->first;
 		}
 		else if (error_code == ERR_USERNOTINCHANNEL)
-		{
-			std::cerr << "send " << error_code << channel_name << std::endl;
-			_replier.sendError(error_code, sender, o_itr->first + " " + channel_name);
-		}
+			_replier.sendError(error_code, sender, o_itr->first + " " + channel->getName());
 		else if (error_code == ERR_NOSUCHNICK)
 			_replier.sendError(error_code, sender, o_itr->first);
 	}
-	if(o_args_str.empty() == false)
-	{
-		std::cerr << ":" + sender->getPrefix() + " MODE " + channel_name + " " + o_args_str + o_set_names;
-		channel->sendMsg(sender, ":" + sender->getPrefix() + " MODE " + channel_name + " " + o_args_str + o_set_names + "\r\n");
-	}
+	if(o_modes_str.empty() == false)
+		channel->sendMsg(sender, ":" + sender->getPrefix() + " MODE " + channel->getName() + " " + o_modes_str + o_set_names + "\r\n");
+}
 
-	if(inv_code > 0)
-		std::cerr << inv_code << std::endl;
-		//_replier.sendError(static_cast<IRC_ERR>(o_itr->second.second), sender, ""); //fix err codes!!
-	if(topic_code > 0)
-		std::cerr << topic_code << std::endl;
-		//_replier.sendError(static_cast<IRC_ERR>(o_itr->second.second), sender, ""); //fix err codes!!
-	if(limit_code > 0)
-		std::cerr << topic_code << std::endl;
-	return (0);
+void Irc::sendSetModeToChannel(Channel *channel, Client *sender, const int &inv_code, const int &topic_code)
+{
+	if(inv_code == MODE_SET_PLUS)
+		channel->sendMsg(sender, ":" + sender->getPrefix() + " MODE " + channel->getName() + " +i\r\n");
+	else if(inv_code == MODE_SET_MINUS)
+		channel->sendMsg(sender, ":" + sender->getPrefix() + " MODE " + channel->getName() + " -i\r\n");
+	if(topic_code == MODE_SET_PLUS)
+		channel->sendMsg(sender, ":" + sender->getPrefix() + " MODE " + channel->getName() + " +t\r\n");
+	else if(topic_code == MODE_SET_MINUS)
+		channel->sendMsg(sender, ":" + sender->getPrefix() + " MODE " + channel->getName() + " -t\r\n");
 }

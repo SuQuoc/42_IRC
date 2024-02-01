@@ -40,14 +40,18 @@ public:
 	void	USER(Client *sender, std::stringstream& sstream);
 	void	PRIVMSG(Client *sender, std::stringstream& sstream);
 
-	int		MODE(Client *sender, std::stringstream& sstream);
 	void	TOPIC(Client *sender, std::stringstream& sstream);
 	int		INVITE(Client *sender, std::stringstream& sstream);
 
 	void	OPER(Client *sender, std::stringstream &sstream);
 	int		KILL(Client *sender, std::stringstream &sstream);
 
-//methods (commands)
 	void setOperatorHost(const std::string& hostname);
 	void setOperatorPW(const std::string& password);
+
+	int		MODE(Client *sender, std::stringstream& sstream);
+	void	operatorsSendSetModeToChannel(Channel *channel, Client *sender, std::map< std::string, int> operator_rpl_map);
+	void	sendSetModeToChannel(Channel *channel, Client *sender, const int &inv_code, const int &topic_code);
+
+//methods (commands)
 };
