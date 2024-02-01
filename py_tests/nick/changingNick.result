@@ -1,0 +1,10 @@
+:AfterLife 001 client0 :Welcome to the Internet Relay Network, user0
+:AfterLife 001 client1 :Welcome to the Internet Relay Network, user1
+:AfterLife 001 client2 :Welcome to the Internet Relay Network, user2
+:client1!user1@10.14.3.10 PRIVMSG client0 :NO error should be sent
+:client0 NICK newNick
+:client1!user1@10.14.3.10 PRIVMSG newNick :if you see this, it means that the nick was changed successfully
+:AfterLife 401 client1  :No such nick/channel
+:client2 NICK client0
+:AfterLife 433 client0  :Nickname is already in use
+:client1!user1@10.14.3.10 PRIVMSG client0 :if you see this, it means that the nick was changed successfully

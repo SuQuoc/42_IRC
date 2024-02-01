@@ -130,6 +130,22 @@ def testPASS():
 	os.chdir(original_directory)
 
 #------------------NICK------------------
+def changingNick():
+	test_name = "changingNick"
+	
+	vector = [
+		(1, "PRIVMSG client0 :NO error should be sent"),
+		(0, "NICK newNick"),
+		(1, "PRIVMSG newNick :if you see this, it means that the nick was changed successfully"),
+		(1, "PRIVMSG client0 :'No such nick/channel' should be sent"),
+		(2, "NICK client0"),
+		(2, "NICK newNick"), #nick already in use
+		(1, "PRIVMSG client0 :if you see this, it means that the nick was changed successfully"),
+		]
+	runMultiClientTest(test_name, 3, vector)
+		
+
+
 def testNICK():
 	print(f"{Style.BRIGHT}{Fore.YELLOW}---NICK TESTS---")
 	print(Style.RESET_ALL)
@@ -138,6 +154,7 @@ def testNICK():
 	#errNoNicknameGiven("NICK client0")
 	#errErroneusNickname("NICK client0")
 	#errNicknameInUse("NICK client0")
+	changingNick()
 	os.chdir(original_directory)
 
 

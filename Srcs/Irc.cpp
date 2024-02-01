@@ -33,9 +33,9 @@ void	Irc::command_switch(Client *sender, const std::string message) //message-> 
 		}
 		std::getline(sstream, cmd, ' '); //extractWord?
 	}
-	if (cmd == "CAP") //we only take the last PASS
+	if (cmd == "CAP")
 		return ;
-	else if (cmd == "PASS") PASS(sender, sstream); //we only take the last PASS // client can always try PASS although not registered ?
+	else if (cmd == "PASS") PASS(sender, sstream);
 	else if (cmd == "NICK") NICK(sender, sstream);
 	else if (cmd == "USER")	USER(sender, sstream);
 	else if (sender->isRegistered() == false) _replier.sendError(ERR_NOTREGISTERED, sender, ""); //?
@@ -76,25 +76,32 @@ void Irc::PASS(Client *sender, std::stringstream &sstream)
 void Irc::NICK(Client *sender, std::stringstream &sstream)
 {
     std::string nickname = extractWord(sstream);
+	std::string old_nick;
+	// bool registered = sender->isRegistered();
 
 	if (nickname.empty())
 		_replier.sendError(ERR_NONICKNAMEGIVEN, sender, "");
-	else if (getClient(nickname) == NULL) //no one has the nickname
+	else if (getClient(nickname) != NULL)
+		_replier.sendError(ERR_NICKNAMEINUSE, sender, "");
+	else  
 	{
+		old_nick = sender->getNickname();
 		if (sender->setNickname(nickname) != 0)
 		{
 			_replier.sendError(ERR_ERRONEUSNICKNAME, sender, "");
 			return ;
 		}
+		else if (sender->isRegistered())
+		{
+			rmClientFromNameMap(old_nick);
+			addClientToNameMap(sender->getNickname(), sender->getFd());
+			protectedSend(sender->getFd(), ":" + old_nick + " NICK " + sender->getNickname());
+			return;
+		}
+		addClientToNameMap(sender->getNickname(), sender->getFd());
+		if (sender->isRegistered() && old_nick.empty() == false)
+			_replier.sendRPL(RPL_WELCOME, sender, sender->getUsername());
 	}
-	else
-	{
-		_replier.sendError(ERR_NICKNAMEINUSE, sender, "");
-		return ;
-	}
-	addClientToNameMap(sender->getNickname(), sender->getFd());
-	if (sender->isRegistered())
-		_replier.sendRPL(RPL_WELCOME, sender, sender->getUsername());
 }
 
 void	Irc::USER(Client *sender, std::stringstream &sstream)

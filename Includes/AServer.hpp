@@ -60,6 +60,7 @@ protected:
 	void	addClientToNameMap(std::string user_name, const int& client_fd);
 	void	addNewClientToFdMap(const int& client_fd, const std::string& client_ip);
 
+	void 	rmClientFromNameMap(const std::string& nick_name);
 	void 	rmClientFromMaps(Client *client); 
 	void 	rmClientFromMaps(int client_fd);
 	void 	rmChannelFromMap(const std::string& channel_name);
