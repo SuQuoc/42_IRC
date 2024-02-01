@@ -46,13 +46,6 @@ bool	Channel::isInvited(const Client*client)
 // if sender NULL send to all
 void Channel::sendMsg(const Client *sender, const std::string &msg)
 {
-	/* if(!sender)
-	{
-		std::cerr << "* Error: sender is NULL (in sendMsg)" << std::endl;
-		return ;
-	} */
-	/* if(getClient(sender) == _clients.end())
-		return ; //return error code */
 	for (clients_itr itr = _clients.begin(); itr != _clients.end(); itr++)
 	{
 		if (sender && itr->members == sender)
@@ -156,7 +149,7 @@ int		Channel::setMaxClients(const std::string &str, const char &pre_fix)
 		if(_max_clients == MAX_CLIENTS)
 			return (0);
 		_max_clients = MAX_CLIENTS;
-		return (RPL_CHANNELMODEIS);
+		return (MODE_SET_MINUS);
 	}
 	if(str.empty() == true)
 		return (ERR_NEEDMOREPARAMS);
@@ -164,7 +157,7 @@ int		Channel::setMaxClients(const std::string &str, const char &pre_fix)
 	if(max_client < 1 || max_client > 100)
 		return (0);
 	_max_clients = max_client;
-	return (RPL_CHANNELMODEIS);
+	return (MODE_SET_PLUS);
 }
 int	Channel::setPassword(const std::string &password, const char &add)
 {
@@ -173,12 +166,12 @@ int	Channel::setPassword(const std::string &password, const char &add)
 	if (add == '+' && _password.empty() == true) // send msg if already set
 	{
 		_password = password;
-		return (RPL_CHANNELMODEIS);
+		return (MODE_SET_PLUS);
 	}
 	if (add == '-' && password == _password)
 	{
 		_password.clear();
-		return (RPL_CHANNELMODEIS);
+		return (MODE_SET_MINUS);
 	}
 	return (ERR_KEYSET); // 467 ERR_KEYSET
 }
@@ -214,12 +207,12 @@ int Channel::changeMode(const char &add, bool &modes)
 	if (add == '+' && modes == false)
 	{
 		modes = true;	// 324     RPL_CHANNELMODEIS
-		return RPL_CHANNELMODEIS;
+		return MODE_SET_PLUS;
 	}
 	else if (add == '-' && modes == true)
 	{
 		modes = false;	// 324     RPL_CHANNELMODEIS
-		return RPL_CHANNELMODEIS;
+		return MODE_SET_MINUS;
 	}
 	return (CH_SUCCESS);
 }
@@ -257,12 +250,12 @@ int Channel::setOperator(const char &add, Client *client)
 	if (add == '+' && client_it->is_operator == false)
 	{
 		client_it->is_operator = true;
-		return RPL_CHANNELMODEIS;
+		return MODE_SET_PLUS;
 	}
 	else if (add == '-' && client_it->is_operator == true)
 	{
 		client_it->is_operator = false;	// 324     RPL_CHANNELMODEIS
-		return RPL_CHANNELMODEIS;
+		return MODE_SET_MINUS;
 	}
 	return (CH_SUCCESS);
 }
@@ -270,9 +263,9 @@ int Channel::setOperator(const char &add, Client *client)
 //multible modes a possilbe like +adasd
 //ervery char needs to be handelt
 //multible arguments are possible
-int Channel::modesSwitch(const char &add, const char &ch_modes, const std::string &argument)
+int Channel::setTopicOrInv(const char &add, const char &ch_modes)
 {
-	enum color { SET_RESTRICT_TOPIC = 't', SET_INVITE_ONLY = 'i', SET_KEY = 'k', SET_LIMIT = 'l' };
+	enum color { SET_RESTRICT_TOPIC = 't', SET_INVITE_ONLY = 'i' };
 
 	switch (ch_modes)
 	{
@@ -280,12 +273,8 @@ int Channel::modesSwitch(const char &add, const char &ch_modes, const std::strin
 		return changeMode(add, _restrict_topic);
 	case SET_INVITE_ONLY:
 		return changeMode(add, _invite_only);
-	case SET_LIMIT:
-		return 0/* setPassword(argument, add) */;
-	case SET_KEY:
-		return setPassword(argument, add);
 	default:
-		std::cout << "Error wrong mode!" << ch_modes << std::endl;
+		std::cerr << "Error wrong mode!" << ch_modes << std::endl;
 	}
 	return (0);
 }

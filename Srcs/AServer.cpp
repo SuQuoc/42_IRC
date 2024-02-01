@@ -104,8 +104,9 @@ void	AServer::process_event(const int& client_fd)
 	char	buf[513];
 	int		bytes_recieved = -1; //better name?
 
-	Client *sender = _client_fds.find(client_fd)->second;
+	Client *sender = getClient(client_fd);
 
+	
 	memset(buf, '\0', 513);
 	bytes_recieved = recv(client_fd, buf, sizeof(buf) - 1, 0);
 	switch (bytes_recieved)
@@ -121,12 +122,13 @@ void	AServer::process_event(const int& client_fd)
 		default:
 			std::stringstream	sstream(buf);
 			std::string str;
-			while(splitMsg(sstream, str)) //we have to do a while loop cuz "CMD\nCMD1\nCMD3\n"
+			while(splitMsg(sstream, str) && sender != NULL) //we have to do a while loop cuz "CMD\nCMD1\nCMD3\n"
 			{
 				sender->loadMsgBuf(str); //take str as reference
 				str = sender->readMsgBuf();
 				if (!str.empty())
 					command_switch(sender, str); //what if fd is not in map?
+				sender = getClient(client_fd);
 			}
 	}
 }

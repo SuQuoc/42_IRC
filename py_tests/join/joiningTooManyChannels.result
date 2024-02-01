@@ -1,0 +1,22 @@
+:AfterLife 001 client0 :Welcome to the Internet Relay Network, user0
+:client0!user0@10.14.3.10 JOIN #chan0 * :user0
+:client0!user0@10.14.3.10 JOIN #chan1 * :user0
+:client0!user0@10.14.3.10 JOIN #chan2 * :user0
+:client0!user0@10.14.3.10 JOIN #chan3 * :user0
+:client0!user0@10.14.3.10 JOIN #chan4 * :user0
+:client0!user0@10.14.3.10 JOIN #chan5 * :user0
+:client0!user0@10.14.3.10 JOIN #chan6 * :user0
+:client0!user0@10.14.3.10 JOIN #chan7 * :user0
+:client0!user0@10.14.3.10 JOIN #chan8 * :user0
+:client0!user0@10.14.3.10 JOIN #chan9 * :user0
+:AfterLife 405 client0 #chan10 :You have joined too many channels
+:client0!user0@10.14.3.10 QUIT :Leaving
+:client0!user0@10.14.3.10 QUIT :Leaving
+:client0!user0@10.14.3.10 QUIT :Leaving
+:client0!user0@10.14.3.10 QUIT :Leaving
+:client0!user0@10.14.3.10 QUIT :Leaving
+:client0!user0@10.14.3.10 QUIT :Leaving
+:client0!user0@10.14.3.10 QUIT :Leaving
+:client0!user0@10.14.3.10 QUIT :Leaving
+:client0!user0@10.14.3.10 QUIT :Leaving
+:client0!user0@10.14.3.10 QUIT :Leaving
