@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Ask for the old and new names
+echo "Enter the old file name without extension:"
+read filename
+
+# Ask for confirmation
+echo "
+Are you sure you want to copy all files in this dir and all its subdirs named:
+${filename}.result
+to
+${filename}.expected?
+(y/n)"
+read answer
+
+# If the answer is 'y', proceed with the copying
+if [ "$answer" = "y" ]; then
+    find . -name "${filename}.result" -exec bash -c 'cp "$0" "${0/'$filename'/'$filename.expected'}"' {} \;
+    echo "Files copied."
+else
+    echo "Operation cancelled."
+fi
