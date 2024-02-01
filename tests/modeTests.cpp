@@ -1,21 +1,5 @@
 #include "TestServer.hpp"
 
-Client* TestServer::crateUserAndChannelRunMode(const std::string &channelname, const std::string &username, const std::string &line, int fd)
-{
-    Client *client;
-
-    makeUserJoinChannel(channelname, username, fd);
-    client = getClient(username);
-    runMode(client, line);
-    return (client);
-}
-
-void TestServer::runMode(Client *client, const std::string &line)
-{
-    std::stringstream stream(line);
-    MODE(client, stream);
-}
-
 void TestServer::basicTest()
 {
     TestServer serv;
@@ -39,12 +23,12 @@ void TestServer::basicTest()
 
 void TestServer::tTest(const std::string &mode)
 {
-    TestServer serv;
-    Client *client;
-    Channel *channel;
+    TestServer  serv;
+    Client*     client;
+    Channel*    channel;
 
 
-    client = serv.crateUserAndChannelRunMode("#Duskwood", "Legolas", "#Duskwood +" + mode, 5);
+    client = serv.createUserAndChannelRunMode("#Duskwood", "Legolas", "#Duskwood +" + mode, 5);
     channel = serv.getChannel("#Duskwood");
     if(channel->getRestrictTopic() == false)
         return (fail(mode + " should be true 01"));        // should send 324
@@ -81,7 +65,7 @@ void TestServer::iTest(const std::string &mode)
     Client      *client;
 
 
-    client = serv.crateUserAndChannelRunMode("#Duskwood", "Legolas", "#Duskwood +" + mode, 5);
+    client = serv.createUserAndChannelRunMode("#Duskwood", "Legolas", "#Duskwood +" + mode, 5);
     ch = serv.getChannel("#Duskwood");
     if(ch->getInviteOnly() == false)
         return (fail(mode + " should be true 01"));        // should send 324
@@ -117,6 +101,36 @@ void TestServer::lTest()
     ok();
 }
 
+//channel name is set from cChannel *ch
+void TestServer::runModeCheckOperator(Client *client, Client *client_target, Channel *ch, std::string run_line, std::string error_msg, bool trigger_error, bool &error)
+{
+    runMode(client, ch->getName() + " " + run_line);
+    if(ch->isOperator(client_target) == trigger_error)
+    {
+        fail(error_msg);
+        error = true;
+    }
+}
+
+void TestServer::oTest()
+{
+    TestServer  serv;
+    Channel*    ch;
+    Client*     sylvanas = serv.makeUserJoinChannel("#Silbermond", "Sylvanas", 5);;
+    Client*     vonix = serv.makeUserJoinChannel("#Silbermond", "Vonix", 6);
+    bool        error = false;
+
+    ch = serv.getChannel("#Silbermond");
+    serv.runModeCheckOperator(sylvanas, vonix, ch, "+o Vonix", "Vonix should be operator 01", false, error);
+    serv.runModeCheckOperator(sylvanas, vonix, ch, "-o+o-o Vonix Vonix Vonix", "Vonix should not be operator 02", true, error);
+    serv.runModeCheckOperator(sylvanas, vonix, ch, "-o+o Sylvanas Vonix", "Vonix should not be operator 03", true, error);
+    if(ch->isOperator(sylvanas) == true)
+        return (fail("Silvanas should not be operator"));
+
+    if(error == false)
+        ok();
+}
+
 void TestServer::mode_tests()
 {
     std::cout << "\033[1;33m---MODE TESTS---\033[0m" << std::endl;
@@ -129,5 +143,7 @@ void TestServer::mode_tests()
     iTest("i");
     std::cout << "channel limit test: ";
     lTest();
+    std::cout << "channel change operator test: ";
+    oTest();
     std::cout << std::endl;
 }

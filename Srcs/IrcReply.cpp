@@ -105,7 +105,7 @@ int	IrcReply::sendError(IRC_ERR error, Client* sender, const std::string& input)
 		std::cerr << "Error send failed in Irc_error." << std::endl;
 		return(-1);
 	}
-	return (0);
+	return (error);
 }
 
 void	IrcReply::sendRPL(IRC_ERR error, Client* sender, const std::string& input) const

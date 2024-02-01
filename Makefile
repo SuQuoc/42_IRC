@@ -1,7 +1,7 @@
 NAME		= ircserv
 ARGS 		= 6667 pw1234567
 CXX			= c++
-CXXFLAGS	= -Wall -Wextra -Werror -MMD -MP -pedantic -g -std=c++98
+CXXFLAGS	= -Wall -Wextra -Werror -MMD -MP -g -std=c++98
  
 INCLUDES 	= ./Includes
 
