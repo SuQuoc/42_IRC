@@ -60,7 +60,7 @@ void	protectedSend(int fd, std::string msg)
 	{
 		if (errno == EAGAIN || errno == EWOULDBLOCK)
 			return ;
-        throw (std::logic_error("send failed: "));//when this happens something went fundamentally wrong
+        /* throw (std::logic_error("send failed: ")); */ //when this happens something went fundamentally wrong
 	}
 	return ;
 }
