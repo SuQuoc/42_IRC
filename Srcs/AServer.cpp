@@ -114,8 +114,8 @@ void	AServer::process_event(const int& client_fd)
 	switch (bytes_recieved)
 	{
 		case (-1):
-			/* if (errno == EAGAIN || errno == EWOULDBLOCK) //leave it in? //potential endless-loop?
-				break ; */ 			//loops when ctrl-D is pressed and waits for enter from same client
+			if (errno == EAGAIN || errno == EWOULDBLOCK) //leave it in? //potential endless-loop?
+				break ;			//loops when ctrl-D is pressed and waits for enter from same client
 			std::cerr << "Error: couldn't recieve data :" << std::strerror(errno) << std::endl;
 			return ;
 		case (0):

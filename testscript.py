@@ -7,16 +7,7 @@ import os
 import time
 from colorama import Fore, Style
 
-
-def killAllProcesses(processes):
-	for process in processes:
-		process.kill()
-
-def print_file_contents(filename):
-    with open(filename, 'r') as file:
-        contents = file.read()
-    print(contents)
-
+# ---------------------UTILS---------------------
 def get_ip_address():
 	hostname = socket.gethostname()    # get local machine name
 	IP = socket.gethostbyname(hostname)    # get IP address of that hostname
@@ -24,25 +15,8 @@ def get_ip_address():
 	return IP
 
 def sendMsg(process, message):
-    process.stdin.write((message + "\r\n").encode())
-
-def	registerClients(processes, password):
-	i = 0
-	pass_msg = "PASS " + password + "\r\n"
-	for process in processes:
-		nickname = "client" + str(i)
-		username = "user" + str(i)
-		hostname = "host" + str(i)
-		servername = "serv" + str(i)
-		realname = "real " + str(i)
-
-		nick_msg = "NICK " + nickname + "\r\n"
-		user_msg = "USER " + username + " " + hostname + " " + servername + " :" + realname + "\r\n"
-		
-		sendMsg(process, pass_msg)
-		sendMsg(process, nick_msg)
-		sendMsg(process, user_msg)
-		i+=1
+	process.stdin.write((message + "\r\n").encode())
+	process.stdin.flush()
 
 def start_netcat(host, port, n, filename):
 	processes = []
@@ -51,13 +25,47 @@ def start_netcat(host, port, n, filename):
 		processes.append(process)
 	return processes
 
-def runMultiClientTest(test_name, msg):
+def quitAllNetcats(processes):
+    quit_message = "QUIT\r\n"
+    for process in processes:
+        process.communicate(quit_message.encode())
+
+def	registerClients(processes, password):
+	i = 0
+	pass_msg = "PASS " + password
+	for process in processes:
+		nickname = "client" + str(i)
+		username = "user" + str(i)
+		hostname = "host" + str(i)
+		servername = "serv" + str(i)
+		realname = "real " + str(i)
+
+		nick_msg = "NICK " + nickname
+		user_msg = "USER " + username + " " + hostname + " " + servername + " :" + realname
+		
+		sendMsg(process, pass_msg)
+		sendMsg(process, nick_msg)
+		sendMsg(process, user_msg)
+		time.sleep(0.5)
+		i+=1
+
+
+# ---------------------IRC UTILS---------------------
+def joinChannel(process, channel):
+	join_msg = "JOIN " + channel
+	sendMsg(process, join_msg)
+
+# ---------------------core framework?---------------------
+def runMultiClientTest(test_name, n_clients, vector):
 	with open(f'{test_name}.result', 'w') as file:
-		processes = start_netcat(serv_host, serv_port, 1, file)
+		processes = start_netcat(serv_host, serv_port, n_clients, file)
 		registerClients(processes, serv_pw)
-		sendMsg(processes[0], msg)
-		quit = "QUIT\r\n"
-		processes[0].communicate(quit.encode())
+		for pair in vector:
+			client_id = pair[0]
+			msg = pair[1]
+			sendMsg(processes[client_id], msg)
+			time.sleep(0.5)
+		quitAllNetcats(processes)
 
 	if not os.path.isfile(f'{test_name}.expected'):
 		open(f'{test_name}.expected', 'w').close()
@@ -86,12 +94,9 @@ def runSingleClientTest(test_name, msg):
 		print(f"{test_name}: ❌")
 
 
+# ---------------------TESTS---------------------
+#------------------PRIVMSG------------------
 def errNORECIPIENT(msg):
-	#if os.path.isfile(f'{test_name}_result.txt'):
-	#	if filecmp.cmp(f'{test_name}_result.txt', f'{test_name}_expected.txt'):
-	#		print(f"{test_name}: ✅")
-	#	else:
-	#		print(f"{test_name}: ❌")
 	test_name = "ERR_NORECIPIENT"
 	runSingleClientTest(test_name, msg)
 
@@ -107,31 +112,52 @@ def errNOSUCHNICK(msg):
 	test_name = "ERR_NOSUCHNICK"
 	runSingleClientTest(test_name, msg)
 
+def msgTest():
+	vector = [
+		(0, "PRIVMSG client1 :hello from client1 to you my dear client0"),
+		]
+	runMultiClientTest("privmsg_test", 2, vector)
+
 def testPRIVMSG():
 	print(f"{Style.BRIGHT}{Fore.YELLOW}---PRIVMSG TESTS---")
 	print(Style.RESET_ALL)
-
 	os.chdir("py_tests/privmsg")
 	errNORECIPIENT("PRIVMSG")
 	#errNOTEXTTOSEND("PRIVMSG") #i need a user that exists or a channel
 	errNOSUCHCHANNEL("PRIVMSG #nonexistentchannel")
 	errNOSUCHNICK("PRIVMSG nonexistentuser")
+	msgTest()
 	os.chdir(original_directory)
 
 
+#------------------JOIN------------------
+def joiningTooManyChannels():
+	test_name = "joiningTooManyChannels"
+	
+	vector = []
+	for i in range(11):
+		join_msg = "JOIN #chan" + str(i)
+		vector.append((0, join_msg))		
+	runMultiClientTest(test_name, 1, vector)
+
+def testJOIN():
+	print(f"{Style.BRIGHT}{Fore.YELLOW}---JOIN TESTS---")
+	print(Style.RESET_ALL)
+	os.chdir("py_tests/join")
+	errNOSUCHCHANNEL("JOIN #nonexistentchannel")
+	joiningTooManyChannels()
+	os.chdir(original_directory)
 
 # Start netcat
 #processes = start_netcat(serv_host, serv_port, n, filename)
 #killAllProcesses(processes)
 
 
-# main code
 # Global variables
 serv_host = get_ip_address()
 serv_port = 6667
 serv_pw = "pw1234567"
 original_directory = os.getcwd()
-
 
 # Get user input
 # serv_host = input("Enter server ip: ")
@@ -139,4 +165,6 @@ original_directory = os.getcwd()
 # serv_port = int(input("Enter server port: "))
 # serv_pw = input("Enter server password: ")
 
+# -------main----------
 testPRIVMSG()
+testJOIN()

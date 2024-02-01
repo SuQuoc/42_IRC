@@ -57,8 +57,8 @@ void	Irc::command_switch(Client *sender, const std::string message) //message-> 
 void Irc::PASS(Client *sender, std::stringstream &sstream)
 {
     std::string password = extractWord(sstream);
-    	
-    if (sender->isRegistered()) 
+
+    if (sender->isRegistered())
         _replier.sendError(ERR_ALREADYREGISTERED, sender, ""); //already registered
     else if (password == _password)
 		sender->authenticate();
@@ -67,6 +67,7 @@ void Irc::PASS(Client *sender, std::stringstream &sstream)
 		sender->deauthenticate();
 		_replier.sendError(ERR_PASSWDMISMATCH, sender, "");
 		disconnectClient(sender, "Wrong password"); //delete Client and the entry from the map if Pw is wrong? --> multiple PASS not possible then
+		return ;
 	}
 	if (sender->isRegistered())
 		_replier.sendRPL(RPL_WELCOME, sender, sender->getUsername());
@@ -261,8 +262,6 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 	std::string			reply;
 	int					cnt = 0;
 
-	if (message.empty())
-		_replier.sendError(ERR_NOTEXTTOSEND, sender, ""); //return message is checked before to avoid checking in loop
 	while (cnt < LIST_LIMIT && std::getline(recip_sstream, recipient, ','))
 	{
 		cnt++;
@@ -276,6 +275,8 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 			Channel *channel = getChannel(recipient);
 			if (channel == NULL)
 				_replier.sendError(ERR_NOSUCHCHANNEL, sender, recipient);
+			else if (message.empty())
+				_replier.sendError(ERR_NOTEXTTOSEND, sender, ""); //return message is checked before to avoid checking in loop
 			else
 				channel->sendMsg(sender, createMsg(sender, "PRIVMSG", recipient, message));
 		} //mask?
@@ -284,6 +285,8 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 			Client *reciever = getClient(recipient);
 			if (reciever == NULL)
 				_replier.sendError(ERR_NOSUCHNICK, sender, "");
+			else if (message.empty())
+				_replier.sendError(ERR_NOTEXTTOSEND, sender, ""); //return message is checked before to avoid checking in loop
 			else
 			{
 				reply = createMsg(sender, "PRIVMSG", recipient, message); //PART uses same method
