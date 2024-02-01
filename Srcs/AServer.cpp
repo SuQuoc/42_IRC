@@ -47,35 +47,33 @@ void	AServer::accept_connection()
 	char				client_ip_buf[INET_ADDRSTRLEN];
 	int					client_fd;
 
-	while (1)
+	client_fd = accept(_sock_fd, reinterpret_cast<struct sockaddr*>(&client_addr), &client_addr_len);
+	if (client_fd == -1)
 	{
-		client_fd = accept(_sock_fd, reinterpret_cast<struct sockaddr*>(&client_addr), &client_addr_len);
-		if (client_fd == -1) //better protection? //should we exit?
-		{
-			if (errno != EAGAIN && errno != EWOULDBLOCK) //if not
-				std::cerr << "Error: accept failed" << std::endl;
+		std::cerr << "Error: accept failed :" << std::strerror(errno) << std::endl;
+		if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EAGAIN || errno == EWOULDBLOCK || errno == ECONNABORTED || errno == EFAULT || errno == EINTR || errno == EMFILE || errno == ENFILE || errno == EPERM)
 			return ;
-		}
-		memset(client_ip_buf, '\0', INET_ADDRSTRLEN);
-		ipAddr = client_addr.sin_addr;
-		inet_ntop(AF_INET, &ipAddr, client_ip_buf, INET_ADDRSTRLEN);
-		std::cout << "Client IP: " << client_ip_buf << "!\n";
-		ev_temp.data.fd = client_fd;
-		ev_temp.events = EPOLLIN | EPOLLET; //needs to be in loop? //niki says it could be changed in epoll_ctl() so just to be save
-		fcntl(client_fd, F_SETFL, O_NONBLOCK);
-		if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, client_fd, &ev_temp) == -1)
-		{
-			std::cerr << "Error: epoll_ctl failed in accept_connection" << std::endl;
-			return ;
-		}
-		if (_client_fds.find(client_fd) != _client_fds.end())
-		{
-			std::cerr << "* Error: new fd already in map" << std::endl;
-			return ;
-		}
-		addNewClientToFdMap(client_fd, client_ip_buf); //allocatoes the client object
-		std::cout << "Added new Client to Fd-Map!" << std::endl;
+		throw (std::logic_error("accept failed: "));//when this happens something went fundamentally wrong
 	}
+	memset(client_ip_buf, '\0', INET_ADDRSTRLEN);
+	ipAddr = client_addr.sin_addr;
+	inet_ntop(AF_INET, &ipAddr, client_ip_buf, INET_ADDRSTRLEN);
+	std::cout << "Client IP: " << client_ip_buf << "!\n";
+	ev_temp.data.fd = client_fd;
+	ev_temp.events = EPOLLIN | EPOLLET; //needs to be in loop? //niki says it could be changed in epoll_ctl() so just to be save
+	fcntl(client_fd, F_SETFL, O_NONBLOCK);
+	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, client_fd, &ev_temp) == -1)
+	{
+		std::cerr << "Error: epoll_ctl failed in accept_connection" << std::endl;
+		return ;
+	}
+	if (_client_fds.find(client_fd) != _client_fds.end())
+	{
+		std::cerr << "* Error: new fd already in map" << std::endl;
+		return ;
+	}
+	addNewClientToFdMap(client_fd, client_ip_buf); //allocatoes the client object
+	std::cout << "Added new Client to Fd-Map!" << std::endl;
 }
 
 
@@ -108,22 +106,17 @@ void	AServer::process_event(const int& client_fd)
 
 	Client *sender = _client_fds.find(client_fd)->second;
 
-	
 	memset(buf, '\0', 513);
 	bytes_recieved = recv(client_fd, buf, sizeof(buf) - 1, 0);
 	switch (bytes_recieved)
 	{
 		case (-1):
-			/* if (errno == EAGAIN || errno == EWOULDBLOCK) //leave it in? //potential endless-loop?
-				break ; */ 			//loops when ctrl-D is pressed and waits for enter from same client
-			std::cerr << "Error: couldn't recieve data :" << std::strerror(errno) << std::endl;
-			return ;
+			if (errno == EAGAIN || errno == EWOULDBLOCK)
+				return ;
+			throw (std::logic_error("couldn't recieve data: ")); //when this happens something went fundamentally wrong
 		case (0):
 			std::cerr << "DISCONNECTING CLIENT here????" << std::endl;
 			disconnectClient(client_fd); //ctrl+c at netcat
-			// close(client_fd);
-			return ;
-		case (1):
 			return ;
 		default:
 			std::stringstream	sstream(buf);
@@ -140,8 +133,7 @@ void	AServer::process_event(const int& client_fd)
 
 void	AServer::failure_exit(const std::string& error_msg)
 {
-	(void)(error_msg);
-	// std::cerr << "Error: " << error_msg << ": " << std::strerror(errno) << std::endl;
+	std::cerr << "Error: " << error_msg << ": " << std::strerror(errno) << std::endl;
 	std::exit(errno); //errno?
 }
 
@@ -230,7 +222,7 @@ struct addrinfo* AServer::getIpAdressToBind(const int& port) // NOT needed CRY..
 		// std::cerr << "getaddrinfo: " << gai_strerror(status) << std::endl; // not allowed i think
 		failure_exit("failed to get addrinfo");
 	}
-    
+    failure_exit("test");
 	for (ptr = result; ptr != NULL; ptr = ptr->ai_next) 
 	{
         if (ptr->ai_family == AF_INET) //Only process IPv4 addresses
@@ -270,7 +262,7 @@ void	AServer::createEpoll()
 {
 	_ev.data.fd = _sock_fd;
 	_ev.events = EPOLLIN | EPOLLET; //ECOLLET sets Edge-Triggered mode ?? whats the differnce again with level triggered write it down somewhere
-
+	
 	_epoll_fd = epoll_create1(0); //can be set to EPOLL_NONBLOCK
 	if (_epoll_fd == -1)
 		failure_exit("couldn't create epoll");
@@ -293,7 +285,6 @@ void	AServer::epollLoop()
 
 	while (str != "exit")
 	{
-		//std::cout << "loop" << std::endl;
 		ev_cnt = epoll_wait(_epoll_fd, events, 1000, 1000); //1000? //-1?
 		if (ev_cnt == -1)
 			failure_exit("epoll_wait failed"); //exits?
