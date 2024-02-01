@@ -103,4 +103,5 @@ public:
 	void 	lTest();
 	void	runModeCheckOperator(Client *client, Client *client_target, Channel *ch, std::string run_line, std::string error_msg, bool trigger_error, bool &error);
 	void	oTest();
+	void	kTest();
 };

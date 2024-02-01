@@ -139,6 +139,7 @@ bool Channel::isInChannel(const Client *client)
 //			setter
 void	Channel::setName(const std::string &name) { _name = name; }
 void	Channel::setMaxClients(const int &max_clients){ _max_clients = max_clients; }
+
 int		Channel::setMaxClients(const std::string &str, const char &pre_fix)
 {
 	std::stringstream sstream(str);
@@ -154,11 +155,12 @@ int		Channel::setMaxClients(const std::string &str, const char &pre_fix)
 	if(str.empty() == true)
 		return (ERR_NEEDMOREPARAMS);
 	sstream >> max_client;
-	if(max_client < 1 || max_client > 100 || _max_clients == max_client)
+	if(max_client < 1 || max_client > MAX_CLIENTS || _max_clients == max_client)
 		return (0);
 	_max_clients = max_client;
 	return (MODE_SET_PLUS);
 }
+
 int	Channel::setPassword(const std::string &password, const char &add)
 {
 	if(password.empty() == true)
@@ -243,9 +245,7 @@ int Channel::setOperator(const char &add, Client *client)
 	clients_itr client_it;
 
 	if(!client)
-	{
 		return ERR_NOSUCHNICK;
-	}
 	client_it = getClient(client);
 	if (client_it == _clients.end())
 		return ERR_USERNOTINCHANNEL;
@@ -262,9 +262,6 @@ int Channel::setOperator(const char &add, Client *client)
 	return (CH_SUCCESS);
 }
 
-//multible modes a possilbe like +adasd
-//ervery char needs to be handelt
-//multible arguments are possible
 int Channel::setTopicOrInv(const char &add, const char &ch_modes)
 {
 	enum color { SET_RESTRICT_TOPIC = 't', SET_INVITE_ONLY = 'i' };

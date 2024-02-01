@@ -473,7 +473,7 @@ int Irc::MODE(Client *sender, std::stringstream &sstream)
 	if(word.empty() == true)
 	{
 		modesAreSetTo(sender, channel);
-		return 1;
+		return (1);
 	}
 	while(word.empty() == false)
     {
