@@ -68,16 +68,17 @@ void Irc::PASS(Client *sender, std::stringstream &sstream)
 		_replier.sendError(ERR_PASSWDMISMATCH, sender, "");
 		disconnectClient(sender, "Wrong password"); //delete Client and the entry from the map if Pw is wrong? --> multiple PASS not possible then
 	}
+	if (sender->isRegistered())
+		_replier.sendRPL(RPL_WELCOME, sender, sender->getUsername());
 }
 
 void Irc::NICK(Client *sender, std::stringstream &sstream)
 {
     std::string nickname = extractWord(sstream);
-    //if (sender->isAuthenticated() == false) //didnt do PASS before
-    //    _replier.sendError(321, sender) and return; //NOTICE message? sendNotice?
 
-	client_name_map_const_it it = getClientIter(nickname);
-	if (it == _client_names.end()) //no one has the nickname
+	if (nickname.empty())
+		_replier.sendError(ERR_NONICKNAMEGIVEN, sender, "");
+	else if (getClient(nickname) == NULL) //no one has the nickname
 	{
 		if (sender->setNickname(nickname) != 0)
 		{
@@ -266,7 +267,10 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 	{
 		cnt++;
 		if (recipient.empty()) 
+		{
 			_replier.sendError(ERR_NORECIPIENT, sender, "PRIVMSG");
+			continue; 
+		}
 		else if (recipient.at(0) == '#')
 		{
 			Channel *channel = getChannel(recipient);

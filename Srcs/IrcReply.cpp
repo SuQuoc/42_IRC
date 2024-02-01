@@ -41,6 +41,9 @@ int	IrcReply::sendError(IRC_ERR error, Client* sender, const std::string& input)
 		case ERR_UNKNOWNCOMMAND:
 			err_message += input + " :Unknown command"; //<command>
 			break;
+		case ERR_NONICKNAMEGIVEN:
+			err_message += ":No nickname given";
+			break;
 		case ERR_ERRONEUSNICKNAME:
 			err_message += input + " :Erroneus nickname"; //<nick>
 			break;

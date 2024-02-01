@@ -120,9 +120,6 @@ def testPRIVMSG():
 
 
 
-
-
-
 # Start netcat
 #processes = start_netcat(serv_host, serv_port, n, filename)
 #killAllProcesses(processes)
