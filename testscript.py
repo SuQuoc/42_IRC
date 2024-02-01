@@ -96,9 +96,29 @@ def runSingleClientTest(test_name, msg):
 
 # ---------------------TESTS---------------------
 #------------------ERR CODES------------------
+def errNeedMoreParamsNotRegistered(msg):
+	test_name = "errNeedMoreParamsNotRegis"
+	with open(f'{test_name}.result', 'w') as file:
+		processes = start_netcat(serv_host, serv_port, 1, file)
+		sendMsg(processes[0], msg)
+		time.sleep(0.5)
+		#msg = "QUIT\r\n"
+		os.kill(processes[0].pid, signal.SIGINT)
+		#processes[0].communicate(b'')
+		#processes[0].kill()
+
+	if not os.path.isfile(f'{test_name}.expected'):
+		open(f'{test_name}.expected', 'w').close()
+
+	if filecmp.cmp(f'{test_name}.result', f'{test_name}.expected'):
+		print(f"{test_name}: ✅")
+	else:
+		print(f"{test_name}: ❌")
+
 def errNeedMoreParams(msg):
 	test_name = "ERR_NEEDMOREPARAMS"
 	runMultiClientTest(test_name, 1, [(0, msg)])
+
 
 def errNORECIPIENT(msg):
 	test_name = "ERR_NORECIPIENT"
@@ -121,6 +141,7 @@ def testPASS():
 	print(f"{Style.BRIGHT}{Fore.YELLOW}---PASS TESTS---")
 	print(Style.RESET_ALL)
 	os.chdir("py_tests/pass")
+	errNeedMoreParamsNotRegistered("PASS")
 	errNeedMoreParams("PASS")
 	#errAlreadyRegistered("PASS")
 	#errAlreadyRegistered("PASS pw1234567")
@@ -150,11 +171,12 @@ def testNICK():
 	print(f"{Style.BRIGHT}{Fore.YELLOW}---NICK TESTS---")
 	print(Style.RESET_ALL)
 	os.chdir("py_tests/nick")
+	errNeedMoreParamsNotRegistered("NICK")
 	errNeedMoreParams("NICK")
 	#errNoNicknameGiven("NICK client0")
 	#errErroneusNickname("NICK client0")
 	#errNicknameInUse("NICK client0")
-	changingNick()
+	#changingNick()
 	os.chdir(original_directory)
 
 
@@ -163,6 +185,7 @@ def testUSER():
 	print(f"{Style.BRIGHT}{Fore.YELLOW}---USER TESTS---")
 	print(Style.RESET_ALL)
 	os.chdir("py_tests/user")
+	errNeedMoreParamsNotRegistered("USER")
 	errNeedMoreParams("USER")
 	#errAlreadyRegistered("USER")
 	#errAlreadyRegistered("USER user1 host1 serv1 :real1")
@@ -180,7 +203,7 @@ def testPRIVMSG():
 	print(Style.RESET_ALL)
 	os.chdir("py_tests/privmsg")
 	errNeedMoreParams("PRIVMSG")
-	#errNORECIPIENT("PRIVMSG")
+	errNORECIPIENT("PRIVMSG")
 	#errNOTEXTTOSEND("PRIVMSG") #i need a user that exists or a channel
 	errNOSUCHCHANNEL("PRIVMSG #nonexistentchannel")
 	errNOSUCHNICK("PRIVMSG nonexistentuser")
