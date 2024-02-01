@@ -154,7 +154,7 @@ int		Channel::setMaxClients(const std::string &str, const char &pre_fix)
 	if(str.empty() == true)
 		return (ERR_NEEDMOREPARAMS);
 	sstream >> max_client;
-	if(max_client < 1 || max_client > 100)
+	if(max_client < 1 || max_client > 100 || _max_clients == max_client)
 		return (0);
 	_max_clients = max_client;
 	return (MODE_SET_PLUS);
@@ -243,7 +243,9 @@ int Channel::setOperator(const char &add, Client *client)
 	clients_itr client_it;
 
 	if(!client)
+	{
 		return ERR_NOSUCHNICK;
+	}
 	client_it = getClient(client);
 	if (client_it == _clients.end())
 		return ERR_USERNOTINCHANNEL;

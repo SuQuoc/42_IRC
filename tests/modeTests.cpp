@@ -97,7 +97,39 @@ void TestServer::iTest(const std::string &mode)
 
 void TestServer::lTest()
 {
-    /* crateUserAndChannelRunMode(channelname, username, line, fd); */
+    TestServer  serv;
+    Client*     sylvanas = serv.makeUserJoinChannel("#Silbermond", "Sylvanas", 5);;
+    Client*     vonix = serv.makeUser("Vonix", 6);
+    Channel*    ch = serv.getChannel("#Silbermond");
+
+    serv.runMode(sylvanas, "#Silbermond +l 144");
+    if(ch->getMaxClients() != MAX_CLIENTS)
+        return (fail("Should still be MAX_CLIENTS (01)"));
+
+    serv.runMode(sylvanas, "#Silbermond    +l    1         3;[[;];'];]              -l");
+    ch->addClient(vonix, "", false);
+    if(ch->getMaxClients() != 1)
+        return (fail("Should be 1 (02)"));
+    if(ch->isInChannel(vonix) == true)
+        return (fail("Vonix Should not be in the channel (03)"));
+
+    serv.runMode(sylvanas, "#Silbermond    +l    2         3;[[;];'];]              -dwqrel     ");
+    ch->addClient(vonix, "", false);
+    if(ch->getMaxClients() != 2)
+        return (fail("Should be 2 (04)"));
+    if(ch->isInChannel(vonix) == false)
+        return (fail("Vonix Should in the channel (05)"));
+    
+    serv.runMode(sylvanas, "#Silbermond    +l    2         3;[[;];'];]              -dwqrel     ");
+    if(ch->getMaxClients() != MAX_CLIENTS)
+        return (fail("Should be MAX_CLIENTS (06)"));
+
+    serv.runMode(sylvanas, "#Silbermond    +l    -2         +l 96");
+    if(ch->getMaxClients() != 96)
+        return (fail("Should be 96 (07)"));
+    serv.runMode(sylvanas, "#Silbermond");
+    if(ch->getMaxClients() != 96)
+        return (fail("Should be 96 (07)"));
     ok();
 }
 
@@ -123,10 +155,14 @@ void TestServer::oTest()
     ch = serv.getChannel("#Silbermond");
     serv.runModeCheckOperator(sylvanas, vonix, ch, "+o Vonix", "Vonix should be operator 01", false, error);
     serv.runModeCheckOperator(sylvanas, vonix, ch, "-o+o-o Vonix Vonix Vonix", "Vonix should not be operator 02", true, error);
-    serv.runModeCheckOperator(sylvanas, vonix, ch, "-o+o Sylvanas Vonix", "Vonix should not be operator 03", true, error);
+    serv.runModeCheckOperator(sylvanas, vonix, ch, "-o -o Vonix Vonix -Vonix Vonix", "Vonix should not be operator 03", true, error);
+    serv.runModeCheckOperator(sylvanas, vonix, ch, "[]23423501=34[]]", "Vonix should not be operator 04", true, error);
+    serv.runModeCheckOperator(sylvanas, vonix, ch, "-o -o Vonix Vonix -Vonix Vonix +o +o oooooooooo Vonix", "Vonix should be operator 05", false, error);
+    serv.runModeCheckOperator(sylvanas, vonix, ch, "-o+o-o +o Vonix Vonixa", "Vonix should be operator 06", false, error);
+    serv.runModeCheckOperator(sylvanas, vonix, ch, "-o-o Sylvanas Vonix", "Vonix should be operator 07", false, error);
     if(ch->isOperator(sylvanas) == true)
         return (fail("Silvanas should not be operator"));
-
+    serv.runModeCheckOperator(sylvanas, vonix, ch, "", "Vonix should be operator 07", false, error);
     if(error == false)
         ok();
 }

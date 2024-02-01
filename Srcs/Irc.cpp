@@ -473,7 +473,10 @@ int Irc::MODE(Client *sender, std::stringstream &sstream)
 			if(channel->isOperator(sender) == false)
 				break ;
             if(word[i] == '+' || word[i] == '-')
-                pre_fix = word[i++];
+			{
+                pre_fix = word[i];
+				i++;
+			}
 			modesSwitch(channel, sender, operator_rpl_map, sstream, pre_fix, error_vec, word[i]);
         }
 		word = extractWord(sstream);
@@ -532,7 +535,7 @@ void Irc::modesSwitch(Channel *channel, Client *sender, std::map<std::string, in
 	}
 	else if(word_char == 'o')
 	{
-		argument = extractWord(sstream);					
+		argument = extractWord(sstream);
 		operator_rpl_map[argument] = channel->setOperator(pre_fix, getClient(argument));
 	}
 	else if(word_char == 'k') // k is deferent triggers error?
