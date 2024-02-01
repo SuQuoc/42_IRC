@@ -130,6 +130,17 @@ void TestServer::lTest()
     serv.runMode(sylvanas, "#Silbermond");
     if(ch->getMaxClients() != 96)
         return (fail("Should be 96 (07)"));
+    
+    if(ch->setMaxClients("100", '+') != MODE_SET_PLUS)
+        return (fail("return value should be MODE_SET_PLUS 1003"));
+    if(ch->setMaxClients("123123123123", '-') != 0)
+        return (fail("return value should be 0"));
+    if(ch->setMaxClients("", '+') != ERR_NEEDMOREPARAMS)
+        return (fail("return value should be ERR_NEEDMOREPARAMS 461"));
+    if(ch->setMaxClients("0", '+') != 0)
+        return (fail("return value should be 0"));
+    if(ch->setMaxClients("100", '+') != 0)
+        return (fail("return value should be 0"));
     ok();
 }
 
@@ -148,7 +159,7 @@ void TestServer::oTest()
 {
     TestServer  serv;
     Channel*    ch;
-    Client*     sylvanas = serv.makeUserJoinChannel("#Silbermond", "Sylvanas", 5);;
+    Client*     sylvanas = serv.makeUserJoinChannel("#Silbermond", "Sylvanas", 5);
     Client*     vonix = serv.makeUserJoinChannel("#Silbermond", "Vonix", 6);
     bool        error = false;
 
@@ -163,8 +174,57 @@ void TestServer::oTest()
     if(ch->isOperator(sylvanas) == true)
         return (fail("Silvanas should not be operator"));
     serv.runModeCheckOperator(sylvanas, vonix, ch, "", "Vonix should be operator 07", false, error);
-    if(error == false)
+
+    Client*     eule = serv.makeUser("eule", 7);
+    if (ch->setOperator('+', NULL) != ERR_NOSUCHNICK)
+        return (fail("error code should be ERR_NOSUCHNICK 401"));
+    if (ch->setOperator('+', eule) != ERR_USERNOTINCHANNEL)
+        return (fail("error code should be ERR_USERNOTINCHANNEL 441"));
+    if (ch->setOperator('+', vonix) != 0)
+        return (fail("error code should be 0"));
+    if (ch->setOperator('-', sylvanas) != 0)
+        return (fail("error code should be 0"));
+    if (ch->setOperator('-', vonix) != MODE_SET_MINUS)
+        return (fail("error code should be MODE_SET_MINUS"));
+    if (ch->setOperator('+', sylvanas) != MODE_SET_PLUS)
+        return (fail("error code should be MODE_SET_PLUS"));
+    if (error == false)
         ok();
+}
+
+void TestServer::kTest()
+{
+    TestServer  serv;
+    Client*     sylvanas = serv.makeUserJoinChannel("#Silbermond", "Wolf", 5);;
+    Channel*    ch = serv.getChannel("#Silbermond");
+    Client*     weex = serv.makeUser("Weex", 6);
+
+    serv.runMode(sylvanas, "#Silbermond +k zam");
+    if(ch->getPassword() != "zam")
+        return (fail("pw should be zam (01)"));
+    serv.runJoin(weex, "#Silbermond 123");
+    if(ch->isInChannel(weex) == true)
+        return (fail("weex should not be in the channel (02)"));
+    serv.runJoin(weex, "#Silbermond zam");
+    if(ch->isInChannel(weex) == false)
+        return (fail("weex should be in the channel (03)"));
+
+    if(ch->setPassword("", '+') != ERR_NEEDMOREPARAMS)
+        return (fail("return value should be ERR_NEEDMOREPARAMS 461 (04)"));
+    if(ch->setPassword("jjj", '+') != ERR_KEYSET)
+        return (fail("return value should be ERR_KEYSET 467 (05)"));
+    if(ch->setPassword("za", '-') != ERR_KEYSET)
+        return (fail("return value should be ERR_KEYSET 467 (06)"));
+    if(ch->setPassword("zam", '-') != MODE_SET_MINUS)
+        return (fail("return value should be MODE_SET_MINUS 1004 (07)"));
+
+    serv.runKick(sylvanas, "#Silbermond Weex");
+    if(ch->isInChannel(weex) == true)
+        return (fail("weex should not be in the channel (08)"));
+    serv.runJoin(weex, "#Silbermond");
+    if(ch->isInChannel(weex) == false)
+        return (fail("weex should be in the channel (03)"));
+    ok();
 }
 
 void TestServer::mode_tests()
@@ -177,9 +237,11 @@ void TestServer::mode_tests()
     tTest("t");
     std::cout << "invite only test: ";
     iTest("i");
-    std::cout << "channel limit test: ";
+    std::cout << "limit test: ";
     lTest();
-    std::cout << "channel change operator test: ";
+    std::cout << "operator test: ";
     oTest();
+    std::cout << "key tests: ";
+    kTest();
     std::cout << std::endl;
 }
