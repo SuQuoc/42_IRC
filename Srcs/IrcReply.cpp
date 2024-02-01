@@ -120,6 +120,9 @@ void	IrcReply::sendRPL(IRC_ERR error, Client* sender, const std::string& input) 
 	msg = ":" + _server_name + " " + error_code.str() + " " + sender->getNickname() + " ";
 	switch (error)
 	{
+		case RPL_CHANNELMODEIS:
+			msg += input;
+			break;
 		case TOPIC_SET:
 			msg = ":" + sender->getPrefix() + " TOPIC " + input;
 			break;

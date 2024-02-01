@@ -41,11 +41,13 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 
 #General_________________________________________________________
 clean:
+	make clean -C ./tests
 	rm -rf $(OBJ_DIR)
 	@echo "$(MAGENTA)Obj directory removed.$(NC)"
 
 fclean: clean
 	rm -f $(NAME)
+	rm -f ./tests/tester
 	@echo "$(MAGENTA)Deleted executable named: $(NAME)$(NC)"
 
 re: fclean all
