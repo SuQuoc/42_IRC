@@ -276,7 +276,7 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 	int					cnt = 0;
 
 	if (message.empty())
-		_replier.sendError(ERR_NOTEXTTOSEND, sender, "");
+		_replier.sendError(ERR_NOTEXTTOSEND, sender, ""); //return message is checked before to avoid checking in loop
 	while (cnt < LIST_LIMIT && std::getline(recip_sstream, recipient, ','))
 	{
 		cnt++;

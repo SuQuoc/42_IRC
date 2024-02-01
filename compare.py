@@ -4,6 +4,8 @@ import filecmp
 import signal
 import os
 import time
+import testscript
+
 from colorama import Fore, Style
 
 def print_file_contents(filename):
