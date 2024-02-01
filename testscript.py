@@ -56,6 +56,27 @@ def joinChannel(process, channel):
 	sendMsg(process, join_msg)
 
 # ---------------------core framework?---------------------
+def sigintAllClients(processes):
+	for process in processes:
+		os.kill(process.pid, signal.SIGINT)
+
+def runMultiNonRegisClientTest(test_name, n_clients, vector):
+	with open(f'{test_name}.result', 'w') as file:
+		processes = start_netcat(serv_host, serv_port, n_clients, file)
+		for pair in vector:
+			client_id = pair[0]
+			msg = pair[1]
+			sendMsg(processes[client_id], msg)
+			time.sleep(0.5)
+		sigintAllClients(processes)
+
+	if not os.path.isfile(f'{test_name}.expected'):
+		open(f'{test_name}.expected', 'w').close()
+	if filecmp.cmp(f'{test_name}.result', f'{test_name}.expected'):
+		print(f"{test_name}: ✅")
+	else:
+		print(f"{test_name}: ❌")
+
 def runMultiClientTest(test_name, n_clients, vector):
 	with open(f'{test_name}.result', 'w') as file:
 		processes = start_netcat(serv_host, serv_port, n_clients, file)
@@ -96,24 +117,8 @@ def runSingleClientTest(test_name, msg):
 
 # ---------------------TESTS---------------------
 #------------------ERR CODES------------------
-def errNeedMoreParamsNotRegistered(msg):
-	test_name = "errNeedMoreParamsNotRegis"
-	with open(f'{test_name}.result', 'w') as file:
-		processes = start_netcat(serv_host, serv_port, 1, file)
-		sendMsg(processes[0], msg)
-		time.sleep(0.5)
-		#msg = "QUIT\r\n"
-		os.kill(processes[0].pid, signal.SIGINT)
-		#processes[0].communicate(b'')
-		#processes[0].kill()
-
-	if not os.path.isfile(f'{test_name}.expected'):
-		open(f'{test_name}.expected', 'w').close()
-
-	if filecmp.cmp(f'{test_name}.result', f'{test_name}.expected'):
-		print(f"{test_name}: ✅")
-	else:
-		print(f"{test_name}: ❌")
+def errNeedMoreParamsNotRegis(msg):
+	runMultiNonRegisClientTest("errNeedMoreParamsNotRegis", 1, [(0, msg)])
 
 def errNeedMoreParams(msg):
 	test_name = "ERR_NEEDMOREPARAMS"
@@ -141,7 +146,7 @@ def testPASS():
 	print(f"{Style.BRIGHT}{Fore.YELLOW}---PASS TESTS---")
 	print(Style.RESET_ALL)
 	os.chdir("py_tests/pass")
-	errNeedMoreParamsNotRegistered("PASS")
+	errNeedMoreParamsNotRegis("PASS")
 	errNeedMoreParams("PASS")
 	#errAlreadyRegistered("PASS")
 	#errAlreadyRegistered("PASS pw1234567")
@@ -151,9 +156,35 @@ def testPASS():
 	os.chdir(original_directory)
 
 #------------------NICK------------------
+def errErroneusNicknameNotRegis():
+	test_name = "errErroneusNicknameNotRegis"
+	vector = [
+		(0, "NICK clie,nt0"),
+		(0, "NICK clie@nt0"),
+		(0, "NICK clie!nt0"),
+		(0, "NICK clie nt0"),
+		(0, "PASS pw1234567"),
+		(0, "USER user0 host0 serv0 real0"),]
+	runMultiNonRegisClientTest(test_name, 1, vector)
+
+def errErroneusNickname():
+	test_name = "ERR_ERRONEUSNICKNAME"
+	vector = [
+		(0, "NICK 123456789abc"),
+		(0, "NICK 	"),
+		(0, "NICK \n"),
+		(0, "NICK clie,nt0"),
+		(0, "NICK clie@nt0"),
+		(0, "NICK clie!nt0"),
+		(0, "NICK space nt0"),
+		(0, "NICK space nt0"), #changing nick to the same nick
+		(0, "NICK space0 1 2"),
+		(0, "NICK     Nspace   1   2"),
+		]
+	runMultiClientTest(test_name, 1, vector)
+
 def changingNick():
 	test_name = "changingNick"
-	
 	vector = [
 		(1, "PRIVMSG client0 :NO error should be sent"),
 		(0, "NICK newNick"),
@@ -164,19 +195,17 @@ def changingNick():
 		(1, "PRIVMSG client0 :if you see this, it means that the nick was changed successfully"),
 		]
 	runMultiClientTest(test_name, 3, vector)
-		
-
 
 def testNICK():
 	print(f"{Style.BRIGHT}{Fore.YELLOW}---NICK TESTS---")
 	print(Style.RESET_ALL)
 	os.chdir("py_tests/nick")
-	errNeedMoreParamsNotRegistered("NICK")
-	errNeedMoreParams("NICK")
-	#errNoNicknameGiven("NICK client0")
-	#errErroneusNickname("NICK client0")
-	#errNicknameInUse("NICK client0")
-	#changingNick()
+	errNeedMoreParamsNotRegis("NICK") #ERR_NONICKNAMEGIVEN
+	errNeedMoreParams("NICK") #ERR_NONICKNAMEGIVEN
+	errErroneusNicknameNotRegis()
+	errErroneusNickname()
+	#errNicknameInUse("NICK client0") #already done by changing nick
+	changingNick()
 	os.chdir(original_directory)
 
 
@@ -185,7 +214,7 @@ def testUSER():
 	print(f"{Style.BRIGHT}{Fore.YELLOW}---USER TESTS---")
 	print(Style.RESET_ALL)
 	os.chdir("py_tests/user")
-	errNeedMoreParamsNotRegistered("USER")
+	errNeedMoreParamsNotRegis("USER")
 	errNeedMoreParams("USER")
 	#errAlreadyRegistered("USER")
 	#errAlreadyRegistered("USER user1 host1 serv1 :real1")

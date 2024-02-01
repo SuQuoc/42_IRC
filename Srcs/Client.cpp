@@ -66,7 +66,7 @@ int Client::setUser(std::string& uname, const std::string& hname, const std::str
 	_username = uname;
 	_realname = rname;
 	_servername = sname;
-	(void)hname;
+	(void)hname; //?????? i know kinda bad but kinda needed for scuffed OPER
 
 	//Annahme das NICK immer zuerst gemacht wird aber dann ist dann nc nicht gecovered falls wirs covern müssen
 	_prefix = _nickname + "!" + _username + "@" + _hostname;
