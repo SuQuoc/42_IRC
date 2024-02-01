@@ -12,17 +12,13 @@ void TestServer::succesfulKill()
 	serv.makeUserJoinChannel("#family", "elena", 5); //using it to create a client
 	serv.makeUserJoinChannel("#family", "sara", 6); //using it to create a client
 
-	std::stringstream ss_channel("#alone");
-	serv.JOIN(serv.getClient("elena"), ss_channel);
+	serv.runJoin(serv.getClient("elena"), "#alone");
 
-	std::stringstream ss("host pw");
-	serv.OPER(serv.getClient("sara"), ss);
+	serv.runOper(serv.getClient("sara"), "host pw");
 	//----make someone IRC operator----
 
 
-
-	std::stringstream sstream ("elena :sry big sis i dont want u here");
-	serv.KILL(serv.getClient("sara"), sstream);
+	serv.runKill(serv.getClient("sara"), "elena :sry big sis i dont want u here");
 
 	//----test from QUIT--------------
 	if (serv._channels.size() != 1 || serv.getChannel("#family") == NULL)
@@ -55,8 +51,7 @@ void TestServer::notAnIrcOper()
 	serv.makeUserJoinChannel("#family", "elena", 5); //using it to create a client
 	serv.makeUserJoinChannel("#alone", "sara", 6); //using it to create a client
 
-	std::stringstream sstream ("elena :sry big sis i dont want u here");
-	serv.KILL(serv.getClient("sara"), sstream);
+	serv.runKill(serv.getClient("sara"), "elena :sry big sis i dont want u here");
 
 	if (serv.getClient("sara") == NULL)
 		return (fail("client 'sara' should not be deleted from client names map"));

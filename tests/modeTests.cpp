@@ -6,14 +6,13 @@ void TestServer::basicTest()
     Client *client;
     Channel *channel;
     std::string name = "Arwen";
-    std::stringstream stream("#Bruchtal +i-i+i-i-i -o Arwen +o Arwen -o Arwen");
 
     serv.makeUserJoinChannel("#Bruchtal", name, 5);
     client = serv.getClient("Arwen");
     if(client == NULL)
         std::cout << "Client is Null" << std::endl;
     channel = serv.getChannel("#Bruchtal");
-    serv.MODE(client, stream);
+    serv.runMode(client, "#Bruchtal +i-i+i-i-i -o Arwen +o Arwen -o Arwen");
     if(channel->getInviteOnly() == true)
         fail("invite should be false");
     if(channel->isOperator(client) == true)

@@ -49,21 +49,16 @@ void TestServer::availableNick()
 	serv.addNewClientToFdMap(5, "127.0.0.0");
 	serv.addNewClientToFdMap(6, "127.0.0.1");
 	
-	std::stringstream	ss_pw("password");
-	std::stringstream	ss_pw2("password");
-	
 	Client *client = serv.getClient(5);
 	Client *client2 = serv.getClient(6);
-	serv.PASS(client, ss_pw);
-	serv.PASS(client2, ss_pw2);
+	serv.runPass(client, "password");
+	serv.runPass(client2, "password");
 
-	std::stringstream	ss_nick1("Ferdinant");
-	serv.NICK(client, ss_nick1);
+	serv.runNick(client, "Ferdinant");
 	if (client->getNickname() != "Ferdinant")
 		return(fail("client should be available"));
-	
-	std::stringstream	ss_nick2("Nick2");
-	serv.NICK(client2, ss_nick2);
+
+	serv.runNick(client2, "Nick2");
 	if (client2->getNickname() != "Nick2")
 		return(fail("client should be available"));
 	ok();
@@ -75,20 +70,15 @@ void TestServer::unavailableNick()
 	TestServer 	serv("Testserver", "password");
 	serv.addNewClientToFdMap(5, "127.0.0.0");
 	serv.addNewClientToFdMap(6, "127.0.0.1");
-	
-	std::stringstream	ss_pw1("password");
-	std::stringstream	ss_pw2("password");
 
 	Client *client = serv.getClient(5);
 	Client *client2 = serv.getClient(6);
-	serv.PASS(client, ss_pw1);
-	serv.PASS(client2, ss_pw2);
+	serv.runPass(client, "password");
+	serv.runPass(client2, "password");
 
-	std::stringstream	ss_nick1("Ferdinant");
-	serv.NICK(client, ss_nick1);
+	serv.runNick(client, "Ferdinant");
 	
-	std::stringstream	ss_nick2("Ferdinant");
-	serv.NICK(client2, ss_nick2);
+	serv.runNick(client2, "Ferdinant");
 	if (client2->getNickname() == "Ferdinant")
 		return(fail("nickname should not be available"));
 	ok();
@@ -101,8 +91,7 @@ void TestServer::wrongNick()
 	serv.addNewClientToFdMap(5, "127.0.0.0");
 	
 	Client *client = serv.getClient(5);
-	std::stringstream	ss_pw1("password");
-	serv.PASS(client, ss_pw1);
+	serv.runPass(client, "password");
 	
 	std::vector<std::string> wrong_nicknames = 
 	{
@@ -113,8 +102,7 @@ void TestServer::wrongNick()
 
 	for (const std::string& nickname : wrong_nicknames) 
 	{
-		std::stringstream	ss_nick(nickname);
-		serv.NICK(client, ss_nick);
+		serv.runNick(client, nickname);
 		if (client->getNickname().empty() == false)
 			return(fail("nickname should be wrong"));
 	}
@@ -127,27 +115,20 @@ void	TestServer::registerTwoClients()
 	serv.addNewClientToFdMap(5, "127.0.0.0");
 	serv.addNewClientToFdMap(6, "127.0.0.1");
 
-	std::stringstream	ss_pw("password");
-	std::stringstream	ss_pw2("password");
-
 	Client *client = serv.getClient(5);
 	Client *client2 = serv.getClient(6);
-	serv.PASS(client, ss_pw);
-	serv.PASS(client2, ss_pw2);
+	serv.runPass(client, "password");
+	serv.runPass(client2, "password");
 
-	std::stringstream	ss_nick1("Ferdinant");
-	serv.NICK(client, ss_nick1);
+	serv.runNick(client, "Ferdinant");
 	
-	std::stringstream	ss_nick2("Nick2");
-	serv.NICK(client2, ss_nick2);
+	serv.runNick(client2, "Nick2");
 
 	//-------------------------------------
 	std::cout << "register 2 clients: ";
-	std::stringstream	ss_user1("username hostname servername :real name");
-	serv.USER(client, ss_user1);
+	serv.runUser(client, "username hostname servername :real name");
 
-	std::stringstream	ss_user2("username hostname servername :real name");
-	serv.USER(client2, ss_user2);
+	serv.runUser(client2, "username hostname servername :real name");
 	
 	if (serv.getClient("Ferdinant") == NULL)
 		return(fail("client 'Ferdinant'should be available")); 

@@ -4,11 +4,10 @@ void	TestServer::kickEmptySstream()
 {
 	TestServer 			serv;
 	Client				*elena;
-	std::stringstream	sstream("");
 
 	serv.makeUserJoinChannel("#Channel", "Elena", 5);
 	elena = serv.getClient("Elena");
-	serv.KICK(elena, sstream);
+	serv.runKick(elena, "");
 
 	if (elena->getChannelCount() != 1)
 		return (fail("elena should be in one channel"));
@@ -19,11 +18,10 @@ void	TestServer::kickEmptySpacesSstream()
 {
 	TestServer 			serv;
 	Client				*elena;
-	std::stringstream	sstream("   ");
 
 	serv.makeUserJoinChannel("#Channel", "Elena", 5);
 	elena = serv.getClient("Elena");
-	serv.PART(elena, sstream);
+	serv.runPart(elena, "   ");
 
 	if (elena->getChannelCount() != 1)
 		return (fail("elena should be in one channel"));
@@ -36,7 +34,6 @@ void	TestServer::kickChannelMember()
 	Channel		*channel;
 	Client		*elena;
 	Client		*sara;
-	std::stringstream	sstream("#channel sara");
 	std::string			channel_name = "#channel";
 
 	serv.makeUserJoinChannel(channel_name, "elena", 5);
@@ -44,7 +41,7 @@ void	TestServer::kickChannelMember()
 	channel = serv.getChannel(channel_name);
 	elena = serv.getClient("elena");
 	sara = serv.getClient("sara");
-	serv.KICK(elena, sstream);
+	serv.runKick(elena, "#channel sara");
 
 	if (channel->isInChannel(sara) == true)
 		return (fail("sara shouldn't be in client-vector"));
@@ -63,7 +60,6 @@ void	TestServer::unauthorizedKick()
 	Channel		*channel;
 	Client		*elena;
 	Client		*sara;
-	std::stringstream	sstream("#channel elena");
 	std::string			channel_name = "#channel";
 
 	serv.makeUserJoinChannel(channel_name, "elena", 5);
@@ -71,7 +67,7 @@ void	TestServer::unauthorizedKick()
 	channel = serv.getChannel(channel_name);
 	elena = serv.getClient("elena");
 	sara = serv.getClient("sara");
-	serv.KICK(sara, sstream);
+	serv.runKick(sara, "#channel elena");
 
 	if (channel->isInChannel(sara) == false)
 		return (fail("sara should be in client-vector"));
@@ -89,12 +85,11 @@ void	TestServer::kickSelfAndOnlyMember()
 	TestServer	serv;
 	Channel		*channel;
 	Client		*elena;
-	std::stringstream	sstream("#channel elena");
 	std::string			channel_name = "#channel";
 
 	serv.makeUserJoinChannel(channel_name, "elena", 5);
 	elena = serv.getClient("elena");
-	serv.KICK(elena, sstream);
+	serv.runKick(elena, "#channel elena");
 	channel = serv.getChannel(channel_name);
 
 	if (channel != NULL)
@@ -109,14 +104,13 @@ void	TestServer::userToKickNotInChannel()
 	TestServer	serv;
 	Channel		*channel;
 	Client		*elena;
-	std::stringstream	sstream("#channel sara");
 	std::string			channel_name = "#channel";
 
 	serv.makeUserJoinChannel(channel_name, "elena", 5);
 	serv.makeUser("sara", 6);
 	channel = serv.getChannel(channel_name);
 	elena = serv.getClient("elena");
-	serv.KICK(elena, sstream);
+	serv.runKick(elena, "#channel sara");
 
 	if (channel->isInChannel(elena) == false)
 		return (fail("elena should be in client-vector"));
@@ -130,13 +124,12 @@ void	TestServer::userToKickNotInMap()
 	TestServer	serv;
 	Channel		*channel;
 	Client		*elena;
-	std::stringstream	sstream("#channel sara");
 	std::string			channel_name = "#channel";
 
 	serv.makeUserJoinChannel(channel_name, "elena", 5);
 	channel = serv.getChannel(channel_name);
 	elena = serv.getClient("elena");
-	serv.KICK(elena, sstream);
+	serv.runKick(elena, "#channel sara");
 
 	if (channel->isInChannel(elena) == false)
 		return (fail("elena should be in client-vector"));
@@ -150,12 +143,11 @@ void	TestServer::channelNotInMap()
 	TestServer	serv;
 	Channel		*channel;
 	Client		*elena;
-	std::stringstream	sstream("#channel sara");
 
 	serv.makeUser("elena", 5);
 	channel = serv.getChannel("#channel");
 	elena = serv.getClient("elena");
-	serv.KICK(elena, sstream);
+	serv.runKick(elena, "#channel sara");
 
 	if (channel != NULL)
 		return (fail("channel shouldn't exist"));
@@ -170,7 +162,6 @@ void	TestServer::senderNotInChannel()
 	Channel		*channel;
 	Client		*elena;
 	Client		*sara;
-	std::stringstream	sstream("#channel elena");
 	std::string			channel_name = "#channel";
 
 	serv.makeUserJoinChannel(channel_name, "elena", 5);
@@ -178,7 +169,7 @@ void	TestServer::senderNotInChannel()
 	channel = serv.getChannel(channel_name);
 	elena = serv.getClient("elena");
 	sara = serv.getClient("sara");
-	serv.KICK(sara, sstream);
+	serv.runKick(sara, "#channel elena");
 
 	if (channel->isInChannel(elena) == false)
 		return (fail("elena should be in client-vector"));

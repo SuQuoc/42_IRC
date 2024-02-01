@@ -6,7 +6,8 @@ Client*	TestServer::makeUserJoinChannel(const std::string &channel_name, const s
 	Client*				client;
 	
 	client = makeUser(client_name, client_fd);
-	JOIN(client, sstream);
+	setSender(client);
+	JOIN(sstream);
 	return (client);
 }
 
@@ -36,25 +37,71 @@ void	TestServer::ok() const
 int	TestServer::runJoin(Client *client, const std::string& msg)
 {
 	std::stringstream	sstream(msg);
-	return (JOIN(client, sstream));
+	setSender(client);
+	return (JOIN(sstream));
 }
 
 int	TestServer::runKick(Client *client, const std::string& msg)
 {
 	std::stringstream	sstream(msg);
-	return (KICK(client, sstream));
+	setSender(client);
+	return (KICK(sstream));
 }
 
 int	TestServer::runInvite(Client *client, const std::string& msg)
 {
 	std::stringstream	sstream(msg);
-	return (INVITE(client, sstream));
+	setSender(client);
+	return (INVITE(sstream));
 }
 
 void	TestServer::runMode(Client *client, const std::string &line)
 {
 	std::stringstream	stream(line);
-	MODE(client, stream);
+	setSender(client);
+	MODE(stream);
+}
+
+void	TestServer::runPart(Client *client, const std::string &line)
+{
+	std::stringstream	stream(line);
+	setSender(client);
+	MODE(stream);
+}
+
+void	TestServer::runKill(Client *client, const std::string &line)
+{
+	std::stringstream	stream(line);
+	setSender(client);
+	KILL(stream);
+}
+
+void	TestServer::runOper(Client *client, const std::string &line)
+{
+	std::stringstream	stream(line);
+	setSender(client);
+	OPER(stream);
+}
+
+void	TestServer::runUser(Client *client, const std::string &line)
+{
+	std::stringstream	stream(line);
+	setSender(client);
+	USER(stream);
+}
+
+void	TestServer::runNick(Client *client, const std::string &line)
+{
+	std::stringstream	stream(line);
+	setSender(client);
+	NICK(stream);
+}
+
+void	TestServer::runPass(Client *client, const std::string &line)
+{
+	std::stringstream	stream(line);
+	setSender(client);
+	PASS(stream);
 }
 
 Client*	TestServer::createUserAndChannelRunMode(const std::string &channelname, const std::string &username, const std::string &line, int fd)
