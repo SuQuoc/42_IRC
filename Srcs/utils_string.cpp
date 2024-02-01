@@ -1,6 +1,6 @@
 #include "../Includes/utils_string.hpp"
 
-bool containsForbiddenChars(const std::string& input, const std::string& forbiddenChars) 
+bool    containsForbiddenChars(const std::string& input, const std::string& forbiddenChars) 
 {
     // Loop through each character in the input string
     for (std::string::const_iterator it = input.begin(); it != input.end(); it++) 
@@ -14,7 +14,7 @@ bool containsForbiddenChars(const std::string& input, const std::string& forbidd
     return false;
 }
 
-int    splitMsg(std::stringstream& sstream, std::string& str)
+int splitMsg(std::stringstream& sstream, std::string& str)
 {
     char    c;
     int cnt = 0;
@@ -52,10 +52,15 @@ std::string extractWord(std::stringstream& sstream)
 	return (word);
 }
 
-int protectedSend(int fd, std::string msg)
+//joins \\r\\n to end of msg		\it's double '\' so it shows in description
+void	protectedSend(int fd, std::string msg)
 {
-    msg += "\r\n";
-    if (send(fd, msg.c_str(), msg.size(), 0)) // need better protaction ????!!!!
-        return (-1);
-    return (0);
+	msg += "\r\n";
+	if (send(fd, msg.c_str(), msg.size(), MSG_DONTWAIT) == -1) //MSG_DONTWAIT sets to non-block //should be nonblocking anyways because of fcntl();
+	{
+		if (errno == EAGAIN || errno == EWOULDBLOCK)
+			return ;
+        throw (std::logic_error("send failed: "));//when this happens something went fundamentally wrong
+	}
+	return ;
 }

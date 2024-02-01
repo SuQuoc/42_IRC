@@ -69,5 +69,9 @@ int main(const int argc, const char *argv[])
 	server.setOperatorPW("setOpPW");
 	server.createTcpSocket(stoi_(argv[1]));
 	server.createEpoll();
-	server.epollLoop();
+	try {
+		server.epollLoop();
+	} catch (std::exception& e) {
+		std::cerr << "Error: thrown: " << e.what() << std::strerror(errno) << std::endl;
+	}
 }
