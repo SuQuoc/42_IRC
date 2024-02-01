@@ -158,6 +158,14 @@ void	AServer::addNewClientToFdMap(const int& client_fd, const std::string& clien
 	_client_fds.insert(pair); //check if already in map!???
 }
 
+void 	AServer::rmClientFromNameMap(const std::string& nick_name)
+{
+	client_name_map_iter_t it = _client_names.find(nick_name);
+	if (it == _client_names.end())
+		return ;
+	_client_names.erase(it);
+}
+
 void 	AServer::rmClientFromMaps(Client *client) //necessary? we always have fd if we have client
 {
 	if (!client) return;

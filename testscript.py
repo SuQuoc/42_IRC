@@ -95,7 +95,11 @@ def runSingleClientTest(test_name, msg):
 
 
 # ---------------------TESTS---------------------
-#------------------PRIVMSG------------------
+#------------------ERR CODES------------------
+def errNeedMoreParams(msg):
+	test_name = "ERR_NEEDMOREPARAMS"
+	runMultiClientTest(test_name, 1, [(0, msg)])
+
 def errNORECIPIENT(msg):
 	test_name = "ERR_NORECIPIENT"
 	runSingleClientTest(test_name, msg)
@@ -112,6 +116,59 @@ def errNOSUCHNICK(msg):
 	test_name = "ERR_NOSUCHNICK"
 	runSingleClientTest(test_name, msg)
 
+#------------------PASS------------------
+def testPASS():
+	print(f"{Style.BRIGHT}{Fore.YELLOW}---PASS TESTS---")
+	print(Style.RESET_ALL)
+	os.chdir("py_tests/pass")
+	errNeedMoreParams("PASS")
+	#errAlreadyRegistered("PASS")
+	#errAlreadyRegistered("PASS pw1234567")
+	#errWrongPassword("PASS wrongpw")
+	#errWrongPassword("PASS pw1234567 wrongpw")
+	#errWrongPassword("PASS pw1234567)
+	os.chdir(original_directory)
+
+#------------------NICK------------------
+def changingNick():
+	test_name = "changingNick"
+	
+	vector = [
+		(1, "PRIVMSG client0 :NO error should be sent"),
+		(0, "NICK newNick"),
+		(1, "PRIVMSG newNick :if you see this, it means that the nick was changed successfully"),
+		(1, "PRIVMSG client0 :'No such nick/channel' should be sent"),
+		(2, "NICK client0"),
+		(2, "NICK newNick"), #nick already in use
+		(1, "PRIVMSG client0 :if you see this, it means that the nick was changed successfully"),
+		]
+	runMultiClientTest(test_name, 3, vector)
+		
+
+
+def testNICK():
+	print(f"{Style.BRIGHT}{Fore.YELLOW}---NICK TESTS---")
+	print(Style.RESET_ALL)
+	os.chdir("py_tests/nick")
+	errNeedMoreParams("NICK")
+	#errNoNicknameGiven("NICK client0")
+	#errErroneusNickname("NICK client0")
+	#errNicknameInUse("NICK client0")
+	changingNick()
+	os.chdir(original_directory)
+
+
+#------------------USER------------------
+def testUSER():
+	print(f"{Style.BRIGHT}{Fore.YELLOW}---USER TESTS---")
+	print(Style.RESET_ALL)
+	os.chdir("py_tests/user")
+	errNeedMoreParams("USER")
+	#errAlreadyRegistered("USER")
+	#errAlreadyRegistered("USER user1 host1 serv1 :real1")
+	os.chdir(original_directory)
+	
+#------------------PRIVMSG------------------
 def msgTest():
 	vector = [
 		(0, "PRIVMSG client1 :hello from client1 to you my dear client0"),
@@ -122,7 +179,8 @@ def testPRIVMSG():
 	print(f"{Style.BRIGHT}{Fore.YELLOW}---PRIVMSG TESTS---")
 	print(Style.RESET_ALL)
 	os.chdir("py_tests/privmsg")
-	errNORECIPIENT("PRIVMSG")
+	errNeedMoreParams("PRIVMSG")
+	#errNORECIPIENT("PRIVMSG")
 	#errNOTEXTTOSEND("PRIVMSG") #i need a user that exists or a channel
 	errNOSUCHCHANNEL("PRIVMSG #nonexistentchannel")
 	errNOSUCHNICK("PRIVMSG nonexistentuser")
@@ -144,8 +202,102 @@ def testJOIN():
 	print(f"{Style.BRIGHT}{Fore.YELLOW}---JOIN TESTS---")
 	print(Style.RESET_ALL)
 	os.chdir("py_tests/join")
+	errNeedMoreParams("JOIN")
 	errNOSUCHCHANNEL("JOIN #nonexistentchannel")
 	joiningTooManyChannels()
+	os.chdir(original_directory)
+
+#------------------PART------------------
+def testPART():
+	print(f"{Style.BRIGHT}{Fore.YELLOW}---PART TESTS---")
+	print(Style.RESET_ALL)
+	os.chdir("py_tests/part")
+	errNeedMoreParams("PART")
+	errNOSUCHCHANNEL("PART #nonexistentchannel")
+	os.chdir(original_directory)
+
+#------------------QUIT------------------
+def testQUIT():
+	print(f"{Style.BRIGHT}{Fore.YELLOW}---QUIT TESTS---")
+	print(Style.RESET_ALL)
+	os.chdir("py_tests/quit")
+	errNeedMoreParams("QUIT")
+	os.chdir(original_directory)
+
+
+#------------------KICK------------------
+def testKICK():
+	print(f"{Style.BRIGHT}{Fore.YELLOW}---KICK TESTS---")
+	print(Style.RESET_ALL)
+	os.chdir("py_tests/kick")
+	errNeedMoreParams("KICK")
+	errNOSUCHCHANNEL("KICK #nonexistentchannel")
+	errNOSUCHNICK("KICK nonexistentuser")
+	#errNOTONCHANNEL("KICK #nonexistentchannel nonexistentuser")
+	#errCHANOPRIVSNEEDED("KICK #nonexistentchannel nonexistentuser")
+	os.chdir(original_directory)
+
+#------------------INVITE------------------
+def testINVITE():
+	print(f"{Style.BRIGHT}{Fore.YELLOW}---INVITE TESTS---")
+	print(Style.RESET_ALL)
+	os.chdir("py_tests/invite")
+	errNeedMoreParams("INVITE")
+	errNOSUCHNICK("INVITE nonexistentuser #nonexistentchannel")
+	errNOSUCHCHANNEL("INVITE client0 #nonexistentchannel")
+	#errCHANOPRIVSNEEDED("INVITE client0 #nonexistentchannel")
+	os.chdir(original_directory)
+
+#------------------MODE------------------
+def testMODE():
+	print(f"{Style.BRIGHT}{Fore.YELLOW}---MODE TESTS---")
+	print(Style.RESET_ALL)
+	os.chdir("py_tests/mode")
+	errNeedMoreParams("MODE")
+	errNOSUCHNICK("MODE nonexistentuser")
+	errNOSUCHCHANNEL("MODE #nonexistentchannel")
+	#errCHANOPRIVSNEEDED("MODE #nonexistentchannel")
+	os.chdir(original_directory)
+
+#------------------TOPIC------------------
+def testTOPIC():
+	print(f"{Style.BRIGHT}{Fore.YELLOW}---TOPIC TESTS---")
+	print(Style.RESET_ALL)
+	os.chdir("py_tests/topic")
+	errNeedMoreParams("TOPIC")
+	errNOSUCHCHANNEL("TOPIC #nonexistentchannel")
+	#errNOTONCHANNEL("TOPIC #nonexistentchannel")
+	#errCHANOPRIVSNEEDED("TOPIC #nonexistentchannel")
+	os.chdir(original_directory)
+#------------------OPER + KILL------------------
+def wrongOperHost():
+	test_name = "wrongOperHost"
+	vector = [(0, "OPER 7.7.7.7 setOpPW")]
+	runMultiClientTest(test_name, 1, vector)
+
+def wrongOperPw():
+	test_name = "wrongOperPw"
+	vector = [(0, "OPER 10.14.3.10 wrongOperPw")]
+	runMultiClientTest(test_name, 1, vector)
+
+def kill():
+	test_name = "oper_kill"
+	
+	vector = [
+		(0, "KILL client0: bye bye"),
+		(0, "OPER 10.14.3.10 setOpPW"),
+		(0, "KILL client0: bye bye"),
+	]
+	runMultiClientTest(test_name, 2, vector)
+
+def testOPER():
+	print(f"{Style.BRIGHT}{Fore.YELLOW}---OPER + KILL TESTS---")
+	print(Style.RESET_ALL)
+	os.chdir("py_tests/oper")
+	errNeedMoreParams("OPER")
+	wrongOperHost()
+	wrongOperPw()
+	kill()
 	os.chdir(original_directory)
 
 # Start netcat
@@ -166,5 +318,15 @@ original_directory = os.getcwd()
 # serv_pw = input("Enter server password: ")
 
 # -------main----------
+testPASS()
+testNICK()
+testUSER()
 testPRIVMSG()
 testJOIN()
+testPART()
+testQUIT()
+testKICK()
+testINVITE()
+testMODE()
+testTOPIC()
+testOPER() #also tests KILL
