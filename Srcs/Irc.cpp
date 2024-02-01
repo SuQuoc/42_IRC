@@ -27,7 +27,7 @@ void	Irc::command_switch(Client *sender, const std::string message) //message-> 
 	{
 		if (cmd != sender->getPrefix())
 		{
-			std::cout << "YOU are a imposter" << std::endl; //"n!u@" nothing after @ should work; scared bc hexchat has some weird domain after @ :@1321.32133.3213.IRC
+			std::cout << "YOU are a imposter" << std::endl;
 			//send()
 			return;
 		}
@@ -57,8 +57,8 @@ void	Irc::command_switch(Client *sender, const std::string message) //message-> 
 void Irc::PASS(Client *sender, std::stringstream &sstream)
 {
     std::string password = extractWord(sstream);
-    	
-    if (sender->isRegistered()) 
+
+    if (sender->isRegistered())
         _replier.sendError(ERR_ALREADYREGISTERED, sender, ""); //already registered
     else if (password == _password)
 		sender->authenticate();
@@ -67,17 +67,19 @@ void Irc::PASS(Client *sender, std::stringstream &sstream)
 		sender->deauthenticate();
 		_replier.sendError(ERR_PASSWDMISMATCH, sender, "");
 		disconnectClient(sender, "Wrong password"); //delete Client and the entry from the map if Pw is wrong? --> multiple PASS not possible then
+		return ;
 	}
+	if (sender->isRegistered())
+		_replier.sendRPL(RPL_WELCOME, sender, sender->getUsername());
 }
 
 void Irc::NICK(Client *sender, std::stringstream &sstream)
 {
     std::string nickname = extractWord(sstream);
-    //if (sender->isAuthenticated() == false) //didnt do PASS before
-    //    _replier.sendError(321, sender) and return; //NOTICE message? sendNotice?
 
-	client_name_map_const_it it = getClientIter(nickname);
-	if (it == _client_names.end()) //no one has the nickname
+	if (nickname.empty())
+		_replier.sendError(ERR_NONICKNAMEGIVEN, sender, "");
+	else if (getClient(nickname) == NULL) //no one has the nickname
 	{
 		if (sender->setNickname(nickname) != 0)
 		{
@@ -214,7 +216,7 @@ void	Irc::QUIT(Client *sender, std::stringstream &sstream)
 	std::string	comment = extractWord(sstream);
 	if (comment.empty())
 		comment = "Leaving";
-	disconnectClient(sender, createMsg(sender, "QUIT", "", comment));
+	disconnectClient(sender, createMsg(sender, "QUIT", "", comment)); //?? what if he had another cmd after that our program would fail
 }
 
 int	Irc::KICK(Client *sender, std::stringstream &sstream)
@@ -260,18 +262,21 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 	std::string			reply;
 	int					cnt = 0;
 
-	if (message.empty())
-		_replier.sendError(ERR_NOTEXTTOSEND, sender, "");
 	while (cnt < LIST_LIMIT && std::getline(recip_sstream, recipient, ','))
 	{
 		cnt++;
 		if (recipient.empty()) 
+		{
 			_replier.sendError(ERR_NORECIPIENT, sender, "PRIVMSG");
+			continue; 
+		}
 		else if (recipient.at(0) == '#')
 		{
 			Channel *channel = getChannel(recipient);
 			if (channel == NULL)
 				_replier.sendError(ERR_NOSUCHCHANNEL, sender, recipient);
+			else if (message.empty())
+				_replier.sendError(ERR_NOTEXTTOSEND, sender, ""); //return message is checked before to avoid checking in loop
 			else
 				channel->sendMsg(sender, createMsg(sender, "PRIVMSG", recipient, message));
 		} //mask?
@@ -280,6 +285,8 @@ void Irc::PRIVMSG(Client *sender, std::stringstream &sstream)
 			Client *reciever = getClient(recipient);
 			if (reciever == NULL)
 				_replier.sendError(ERR_NOSUCHNICK, sender, "");
+			else if (message.empty())
+				_replier.sendError(ERR_NOTEXTTOSEND, sender, ""); //return message is checked before to avoid checking in loop
 			else
 			{
 				reply = createMsg(sender, "PRIVMSG", recipient, message); //PART uses same method
@@ -414,7 +421,7 @@ int Irc::KILL(Client *sender, std::stringstream &sstream)
 		return (_replier.sendError(ERR_NOSUCHNICK, sender, nickname));
 	
 	comment = extractWord(sstream);
-	disconnectClient(client_to_kill, comment); 
+	disconnectClient(client_to_kill, comment); //what about killing himself? and another command after that??
 	return (0);
 }
 
