@@ -148,7 +148,7 @@ void TestServer::addChannelWithPWandJoin()
 	channel = serv.getChannel("#pw");
 	if(channel == NULL)
 		return (fail("channel was not created"));
-	channel->setPassword(channel_ower, "nyancat", '+');
+	channel->setPassword("nyancat", '+');
 	if(channel->getPassword() != "nyancat")
 		return (fail("password was wrong set or empty"));
 	
@@ -173,11 +173,11 @@ void TestServer::addChannelWithPWandJoin()
 	if(channel->isInChannel(niki) == false)
 		return (fail("password was correct but user did not join"));
 
-	channel->setPassword(channel_ower, "nyancat3", '-');
+	channel->setPassword("nyancat3", '-');
 	if(channel->getPassword() != "nyancat")
 		return (fail("pw was removed with wrong pw"));
 	
-	channel->setPassword(channel_ower, "nyancat", '-');
+	channel->setPassword("nyancat", '-');
 	if(channel->getPassword() == "nyancat")
 		return (fail("pw was not removed"));
 	

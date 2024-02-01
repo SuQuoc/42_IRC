@@ -5,8 +5,6 @@ Client*	TestServer::makeUserJoinChannel(const std::string &channel_name, const s
 	std::stringstream	sstream(channel_name);
 	Client*				client;
 	
-	addNewClientToFdMap(client_fd, "127.0.0.1");
-	addClientToNameMap(client_name, client_fd);
 	client = makeUser(client_name, client_fd);
 	JOIN(client, sstream);
 	return (client);

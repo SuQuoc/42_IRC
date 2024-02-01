@@ -41,8 +41,7 @@ class Channel
 		typedef	std::vector<Channel::Member_t>::iterator clients_itr;
 		typedef	std::vector<Client*>::iterator invited_itr;
 
-		int		changeMode(Client *executor, const char &add, bool &modes);
-		void	sendNonBlock(const int &fd, const std::string &msg);
+		int		changeMode(const char &add, bool &modes);
 		clients_itr	getClient(const std::string &name);
 		clients_itr	getClient(const Client *client);
 		invited_itr	getInvited(const Client *client);
@@ -63,10 +62,11 @@ class Channel
 		bool	isInChannel(const Client *client);
 		bool	isOperator(const Client *client);
 
-		int		setPassword(Client *executor,const std::string &password, const char &add);
 		int		setTopic(const std::string &name, const std::string &topic);
-		void	setMaxClients(const int &max_clients);
 		void	setName(const std::string &name);
+		void	setMaxClients(const int &max_clients);
+		int		setMaxClients(const std::string &str, const char &pre_fix);
+		int		setPassword(const std::string &password, const char &add);
 
 		const std::string	&getPassword() const;
 		const std::string	&getTopic() const;
@@ -76,7 +76,7 @@ class Channel
 		int		getMaxClients() const;
 		int		size() const;
 
-		int modesSwitch(Client *executor, const char &add, const char &mode, const std::string &argument);
+		int modesSwitch(const char &add, const char &mode, const std::string &argument);
 
-		int setOperator(Client *executor, const char &add, const std::string &name);
+		int setOperator(const char &add, Client *client);
 };

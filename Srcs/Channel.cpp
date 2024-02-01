@@ -144,28 +144,43 @@ bool Channel::isInChannel(const Client *client)
 }
 
 //			setter
-void	Channel::setMaxClients(const int &max_clients) { _max_clients = max_clients; }
 void	Channel::setName(const std::string &name) { _name = name; }
-// ? should it respond to the client if it to big?
-int	Channel::setPassword(Client *executor, const std::string &password, const char &add)
+void	Channel::setMaxClients(const int &max_clients){ _max_clients = max_clients; }
+int		Channel::setMaxClients(const std::string &str, const char &pre_fix)
 {
-	clients_itr client;
+	std::stringstream sstream(str);
+	int max_client;
 
-	client = getClient(executor);
-	// send msg ???? youre not a channel operator
-	if (client == _clients.end() || client->is_operator == false)
-		return ERR_CHANOPRIVSNEEDED; // = 481 ERR_NOPRIVILEGES
+	if(pre_fix == '-')
+	{
+		if(_max_clients == MAX_CLIENTS)
+			return (0);
+		_max_clients = MAX_CLIENTS;
+		return (RPL_CHANNELMODEIS);
+	}
+	if(str.empty() == true)
+		return (ERR_NEEDMOREPARAMS);
+	sstream >> max_client;
+	if(max_client < 1 || max_client > 100)
+		return (0);
+	_max_clients = max_client;
+	return (RPL_CHANNELMODEIS);
+}
+int	Channel::setPassword(const std::string &password, const char &add)
+{
+	if(password.empty() == true)
+		return (ERR_NEEDMOREPARAMS);
 	if (add == '+' && _password.empty() == true) // send msg if already set
 	{
 		_password = password;
-		return RPL_CHANNELMODEIS;
+		return (RPL_CHANNELMODEIS);
 	}
 	if (add == '-' && password == _password)
 	{
 		_password.clear();
-		return RPL_CHANNELMODEIS;
+		return (RPL_CHANNELMODEIS);
 	}
-	return ERR_KEYSET; // 467 ERR_KEYSET
+	return (ERR_KEYSET); // 467 ERR_KEYSET
 }
 
 //			getter
@@ -194,10 +209,8 @@ int Channel::getMaxClients() const { return _max_clients; }
 int Channel::size() const { return _clients.size(); }
 
 //returns -1 if not a + or - in add, otherwise error code if fails
-int Channel::changeMode(Client *executor, const char &add, bool &modes)
+int Channel::changeMode(const char &add, bool &modes)
 {
-	if (getClient(executor)->is_operator == false)
-		return ERR_NOPRIVILEGES;     //ERR_NOPRIVILEGES
 	if (add == '+' && modes == false)
 	{
 		modes = true;	// 324     RPL_CHANNELMODEIS
@@ -232,28 +245,22 @@ int	Channel::setTopic(const std::string &name, const std::string &topic)
 	return ERR_CHANOPRIVSNEEDED;
 }
 
-int Channel::setOperator(Client *executor, const char &add, const std::string &name)
+int Channel::setOperator(const char &add, Client *client)
 {
 	clients_itr client_it;
 
-	client_it = getClient(name);
-	if (getClient(executor) == _clients.end())
-		return ERR_NOTONCHANNEL;		// :server-name 442 your-nickname #channel :You're not on that channel
-	if (getClient(executor)->is_operator == false)
-		return ERR_CHANOPRIVSNEEDED;     //ERR_NOPRIVILEGES
+	if(!client)
+		return ERR_NOSUCHNICK;
+	client_it = getClient(client);
 	if (client_it == _clients.end())
 		return ERR_USERNOTINCHANNEL;
-	if (add == '+')
+	if (add == '+' && client_it->is_operator == false)
 	{
-		if(client_it->is_operator == true)
-			return 491; //:server-name 491 your-nickname #channel :You're already an operator
 		client_it->is_operator = true;
 		return RPL_CHANNELMODEIS;
 	}
-	else if (add == '-')
+	else if (add == '-' && client_it->is_operator == true)
 	{
-		if(client_it->is_operator == false)
-			return 491; // :server-name 491 your-nickname #channel :They are not an operator
 		client_it->is_operator = false;	// 324     RPL_CHANNELMODEIS
 		return RPL_CHANNELMODEIS;
 	}
@@ -263,26 +270,22 @@ int Channel::setOperator(Client *executor, const char &add, const std::string &n
 //multible modes a possilbe like +adasd
 //ervery char needs to be handelt
 //multible arguments are possible
-int Channel::modesSwitch(Client *executor, const char &add, const char &ch_modes, const std::string &argument)
+int Channel::modesSwitch(const char &add, const char &ch_modes, const std::string &argument)
 {
-	enum color { SET_RESTRICT_TOPIC = 't', SET_INVITE_ONLY = 'i', SET_KEY = 'k', SET_OPERATOR = 'o' };
+	enum color { SET_RESTRICT_TOPIC = 't', SET_INVITE_ONLY = 'i', SET_KEY = 'k', SET_LIMIT = 'l' };
 
-	/* std::cout << "prefix = " << add << " / mode = " << ch_modes << std::endl;
-	std::cout << "Argument = " << argument << std::endl; */
 	switch (ch_modes)
 	{
 	case SET_RESTRICT_TOPIC:
-		return changeMode(executor, add, _restrict_topic);
+		return changeMode(add, _restrict_topic);
 	case SET_INVITE_ONLY:
-		return changeMode(executor, add, _invite_only);
-	case SET_OPERATOR:
-		return setOperator(executor, add, argument);
+		return changeMode(add, _invite_only);
+	case SET_LIMIT:
+		return 0/* setPassword(argument, add) */;
 	case SET_KEY:
-		return setPassword(executor, argument, add);
+		return setPassword(argument, add);
 	default:
 		std::cout << "Error wrong mode!" << ch_modes << std::endl;
 	}
-	/* else if(mode == 'o' && (itr = getClient(argument)) != _clients.end())
-		itr->is_operator = true; */
 	return (0);
 }
