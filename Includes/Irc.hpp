@@ -49,9 +49,11 @@ public:
 	void setOperatorHost(const std::string& hostname);
 	void setOperatorPW(const std::string& password);
 
+//MODE
 	int		MODE(Client *sender, std::stringstream& sstream);
-	void	operatorsSendSetModeToChannel(Channel *channel, Client *sender, std::map< std::string, int> operator_rpl_map);
+	void	modesAreSetTo(Client *sender, Channel *channel);
+	void	modesSwitch(Channel *channel, Client *sender, std::map<std::string, int> &operator_rpl_map, std::stringstream &sstream, const char &pre_fix, std::vector<int> &error_codes, const char &word_char);
+	void	operatorsSendSetModeToChannel(Channel *channel, Client *sender, const std::map<std::string, int> &operator_rpl_map);
 	void	sendSetModeToChannel(Channel *channel, Client *sender, const int &inv_code, const int &topic_code);
 
-//methods (commands)
 };

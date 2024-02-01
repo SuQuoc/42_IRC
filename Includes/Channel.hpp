@@ -41,7 +41,6 @@ class Channel
 		typedef	std::vector<Channel::Member_t>::iterator clients_itr;
 		typedef	std::vector<Client*>::iterator invited_itr;
 
-		int		changeMode(const char &add, bool &modes);
 		clients_itr	getClient(const std::string &name);
 		clients_itr	getClient(const Client *client);
 		invited_itr	getInvited(const Client *client);
@@ -62,7 +61,6 @@ class Channel
 		bool	isInChannel(const Client *client);
 		bool	isOperator(const Client *client);
 
-		int		setTopic(const std::string &name, const std::string &topic);
 		void	setName(const std::string &name);
 		void	setMaxClients(const int &max_clients);
 		int		setMaxClients(const std::string &str, const char &pre_fix);
@@ -76,7 +74,8 @@ class Channel
 		int		getMaxClients() const;
 		int		size() const;
 
-		int modesSwitch(const char &add, const char &mode, const std::string &argument);
-
-		int setOperator(const char &add, Client *client);
+		int		changeMode(const char &add, bool &modes);
+		int		setTopic(const std::string &name, const std::string &topic);
+		int		setOperator(const char &add, Client *client);
+		int		setTopicOrInv(const char &add, const char &mode);
 };
