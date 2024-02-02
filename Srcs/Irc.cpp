@@ -181,7 +181,7 @@ int	Irc::JOIN(std::stringstream &sstream)
 		}
 		channel = getChannel(channel_name);
 		_sender->joinChannel(channel);
-		channel->sendMsg(NULL, ":" + _sender->getPrefix() + " JOIN " + channel_name + " * :" + _sender->getUsername() + "\r\n");
+		channel->sendMsg(NULL, ":" + _sender->getPrefix() + " JOIN " + channel_name + " * :" + _sender->getUsername());
 	}
 	if (cnt == 0)
 		_replier.sendError(ERR_NEEDMOREPARAMS, _sender, "");
@@ -257,7 +257,7 @@ int	Irc::KICK(std::stringstream &sstream)
 	if (user_to_kick == NULL)
 		return (_replier.sendError(ERR_NOSUCHNICK, _sender, nickname)); //ERR-NOSUCHNICK is not in list of numeric replies for kick in protocoll
 
-	msg = ":" + _sender->getPrefix() + " KICK " + channel_name + " " + nickname + " :" + msg + "\r\n";
+	msg = ":" + _sender->getPrefix() + " KICK " + channel_name + " " + nickname + " :" + msg;
 	err = channel->rmClient(_sender, user_to_kick, msg);
 	if (err > 0)
 		return (_replier.sendError(static_cast<IRC_ERR>(err), _sender, channel_name));
@@ -556,7 +556,7 @@ int Irc::modesSwitch(Channel *channel, std::map<std::string, int> &operator_rpl_
 				return (2);
 			error_codes[2] = channel->setMaxClients(argument, pre_fix);
 			if(error_codes[2] == MODE_SET_PLUS || error_codes[2] == MODE_SET_MINUS)
-				channel->sendMsg(NULL, ":" + _sender->getPrefix() + " MODE " + channel->getName() + " " + pre_fix + "l " + argument + "\r\n");
+				channel->sendMsg(NULL, ":" + _sender->getPrefix() + " MODE " + channel->getName() + " " + pre_fix + "l " + argument);
 			else if(error_codes[2] == ERR_NEEDMOREPARAMS)
 				_replier.sendError(ERR_NEEDMOREPARAMS, _sender, "MODE");
 			return (3);
@@ -578,7 +578,7 @@ int Irc::modesSwitch(Channel *channel, std::map<std::string, int> &operator_rpl_
 int Irc::sendKeyRPLorError(Channel *channel, std::string &argument, const int &key_code, const char &pre_fix)
 {
 	if(key_code == MODE_SET_PLUS || key_code == MODE_SET_MINUS)
-		channel->sendMsg(NULL, ":" + _sender->getPrefix() + " MODE " + channel->getName() + " " + pre_fix + "k " + argument + "\r\n");
+		channel->sendMsg(NULL, ":" + _sender->getPrefix() + " MODE " + channel->getName() + " " + pre_fix + "k " + argument);
 	else if(key_code == ERR_KEYSET)
 		_replier.sendError(ERR_KEYSET, _sender, argument);
 	else if(key_code == ERR_NEEDMOREPARAMS)
@@ -610,17 +610,17 @@ void Irc::operatorsSendSetModeToChannel(Channel *channel, Client *sender, const 
 			_replier.sendError(error_code, sender, o_itr->first);
 	}
 	if(o_modes_str.empty() == false)
-		channel->sendMsg(NULL, ":" + sender->getPrefix() + " MODE " + channel->getName() + " " + o_modes_str + o_set_names + "\r\n");
+		channel->sendMsg(NULL, ":" + sender->getPrefix() + " MODE " + channel->getName() + " " + o_modes_str + o_set_names);
 }
 
 void Irc::sendSetModeToChannel(Channel *channel, Client *sender, const int &inv_code, const int &topic_code)
 {
 	if(inv_code == MODE_SET_PLUS)
-		channel->sendMsg(NULL, ":" + sender->getPrefix() + " MODE " + channel->getName() + " +i\r\n");
+		channel->sendMsg(NULL, ":" + sender->getPrefix() + " MODE " + channel->getName() + " +i");
 	else if(inv_code == MODE_SET_MINUS)
-		channel->sendMsg(NULL, ":" + sender->getPrefix() + " MODE " + channel->getName() + " -i\r\n");
+		channel->sendMsg(NULL, ":" + sender->getPrefix() + " MODE " + channel->getName() + " -i");
 	if(topic_code == MODE_SET_PLUS)
-		channel->sendMsg(NULL, ":" + sender->getPrefix() + " MODE " + channel->getName() + " +t\r\n");
+		channel->sendMsg(NULL, ":" + sender->getPrefix() + " MODE " + channel->getName() + " +t");
 	else if(topic_code == MODE_SET_MINUS)
-		channel->sendMsg(NULL, ":" + sender->getPrefix() + " MODE " + channel->getName() + " -t\r\n");
+		channel->sendMsg(NULL, ":" + sender->getPrefix() + " MODE " + channel->getName() + " -t");
 }
