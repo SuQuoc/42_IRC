@@ -61,7 +61,10 @@ void Irc::PASS(std::stringstream &sstream)
     std::string password = extractWord(sstream);
 
     if (_sender->isRegistered())
+	{
         _replier.sendError(ERR_ALREADYREGISTERED, _sender, ""); //already registered
+		return ;
+	}
     else if (password == _password)
 		_sender->authenticate();
 	else
