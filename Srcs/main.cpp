@@ -67,8 +67,10 @@ int main(const int argc, const char *argv[])
 	// server.setOperatorHost("10.18.195.33"); //nikis laptop on the 42 network
 	server.setOperatorHost("10.14.3.10");
 	server.setOperatorPW("setOpPW");
-	server.createTcpSocket(stoi_(argv[1]));
-	server.createEpoll();
+	if (server.createTcpSocket(stoi_(argv[1])) == -1)
+		return (1);
+	if (server.createEpoll() == -1)
+		return (1);
 	try {
 		server.epollLoop();
 	} catch (std::exception& e) {

@@ -52,8 +52,7 @@ protected:
 	void	disconnectClient(Client *client, const std::string& msg);
 
 	void	process_event(const int& client_sock);
-	void	failure_exit(const std::string& error_msg); //exits?
-	struct addrinfo*	getIpAdressToBind(const int& port);
+	int		printErrorReturn(const std::string& error_msg);
 	virtual void	command_switch(Client *sender, const std::string message) = 0;
 
 	void	addNewChannelToMap(Client *sender, const std::string& channel_name);
@@ -83,7 +82,7 @@ public:
 	virtual ~AServer(); //put this under protected?
 
 //methods
-	void	createTcpSocket(const int& port); //exits?
-	void	createEpoll(); //exits?
-	void	epollLoop(); //exits?
+	int		createTcpSocket(const int& port);
+	int		createEpoll();
+	void	epollLoop(); 
 };

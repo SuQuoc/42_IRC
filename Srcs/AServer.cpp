@@ -133,10 +133,10 @@ void	AServer::process_event(const int& client_fd)
 	}
 }
 
-void	AServer::failure_exit(const std::string& error_msg)
+int	AServer::printErrorReturn(const std::string& error_msg)
 {
-	std::cerr << "Error: " << error_msg << ": " << std::strerror(errno) << std::endl;
-	std::exit(errno); //errno?
+	std::cerr << "Error: " << error_msg << std::endl;
+	return (-1);
 }
 
 void	AServer::addNewChannelToMap(Client *sender, const std::string& channel_name)
@@ -206,47 +206,9 @@ void 	AServer::rmChannelFromMap(const std::string& channel_name)
 	_channels.erase(it);
 }
 
-// struct sockaddr_in addr;
-// struct in_addr ipAddr = addr.sin_addr;
-// char str[INET_ADDRSTRLEN];
-// inet_ntop(AF_INET, &ipAddr, str, INET_ADDRSTRLEN);
-// std::cout << "inet: " << str << "|\n";
-
-struct addrinfo* AServer::getIpAdressToBind(const int& port) // NOT needed CRY.... !!!???
-{
-	struct addrinfo hints, *result, *ptr;
-	int status;
-	char ipstr[INET_ADDRSTRLEN];
-
-	std::stringstream ss;
-	ss << port;
-	std::string portSTR = ss.str();
-	std::cout << "PORT: " << portSTR << std::endl;
-
-	std::memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_INET; // AF_INET or AF_INET6 to force version
-	hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE; // to return a socket suitable for binding a socket for accepting 
-	if ((status = getaddrinfo(NULL, portSTR.c_str(), &hints, &result)) != 0)
-    {
-		// std::cerr << "getaddrinfo: " << gai_strerror(status) << std::endl; // not allowed i think
-		failure_exit("failed to get addrinfo");
-	}
-    failure_exit("test");
-	for (ptr = result; ptr != NULL; ptr = ptr->ai_next) 
-	{
-        if (ptr->ai_family == AF_INET) //Only process IPv4 addresses
-		{ 
-            struct sockaddr_in *ipv4 = reinterpret_cast<struct sockaddr_in*>(ptr->ai_addr);
-            inet_ntop(ptr->ai_family, &(ipv4->sin_addr), ipstr, sizeof(ipstr)); //Convert the IPv4 address to a human-readable form
-            std::cout << "IPv4 Address: " << ipstr << std::endl;
-        }
-    }
-	return result;
-}
 
 //public methods
-void	AServer::createTcpSocket(const int& port) //exits?
+int	AServer::createTcpSocket(const int& port)
 {
 	int	optval = 1;
 
@@ -254,37 +216,37 @@ void	AServer::createTcpSocket(const int& port) //exits?
 	saddr.sin_family = AF_INET; 
 	saddr.sin_port = htons(port);
 	saddr.sin_addr.s_addr = INADDR_ANY;
-
 	_sock_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP); //IPPROTO_TCP?
 	if (_sock_fd == -1)
-		failure_exit("couldn't create socket");
+		return (printErrorReturn("couldn't create socket"));
 	if (setsockopt(_sock_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1) //not necassery
-		failure_exit("couldn't set socket options");
+		return (printErrorReturn("couldn't set socket options"));
 	if (bind(_sock_fd, reinterpret_cast<sockaddr*>(&saddr), sizeof(struct sockaddr_in)) == -1)
-		failure_exit("couldn't bind to socket");
+		return (printErrorReturn("couldn't bind to socket"));
 	if (listen(_sock_fd, 1000) == -1) //1000?
-		failure_exit("couldn't listen(?) to socket");
+		return (printErrorReturn("couldn't listen(?) to socket"));
 	if (fcntl(_sock_fd, F_SETFL, O_NONBLOCK) == -1)
-		failure_exit("fcntl failed");
+		return (printErrorReturn("fcntl failed"));
+	return (0);
 }
 
-void	AServer::createEpoll()
+int	AServer::createEpoll()
 {
 	_ev.data.fd = _sock_fd;
 	_ev.events = EPOLLIN | EPOLLET; //ECOLLET sets Edge-Triggered mode ?? whats the differnce again with level triggered write it down somewhere
-	
 	_epoll_fd = epoll_create1(0); //can be set to EPOLL_NONBLOCK
 	if (_epoll_fd == -1)
-		failure_exit("couldn't create epoll");
+		return (printErrorReturn("couldn't create epoll"));
 	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, _sock_fd, &_ev) == -1)
-		failure_exit("epoll_ctrl failed");
+		return (printErrorReturn("epoll_ctrl failed"));
 
 	_ev.data.fd = STDIN_FILENO;
 	_ev.events = EPOLLIN | EPOLLET; //needed?
 	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, STDIN_FILENO, &_ev) == -1) //to get out of loop(?)
-		failure_exit("epoll_ctrl failed on stdin");
+		return (printErrorReturn("epoll_ctrl failed on stdin"));
 	_ev.data.fd = _sock_fd;
 	_ev.events = EPOLLIN | EPOLLET; //needed?
+	return (0);
 }
 
 void	AServer::epollLoop()
@@ -295,9 +257,9 @@ void	AServer::epollLoop()
 
 	while (str != "exit")
 	{
-		ev_cnt = epoll_wait(_epoll_fd, events, 1000, 1000); //1000? //-1?
+		ev_cnt = epoll_wait(_epoll_fd, events, 1000, 1000); //1000?
 		if (ev_cnt == -1)
-			failure_exit("epoll_wait failed"); //exits?
+			throw (std::logic_error("epoll_wait failed: "));
 		for (int i = 0; i < ev_cnt; i++)
 		{
 			std::cout << "fd: " << events[i].data.fd << std::endl;			
