@@ -63,6 +63,11 @@ void Irc::PASS(Client *sender, std::stringstream &sstream)
         _replier.sendError(ERR_ALREADYREGISTERED, sender, ""); //already registered
 		return ;
 	}
+	else if (password.empty())
+	{
+		_replier.sendError(ERR_NEEDMOREPARAMS, sender, ""); //already registered
+		return ;
+	}
     else if (password == _password)
 		sender->authenticate();
 	else
@@ -408,6 +413,7 @@ void Irc::OPER(Client *sender, std::stringstream &sstream)
 	{
 		sender->elevateToServOp(); //what if send in next line fails?
 		_replier.sendRPL(RPL_YOUREOPER, sender, "");
+		//should we make him channel op in all channels exsiting or he is in???
 		std::cout << "INFO: " << sender->getPrefix() << " is now server op, chaos is coming!" << std::endl; //out?
 	}
 }

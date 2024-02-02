@@ -46,7 +46,7 @@ def	registerClients(processes, password):
 		sendMsg(process, pass_msg)
 		sendMsg(process, nick_msg)
 		sendMsg(process, user_msg)
-		time.sleep(0.4)
+		time.sleep(0.5)
 		i+=1
 
 
@@ -67,7 +67,7 @@ def runMultiNonRegisClientTest(test_name, n_clients, vector):
 			client_id = pair[0]
 			msg = pair[1]
 			sendMsg(processes[client_id], msg)
-			time.sleep(0.4)
+			time.sleep(0.5)
 		sigintAllClients(processes)
 
 	if not os.path.isfile(f'{test_name}.expected'):
@@ -85,7 +85,7 @@ def runMultiClientTest(test_name, n_clients, vector):
 			client_id = pair[0]
 			msg = pair[1]
 			sendMsg(processes[client_id], msg)
-			time.sleep(0.4)
+			time.sleep(0.5)
 		quitAllNetcats(processes)
 
 	if not os.path.isfile(f'{test_name}.expected'):
@@ -126,19 +126,23 @@ def errNeedMoreParams(msg):
 
 def errAlreadyRegisteredPASS():
 	test_name = "ERR_ALREADYREGISTERED"
+	#doesnt lose connection because client already registered
 	vector = [
 		(0, "PASS"),
-		(0, "PASS pw1234567"), #correct password
-		(0, "PASS wrong_password"), #correct password
+		#(0, "PASS pw1234567"), #correct password
+		#(0, "PASS wrong_password"), #correct password
 	]
+	runMultiClientTest("errAlreadyRegisteredPASS", 1, vector)
 
 def errAlreadyRegisteredUSER():
 	test_name = "ERR_ALREADYREGISTERED"
 	vector = [
 		(0, "USER"),
-		(0, "USER userX"), #correct password
-		(0, "USER userX hostX servX reealX"), #correct password
+		(0, "USER userX"),
+		(0, "USER userX hostX servX reealX"),
 	]
+	runMultiClientTest("errAlreadyRegisteredPASS", 1, vector)
+
 
 def errNORECIPIENT(msg):
 	test_name = "ERR_NORECIPIENT"
@@ -202,6 +206,7 @@ def errErroneusNickname():
 		]
 	runMultiClientTest(test_name, 1, vector)
 
+#also checks for ERR_NICKNAMEINUSE
 def changingNick():
 	test_name = "changingNick"
 	vector = [
