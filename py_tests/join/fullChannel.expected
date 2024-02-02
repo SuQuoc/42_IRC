@@ -8,6 +8,7 @@
 :AfterLife 001 client7 :Welcome to the Internet Relay Network, user7
 :AfterLife 001 client8 :Welcome to the Internet Relay Network, user8
 :AfterLife 001 client9 :Welcome to the Internet Relay Network, user9
+:AfterLife 001 client10 :Welcome to the Internet Relay Network, user10
 :client0!user0@10.14.3.10 JOIN #chan * :user0
 :client1!user1@10.14.3.10 JOIN #chan * :user1
 :client1!user1@10.14.3.10 JOIN #chan * :user1
@@ -63,93 +64,49 @@
 :client9!user9@10.14.3.10 JOIN #chan * :user9
 :client9!user9@10.14.3.10 JOIN #chan * :user9
 :client9!user9@10.14.3.10 JOIN #chan * :user9
+:AfterLife 471 client10 #chan :Cannot join channel (+l)
 :client0!user0@10.14.3.10 QUIT :Leaving
-
 :client0!user0@10.14.3.10 QUIT :Leaving
-
 :client0!user0@10.14.3.10 QUIT :Leaving
-
 :client0!user0@10.14.3.10 QUIT :Leaving
-
 :client0!user0@10.14.3.10 QUIT :Leaving
-
 :client0!user0@10.14.3.10 QUIT :Leaving
-
 :client0!user0@10.14.3.10 QUIT :Leaving
-
 :client0!user0@10.14.3.10 QUIT :Leaving
-
 :client0!user0@10.14.3.10 QUIT :Leaving
-
 :client1!user1@10.14.3.10 QUIT :Leaving
-
 :client1!user1@10.14.3.10 QUIT :Leaving
-
 :client1!user1@10.14.3.10 QUIT :Leaving
-
 :client1!user1@10.14.3.10 QUIT :Leaving
-
 :client1!user1@10.14.3.10 QUIT :Leaving
-
 :client1!user1@10.14.3.10 QUIT :Leaving
-
 :client1!user1@10.14.3.10 QUIT :Leaving
-
 :client1!user1@10.14.3.10 QUIT :Leaving
-
 :client2!user2@10.14.3.10 QUIT :Leaving
-
 :client2!user2@10.14.3.10 QUIT :Leaving
-
 :client2!user2@10.14.3.10 QUIT :Leaving
-
 :client2!user2@10.14.3.10 QUIT :Leaving
-
 :client2!user2@10.14.3.10 QUIT :Leaving
-
 :client2!user2@10.14.3.10 QUIT :Leaving
-
+:client2!user2@10.14.3.10 QUIT :Leaving
 :client3!user3@10.14.3.10 QUIT :Leaving
-
-:client2!user2@10.14.3.10 QUIT :Leaving
-
 :client3!user3@10.14.3.10 QUIT :Leaving
-
 :client3!user3@10.14.3.10 QUIT :Leaving
-
 :client3!user3@10.14.3.10 QUIT :Leaving
-
 :client3!user3@10.14.3.10 QUIT :Leaving
-
 :client3!user3@10.14.3.10 QUIT :Leaving
-
 :client4!user4@10.14.3.10 QUIT :Leaving
-
 :client4!user4@10.14.3.10 QUIT :Leaving
-
 :client4!user4@10.14.3.10 QUIT :Leaving
-
 :client4!user4@10.14.3.10 QUIT :Leaving
-
 :client4!user4@10.14.3.10 QUIT :Leaving
-
 :client5!user5@10.14.3.10 QUIT :Leaving
-
 :client5!user5@10.14.3.10 QUIT :Leaving
-
 :client5!user5@10.14.3.10 QUIT :Leaving
-
 :client5!user5@10.14.3.10 QUIT :Leaving
-
 :client6!user6@10.14.3.10 QUIT :Leaving
-
 :client6!user6@10.14.3.10 QUIT :Leaving
-
 :client6!user6@10.14.3.10 QUIT :Leaving
-
 :client7!user7@10.14.3.10 QUIT :Leaving
-
 :client7!user7@10.14.3.10 QUIT :Leaving
-
 :client8!user8@10.14.3.10 QUIT :Leaving
-

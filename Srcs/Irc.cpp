@@ -324,9 +324,9 @@ std::string Irc::createMsg(Client *sender, const std::string& cmd, const std::st
 	if (!sender)
         return msg;
 	if (recipient.empty())
-		message = ":" + sender->getPrefix() + " " + cmd + " :" + msg + "\r\n";
+		message = ":" + sender->getPrefix() + " " + cmd + " :" + msg;
     else
-		message = ":" + sender->getPrefix() + " " + cmd + " " + recipient + " :" + msg + "\r\n"; //PART uses same method -> extra function?
+		message = ":" + sender->getPrefix() + " " + cmd + " " + recipient + " :" + msg; //PART uses same method -> extra function?
     return message;
 }
 

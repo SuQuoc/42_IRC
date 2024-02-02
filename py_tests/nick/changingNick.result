@@ -4,3 +4,7 @@
 :client1!user1@10.14.3.10 PRIVMSG client0 :You should see this message
 :client0 NICK newNick
 :client1!user1@10.14.3.10 PRIVMSG newNick :if you see this, it means that the nick was changed successfully
+:AfterLife 401 client1 client0 :No such nick/channel
+:client2 NICK client0
+:AfterLife 433 client0  :Nickname is already in use
+:client1!user1@10.14.3.10 PRIVMSG client0 :if you see this, it means that the nick was changed successfully
