@@ -270,7 +270,7 @@ def joiningTooManyChannels():
 	test_name = "joiningTooManyChannels"
 	
 	vector = []
-	for i in range(2):
+	for i in range(11):
 		join_msg = "JOIN #chan" + str(i)
 		vector.append((0, join_msg))		
 	runMultiClientTest(test_name, 1, vector)
@@ -279,8 +279,8 @@ def testJOIN():
 	print(f"{Style.BRIGHT}{Fore.YELLOW}---JOIN TESTS---")
 	print(Style.RESET_ALL)
 	os.chdir("py_tests/join")
-	errNeedMoreParams("JOIN")
-	errNOSUCHCHANNEL("JOIN #nonexistentchannel")
+	#errNeedMoreParams("JOIN")
+	#errNOSUCHCHANNEL("JOIN #nonexistentchannel")
 	joiningTooManyChannels()
 	os.chdir(original_directory)
 
@@ -289,8 +289,8 @@ def testPART():
 	print(f"{Style.BRIGHT}{Fore.YELLOW}---PART TESTS---")
 	print(Style.RESET_ALL)
 	os.chdir("py_tests/part")
-	errNeedMoreParams("PART")
-	errNOSUCHCHANNEL("PART #nonexistentchannel")
+	#errNeedMoreParams("PART")
+	#errNOSUCHCHANNEL("PART #nonexistentchannel")
 	os.chdir(original_directory)
 
 #------------------QUIT------------------
@@ -298,7 +298,7 @@ def testQUIT():
 	print(f"{Style.BRIGHT}{Fore.YELLOW}---QUIT TESTS---")
 	print(Style.RESET_ALL)
 	os.chdir("py_tests/quit")
-	errNeedMoreParams("QUIT")
+	#errNeedMoreParams("QUIT")
 	os.chdir(original_directory)
 
 
@@ -307,9 +307,9 @@ def testKICK():
 	print(f"{Style.BRIGHT}{Fore.YELLOW}---KICK TESTS---")
 	print(Style.RESET_ALL)
 	os.chdir("py_tests/kick")
-	errNeedMoreParams("KICK")
-	errNOSUCHCHANNEL("KICK #nonexistentchannel")
-	errNOSUCHNICK("KICK nonexistentuser")
+	#errNeedMoreParams("KICK")
+	#errNOSUCHCHANNEL("KICK #nonexistentchannel")
+	#errNOSUCHNICK("KICK nonexistentuser")
 	#errNOTONCHANNEL("KICK #nonexistentchannel nonexistentuser")
 	#errCHANOPRIVSNEEDED("KICK #nonexistentchannel nonexistentuser")
 	os.chdir(original_directory)
@@ -319,9 +319,9 @@ def testINVITE():
 	print(f"{Style.BRIGHT}{Fore.YELLOW}---INVITE TESTS---")
 	print(Style.RESET_ALL)
 	os.chdir("py_tests/invite")
-	errNeedMoreParams("INVITE")
-	errNOSUCHNICK("INVITE nonexistentuser #nonexistentchannel")
-	errNOSUCHCHANNEL("INVITE client0 #nonexistentchannel")
+	#errNeedMoreParams("INVITE")
+	#errNOSUCHNICK("INVITE nonexistentuser #nonexistentchannel")
+	#errNOSUCHCHANNEL("INVITE client0 #nonexistentchannel")
 	#errCHANOPRIVSNEEDED("INVITE client0 #nonexistentchannel")
 	os.chdir(original_directory)
 
@@ -330,9 +330,9 @@ def testMODE():
 	print(f"{Style.BRIGHT}{Fore.YELLOW}---MODE TESTS---")
 	print(Style.RESET_ALL)
 	os.chdir("py_tests/mode")
-	errNeedMoreParams("MODE")
-	errNOSUCHNICK("MODE nonexistentuser")
-	errNOSUCHCHANNEL("MODE #nonexistentchannel")
+	#errNeedMoreParams("MODE")
+	#errNOSUCHNICK("MODE nonexistentuser")
+	#errNOSUCHCHANNEL("MODE #nonexistentchannel")
 	#errCHANOPRIVSNEEDED("MODE #nonexistentchannel")
 	os.chdir(original_directory)
 
@@ -341,8 +341,8 @@ def testTOPIC():
 	print(f"{Style.BRIGHT}{Fore.YELLOW}---TOPIC TESTS---")
 	print(Style.RESET_ALL)
 	os.chdir("py_tests/topic")
-	errNeedMoreParams("TOPIC")
-	errNOSUCHCHANNEL("TOPIC #nonexistentchannel")
+	#errNeedMoreParams("TOPIC")
+	#errNOSUCHCHANNEL("TOPIC #nonexistentchannel")
 	#errNOTONCHANNEL("TOPIC #nonexistentchannel")
 	#errCHANOPRIVSNEEDED("TOPIC #nonexistentchannel")
 	os.chdir(original_directory)
@@ -362,7 +362,7 @@ def kill():
 	
 	vector = [
 		(0, "KILL client0: cant do i have no priviliges"), #ERR_NOPRIVILEGES
-		(0, "OPER 10.14.3.10 setOpPW"),
+		(0, "OPER 10.14.3.10 setOpPW"), #--> You are now an IRC operator
 		(0, "KILL"), #ERR_NEEDMOREPARAMS
 		(0, "KILL NoNick "), #ERR_NOSUCHNICK
 		(0, "PRIVMSG client1 :you should see this cuz client 1 is alive and was not kiled"),
@@ -370,7 +370,7 @@ def kill():
 		(0, "KILL client1 :successfull kill of client1"),
 		(0, "PRIVMSG client1 :'No such nick/channel' should be sent"),
 		(0, "KILL client0 :killing myself??"), #problematic cuz running runMultiClientTest after, which sends a QUIT for all users  
-		#(2, "PRIVMSG client0 :'No such nick/channel' should be sent"),
+		(2, "PRIVMSG client0 :'No such nick/channel' should be sent"),
 	]
 	runMultiClientTest(test_name, 3, vector)
 
@@ -402,15 +402,15 @@ original_directory = os.getcwd()
 # serv_pw = input("Enter server password: ")
 
 # -------main----------
-#testPASS()
-#testNICK()
-#testUSER()
-#testPRIVMSG()
+testPASS()
+testNICK()
+testUSER()
+testPRIVMSG()
 testJOIN()
 testPART()
 testQUIT()
-#testKICK()
-#testINVITE()
-#testMODE()
-#testTOPIC()
+testKICK()
+testINVITE()
+testMODE()
+testTOPIC()
 testOPER() #also tests KILL

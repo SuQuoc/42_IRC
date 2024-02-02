@@ -181,7 +181,7 @@ int	Irc::JOIN(std::stringstream &sstream)
 		}
 		channel = getChannel(channel_name);
 		_sender->joinChannel(channel);
-		channel->sendMsg(NULL, ":" + _sender->getPrefix() + " JOIN " + channel_name + " * :" + _sender->getUsername() + "\r\n");
+		channel->sendMsg(NULL, ":" + _sender->getPrefix() + " JOIN " + channel_name + " * :" + _sender->getUsername());
 	}
 	if (cnt == 0)
 		_replier.sendError(ERR_NEEDMOREPARAMS, _sender, "");

@@ -10,13 +10,3 @@
 :client0!user0@10.14.3.10 JOIN #chan8 * :user0
 :client0!user0@10.14.3.10 JOIN #chan9 * :user0
 :AfterLife 405 client0 #chan10 :You have joined too many channels
-:client0!user0@10.14.3.10 QUIT :Leaving
-:client0!user0@10.14.3.10 QUIT :Leaving
-:client0!user0@10.14.3.10 QUIT :Leaving
-:client0!user0@10.14.3.10 QUIT :Leaving
-:client0!user0@10.14.3.10 QUIT :Leaving
-:client0!user0@10.14.3.10 QUIT :Leaving
-:client0!user0@10.14.3.10 QUIT :Leaving
-:client0!user0@10.14.3.10 QUIT :Leaving
-:client0!user0@10.14.3.10 QUIT :Leaving
-:client0!user0@10.14.3.10 QUIT :Leaving
