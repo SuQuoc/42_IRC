@@ -66,7 +66,7 @@ void	TestServer::runPart(Client *client, const std::string &line)
 {
 	std::stringstream	stream(line);
 	setSender(client);
-	MODE(stream);
+	PART(stream);
 }
 
 void	TestServer::runKill(Client *client, const std::string &line)
@@ -102,6 +102,13 @@ void	TestServer::runPass(Client *client, const std::string &line)
 	std::stringstream	stream(line);
 	setSender(client);
 	PASS(stream);
+}
+
+void TestServer::runQuit(Client *client, const std::string &line)
+{
+	std::stringstream	stream(line);
+	setSender(client);
+	QUIT(stream);
 }
 
 Client*	TestServer::createUserAndChannelRunMode(const std::string &channelname, const std::string &username, const std::string &line, int fd)

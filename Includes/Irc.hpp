@@ -52,10 +52,11 @@ public:
 
 //MODE
 	int		MODE(std::stringstream& sstream);
-	void	modesAreSetTo(Client *sender, Channel *channel);
-	void	modesSwitch(Channel *channel, Client *sender, std::map<std::string, int> &operator_rpl_map, std::stringstream &sstream, const char &pre_fix, std::vector<int> &error_codes, const char &word_char);
+	int		sendModesStatus(Channel *channel);
+	int		modesSwitch(Channel *channel, std::map<std::string, int> &operator_rpl_map, std::stringstream &sstream, const char &pre_fix, std::vector<int> &error_codes, const char &word_char);
+	int		sendKeyRPLorError(Channel *channel, std::string &argument, const int &key_code, const char &pre_fix);
 	void	operatorsSendSetModeToChannel(Channel *channel, Client *sender, const std::map<std::string, int> &operator_rpl_map);
 	void	sendSetModeToChannel(Channel *channel, Client *sender, const int &inv_code, const int &topic_code);
 
-	void	setSender(Client *sender) { sender = _sender; }
+	void	setSender(Client *sender) { _sender = sender; }
 };

@@ -8,12 +8,9 @@ void TestServer::correctPW()
 
 	TestServer 	serv("Testserver", "password");
 	serv.addNewClientToFdMap(5, "127.0.0.0");
-	
-	std::string	password("password");
-	std::stringstream	sstream(password);
 
 	Client *client = serv.getClient(5);
-	serv.PASS(client, sstream);
+	serv.runPass(client, "password");
 
 	if (client == NULL) //set it to NULL after deletion in program
 		return (fail("client shouldn't be NULL"));
@@ -28,12 +25,9 @@ void TestServer::incorrectPW()
 
 	TestServer 	serv("Testserver", "password");
 	serv.makeUserJoinChannel("#family", "elena", 5);
-	
-	std::string	password("wrong_password");
-	std::stringstream	sstream(password);
 
 	Client *client = serv.getClient(5);
-	serv.PASS(client, sstream);
+	serv.runPass(client, "187");
 	if (serv.getClient(5) != NULL || serv.getClient("elena") != NULL) //set it to NULL after deletion in program
 		return (fail("client should be deleted"));
 

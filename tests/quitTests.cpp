@@ -15,13 +15,11 @@ void	TestServer::quitWithMessage()
 
 	serv.makeUserJoinChannel("#family", "elena", 5);
 	serv.makeUserJoinChannel("#family", "sara", 6);
-	
-	std::stringstream sstream("#alone");
-	serv.JOIN(serv.getClient("elena"), sstream);
+
+	serv.runJoin(serv.getClient("elena"), "#alone");
 
 	elena = serv.getClient("elena");
-	std::stringstream	comment("leaving for a while");
-	serv.QUIT(elena, comment);
+	serv.runQuit(elena, "leaving for a while");
 	
 	if (serv._channels.size() != 1 || serv.getChannel("#family") == NULL)
 		return (fail("there should be only 1 channel, '#family', left"));

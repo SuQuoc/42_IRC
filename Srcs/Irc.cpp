@@ -5,6 +5,7 @@
 Irc::Irc(const std::string& name, const std::string& password): 
 AServer(name, password),
 _replier(_name),
+_sender(NULL),
 _op_host("OpHost"),
 _op_password("OpPass")
 {}
@@ -469,10 +470,7 @@ int Irc::MODE(std::stringstream &sstream)
 		return(_replier.sendError(ERR_CHANOPRIVSNEEDED, _sender, channel_name));
 	word = extractWord(sstream);
 	if(word.empty() == true)
-	{
-		modesAreSetTo(_sender, channel);
-		return (1);
-	}
+		return (sendModesStatus(channel));
 	while(word.empty() == false)
     {
         pre_fix = '+';
@@ -485,7 +483,7 @@ int Irc::MODE(std::stringstream &sstream)
                 pre_fix = word[i];
 				i++;
 			}
-			modesSwitch(channel, _sender, operator_rpl_map, sstream, pre_fix, error_vec, word[i]);
+			modesSwitch(channel, operator_rpl_map, sstream, pre_fix, error_vec, word[i]);
         }
 		word = extractWord(sstream);
     }
@@ -494,11 +492,11 @@ int Irc::MODE(std::stringstream &sstream)
 	return (0);
 }
 
-void Irc::modesAreSetTo(Client *sender, Channel *channel)
+int Irc::sendModesStatus(Channel *channel)
 {
-	std::stringstream sstream;
-	std::string msg(channel->getName() + " +");
-	std::string args;
+	std::string			msg(channel->getName() + " +");
+	std::stringstream	sstream;
+	std::string 		args;
 
 	if(channel->getRestrictTopic() == true)
 		msg += "t";
@@ -517,50 +515,65 @@ void Irc::modesAreSetTo(Client *sender, Channel *channel)
 	}
 	if(msg == channel->getName() + " +")
 		msg.clear();
-	_replier.sendRPL(RPL_CHANNELMODEIS, sender, msg + args);
+	_replier.sendRPL(RPL_CHANNELMODEIS, _sender, msg + args);
+	return (0);
 }
 
-void Irc::modesSwitch(Channel *channel, Client *sender, std::map<std::string, int> &operator_rpl_map, std::stringstream &sstream, const char &pre_fix, std::vector<int> &error_codes, const char &word_char)
+int Irc::modesSwitch(Channel *channel, std::map<std::string, int> &operator_rpl_map, std::stringstream &sstream, const char &pre_fix, std::vector<int> &error_codes, const char &ch_modes)
 {
 	int 		key_code = -1;
 	std::string argument;
+	enum color {SET_RESTRICT_TOPIC = 't', SET_INVITE_ONLY = 'i', SET_LIMIT = 'l', SET_OPERATOR = 'o', SET_KEY = 'k'};
 
-	if(word_char == 'i')
-		error_codes[0] = channel->setTopicOrInv(pre_fix, word_char);
-	else if(word_char == 't')
-		error_codes[1] = channel->setTopicOrInv(pre_fix, word_char);
-	else if(word_char == 'l' )
+	switch (ch_modes)
 	{
-		if(pre_fix == '+')
+
+		case SET_RESTRICT_TOPIC:
+			return (error_codes[1] = channel->setTopicOrInv(pre_fix, ch_modes));
+
+		case SET_INVITE_ONLY:
+			return (error_codes[0] = channel->setTopicOrInv(pre_fix, ch_modes));
+
+		case SET_OPERATOR:
 			argument = extractWord(sstream);
-		if(error_codes[2] == MODE_SET_PLUS || error_codes[2] == MODE_SET_MINUS)
-			return ;
-		error_codes[2] = channel->setMaxClients(argument, pre_fix);
-		if(error_codes[2] == MODE_SET_PLUS || error_codes[2] == MODE_SET_MINUS)
-			channel->sendMsg(sender, ":" + sender->getPrefix() + " MODE " + channel->getName() + " " + pre_fix + "k " + argument + "\r\n");
-		else if(error_codes[2] == ERR_NEEDMOREPARAMS)
-			_replier.sendError(ERR_NEEDMOREPARAMS, sender, "MODE");
+			operator_rpl_map[argument] = channel->setOperator(pre_fix, getClient(argument));
+			return (1);
+
+		case SET_LIMIT:
+			if(pre_fix == '+')
+				argument = extractWord(sstream);
+			if(error_codes[2] == MODE_SET_PLUS || error_codes[2] == MODE_SET_MINUS)
+				return (2);
+			error_codes[2] = channel->setMaxClients(argument, pre_fix);
+			if(error_codes[2] == MODE_SET_PLUS || error_codes[2] == MODE_SET_MINUS)
+				channel->sendMsg(_sender, ":" + _sender->getPrefix() + " MODE " + channel->getName() + " " + pre_fix + "k " + argument + "\r\n");
+			else if(error_codes[2] == ERR_NEEDMOREPARAMS)
+				_replier.sendError(ERR_NEEDMOREPARAMS, _sender, "MODE");
+			return (3);
+
+		case SET_KEY:
+			argument = extractWord(sstream);
+			if(key_code > 0)
+				return (4);
+			key_code = channel->setPassword(argument, pre_fix);
+			return (sendKeyRPLorError(channel, argument, key_code, pre_fix));
+
+		default:
+			_replier.sendError(ERR_UNKNOWNMODE, _sender, argument = ch_modes);
+
 	}
-	else if(word_char == 'o')
-	{
-		argument = extractWord(sstream);
-		operator_rpl_map[argument] = channel->setOperator(pre_fix, getClient(argument));
-	}
-	else if(word_char == 'k') // k is deferent triggers error?
-	{
-		argument = extractWord(sstream);
-		if(key_code > 0)
-			return ;
-		key_code = channel->setPassword(argument, pre_fix);
-		if(key_code == MODE_SET_PLUS || key_code == MODE_SET_MINUS)
-			channel->sendMsg(sender, ":" + sender->getPrefix() + " MODE " + channel->getName() + " " + pre_fix + "k " + argument + "\r\n");
-		if(key_code == ERR_KEYSET)
-			_replier.sendError(ERR_KEYSET, sender, argument);
-		if(key_code == ERR_NEEDMOREPARAMS)
-			_replier.sendError(ERR_NEEDMOREPARAMS, sender, "MODE");
-	}
-	else
-		_replier.sendError(ERR_UNKNOWNMODE, sender, argument = word_char);
+	return (0);
+}
+
+int Irc::sendKeyRPLorError(Channel *channel, std::string &argument, const int &key_code, const char &pre_fix)
+{
+	if(key_code == MODE_SET_PLUS || key_code == MODE_SET_MINUS)
+		channel->sendMsg(_sender, ":" + _sender->getPrefix() + " MODE " + channel->getName() + " " + pre_fix + "k " + argument + "\r\n");
+	else if(key_code == ERR_KEYSET)
+		_replier.sendError(ERR_KEYSET, _sender, argument);
+	else if(key_code == ERR_NEEDMOREPARAMS)
+		_replier.sendError(ERR_NEEDMOREPARAMS, _sender, "MODE");
+	return (5);
 }
 
 void Irc::operatorsSendSetModeToChannel(Channel *channel, Client *sender, const std::map<std::string, int> &operator_rpl_map)

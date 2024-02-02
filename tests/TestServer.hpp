@@ -20,6 +20,7 @@ private:
 	void	runUser(Client *client, const std::string &line);
 	void	runNick(Client *client, const std::string &line);
 	void	runPass(Client *client, const std::string &line);
+	void	runQuit(Client *client, const std::string &line);
 	Client*	createUserAndChannelRunMode(const std::string &channelname, const std::string &username, const std::string &line, int fd);
 
 
