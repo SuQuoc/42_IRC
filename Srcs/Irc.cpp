@@ -476,11 +476,11 @@ int Irc::MODE(std::stringstream &sstream)
 		return(_replier.sendError(ERR_NOSUCHCHANNEL, _sender, channel_name));
 	if(channel->isInChannel(_sender) == false)
 		return(_replier.sendError(ERR_NOTONCHANNEL, _sender, channel_name));
-	if(channel->isOperator(_sender) == false)
-		return(_replier.sendError(ERR_CHANOPRIVSNEEDED, _sender, channel_name));
 	word = extractWord(sstream);
 	if(word.empty() == true)
 		return (sendModesStatus(channel));
+	if(channel->isOperator(_sender) == false)
+		return(_replier.sendError(ERR_CHANOPRIVSNEEDED, _sender, channel_name));
 	while(word.empty() == false)
     {
         pre_fix = '+';
@@ -518,7 +518,7 @@ int Irc::sendModesStatus(Channel *channel)
 		sstream << channel->getMaxClients();
 		args = " " + sstream.str();
 	}
-	if(channel->getPassword().empty() == true)
+	if(channel->getPassword().empty() == false)
 	{
 		msg += "k";
 		args = " " + channel->getPassword();
@@ -556,7 +556,7 @@ int Irc::modesSwitch(Channel *channel, std::map<std::string, int> &operator_rpl_
 				return (2);
 			error_codes[2] = channel->setMaxClients(argument, pre_fix);
 			if(error_codes[2] == MODE_SET_PLUS || error_codes[2] == MODE_SET_MINUS)
-				channel->sendMsg(_sender, ":" + _sender->getPrefix() + " MODE " + channel->getName() + " " + pre_fix + "k " + argument + "\r\n");
+				channel->sendMsg(NULL, ":" + _sender->getPrefix() + " MODE " + channel->getName() + " " + pre_fix + "l " + argument + "\r\n");
 			else if(error_codes[2] == ERR_NEEDMOREPARAMS)
 				_replier.sendError(ERR_NEEDMOREPARAMS, _sender, "MODE");
 			return (3);
@@ -578,7 +578,7 @@ int Irc::modesSwitch(Channel *channel, std::map<std::string, int> &operator_rpl_
 int Irc::sendKeyRPLorError(Channel *channel, std::string &argument, const int &key_code, const char &pre_fix)
 {
 	if(key_code == MODE_SET_PLUS || key_code == MODE_SET_MINUS)
-		channel->sendMsg(_sender, ":" + _sender->getPrefix() + " MODE " + channel->getName() + " " + pre_fix + "k " + argument + "\r\n");
+		channel->sendMsg(NULL, ":" + _sender->getPrefix() + " MODE " + channel->getName() + " " + pre_fix + "k " + argument + "\r\n");
 	else if(key_code == ERR_KEYSET)
 		_replier.sendError(ERR_KEYSET, _sender, argument);
 	else if(key_code == ERR_NEEDMOREPARAMS)
@@ -610,7 +610,7 @@ void Irc::operatorsSendSetModeToChannel(Channel *channel, Client *sender, const 
 			_replier.sendError(error_code, sender, o_itr->first);
 	}
 	if(o_modes_str.empty() == false)
-		channel->sendMsg(sender, ":" + sender->getPrefix() + " MODE " + channel->getName() + " " + o_modes_str + o_set_names + "\r\n");
+		channel->sendMsg(NULL, ":" + sender->getPrefix() + " MODE " + channel->getName() + " " + o_modes_str + o_set_names + "\r\n");
 }
 
 void Irc::sendSetModeToChannel(Channel *channel, Client *sender, const int &inv_code, const int &topic_code)
