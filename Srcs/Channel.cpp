@@ -50,12 +50,12 @@ void Channel::sendMsg(const Client *sender, const std::string &msg)
 	{
 		if (sender && itr->members == sender)
 			continue ;
-		if (send(itr->members->getFd(), msg.c_str(), msg.size(), 0) == -1)
-		{
-			/* std::cerr << "send faild in channel.cpp" << std::endl;
-			strerror(errno);
-			std::exit(EXIT_FAILURE); //? */
-		}
+		protectedSend(itr->members->getFd(), msg);
+		// {
+			// /* std::cerr << "send faild in channel.cpp" << std::endl;
+			// strerror(errno);
+			// std::exit(EXIT_FAILURE); //? */
+		// }
 	}
 }
 
@@ -90,6 +90,23 @@ int	Channel::rmClient(const Client *rm_client, const std::string &leaving_msg) /
 		return (DELETE_CHANNEL);
 	return (0);
 }
+
+int	Channel::rmClientTest(const Client *rm_client, const Client *ignore_me, const std::string &leaving_msg)
+{
+	clients_itr itr;
+
+	if (!rm_client)
+		return (-2); //should never happen
+	itr = getClient(rm_client);
+	if (itr == _clients.end())
+		return (ERR_NOTONCHANNEL);
+	sendMsg(ignore_me, leaving_msg);
+	_clients.erase(itr);
+	if (_clients.empty())
+		return (DELETE_CHANNEL);
+	return (0);
+}
+
 
 // -1 if client is NULL
 // -2 is already in channel

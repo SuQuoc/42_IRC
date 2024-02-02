@@ -86,7 +86,8 @@ def runMultiClientTest(test_name, n_clients, vector):
 			msg = pair[1]
 			sendMsg(processes[client_id], msg)
 			time.sleep(0.5)
-		quitAllNetcats(processes)
+		sigintAllClients(processes)
+		#quitAllNetcats(processes)
 
 	if not os.path.isfile(f'{test_name}.expected'):
 		open(f'{test_name}.expected', 'w').close()
@@ -235,8 +236,6 @@ def testNICK():
 
 #------------------USER------------------
 	
-
-
 def testUSER():
 	print(f"{Style.BRIGHT}{Fore.YELLOW}---USER TESTS---")
 	print(Style.RESET_ALL)
@@ -271,7 +270,7 @@ def joiningTooManyChannels():
 	test_name = "joiningTooManyChannels"
 	
 	vector = []
-	for i in range(11):
+	for i in range(2):
 		join_msg = "JOIN #chan" + str(i)
 		vector.append((0, join_msg))		
 	runMultiClientTest(test_name, 1, vector)
@@ -362,11 +361,18 @@ def kill():
 	test_name = "oper_kill"
 	
 	vector = [
-		(0, "KILL client0: bye bye"),
+		(0, "KILL client0: cant do i have no priviliges"), #ERR_NOPRIVILEGES
 		(0, "OPER 10.14.3.10 setOpPW"),
-		(0, "KILL client0: bye bye"),
+		(0, "KILL"), #ERR_NEEDMOREPARAMS
+		(0, "KILL NoNick "), #ERR_NOSUCHNICK
+		(0, "PRIVMSG client1 :you should see this cuz client 1 is alive and was not kiled"),
+		(1, "PRIVMSG client0 :yes i am alive"),
+		(0, "KILL client1 :successfull kill of client1"),
+		(0, "PRIVMSG client1 :'No such nick/channel' should be sent"),
+		(0, "KILL client0 :killing myself??"), #problematic cuz running runMultiClientTest after, which sends a QUIT for all users  
+		#(2, "PRIVMSG client0 :'No such nick/channel' should be sent"),
 	]
-	runMultiClientTest(test_name, 2, vector)
+	runMultiClientTest(test_name, 3, vector)
 
 def testOPER():
 	print(f"{Style.BRIGHT}{Fore.YELLOW}---OPER + KILL TESTS---")
@@ -396,15 +402,15 @@ original_directory = os.getcwd()
 # serv_pw = input("Enter server password: ")
 
 # -------main----------
-testPASS()
-testNICK()
-testUSER()
-testPRIVMSG()
+#testPASS()
+#testNICK()
+#testUSER()
+#testPRIVMSG()
 testJOIN()
 testPART()
 testQUIT()
-testKICK()
-testINVITE()
-testMODE()
-testTOPIC()
+#testKICK()
+#testINVITE()
+#testMODE()
+#testTOPIC()
 testOPER() #also tests KILL

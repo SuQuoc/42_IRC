@@ -50,6 +50,7 @@ void	Irc::command_switch(Client *sender, const std::string message) //message-> 
 	else if (cmd == "MODE") MODE(sstream);
 	else if (cmd == "TOPIC") TOPIC(sstream);
 	else if (cmd == "OPER") OPER(sstream);
+	else if (cmd == "KILL") KILL(sstream);
 	else _replier.sendError(ERR_UNKNOWNCOMMAND, _sender, cmd);
 	std::cout << std::endl;
 }
@@ -301,7 +302,7 @@ void Irc::PRIVMSG(std::stringstream &sstream)
 		{
 			Client *reciever = getClient(recipient);
 			if (reciever == NULL)
-				_replier.sendError(ERR_NOSUCHNICK, _sender, "");
+				_replier.sendError(ERR_NOSUCHNICK, _sender, recipient);
 			else if (message.empty())
 				_replier.sendError(ERR_NOTEXTTOSEND, _sender, ""); //return message is checked before to avoid checking in loop
 			else
@@ -439,7 +440,7 @@ int Irc::KILL(std::stringstream &sstream)
 		return (_replier.sendError(ERR_NOSUCHNICK, _sender, nickname));
 	
 	comment = extractWord(sstream);
-	disconnectClient(client_to_kill, comment); //what about killing himself? and another command after that??
+	disconnectClient(client_to_kill, comment); //what about killing himself? and another command after that?? -> we check in cmd switch if client is not NULL
 	return (0);
 }
 
