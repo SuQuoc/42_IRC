@@ -324,9 +324,9 @@ std::string Irc::createMsg(Client *sender, const std::string& cmd, const std::st
 	if (!sender)
         return msg;
 	if (recipient.empty())
-		message = ":" + sender->getPrefix() + " " + cmd + " :" + msg + "\r\n";
+		message = ":" + sender->getPrefix() + " " + cmd + " :" + msg;
     else
-		message = ":" + sender->getPrefix() + " " + cmd + " " + recipient + " :" + msg + "\r\n"; //PART uses same method -> extra function?
+		message = ":" + sender->getPrefix() + " " + cmd + " " + recipient + " :" + msg; //PART uses same method -> extra function?
     return message;
 }
 
@@ -339,7 +339,6 @@ void Irc::TOPIC(std::stringstream &sstream)
 
 	if (channel_name.empty())
 		return (_replier.sendError(ERR_NEEDMOREPARAMS, _sender, ""), void());
-
 	channel = getChannel(channel_name);
 	if (channel == NULL)
 		return ; //no error listed in protocoll
@@ -356,7 +355,7 @@ void Irc::TOPIC(std::stringstream &sstream)
 	else
 	{
 		int err = channel->setTopic(_sender->getNickname(), topic); //checks if sender is operator??
-		if (err != 0)
+		if (err != TOPIC_SET)
 			_replier.sendError(static_cast<IRC_ERR>(err), _sender, channel_name);
 		else
 		{

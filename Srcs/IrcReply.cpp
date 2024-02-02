@@ -102,12 +102,7 @@ int	IrcReply::sendError(IRC_ERR error, Client* sender, const std::string& input)
 			std::cout << "CANT HAPPEN DUE TO ENUM" << std::endl;
 			//throw ;?
 	}
-	err_message += "\r\n";
-	if(send(sender->getFd(), err_message.c_str(), err_message.size(), 0) == -1) //--> turn this to a seperat function that sends in a while loop, others outside of switch can also use it 
-	{
-		std::cerr << "Error send failed in Irc_error." << std::endl;
-		return(-1);
-	}
+	protectedSend(sender->getFd(), err_message);
 	return (error);
 }
 
@@ -136,7 +131,7 @@ void	IrcReply::sendRPL(IRC_ERR error, Client* sender, const std::string& input) 
 			msg += " :You are now an IRC operator";
 			break;
 		case RPL_TOPIC:
-			msg = input + "<channel> :<topic>"; //channel topic
+			msg = input; //"<channel> :<topic>"
 			break;
 		case RPL_NOTOPIC:
 			msg = input + " :No topic is set"; //channel
@@ -144,7 +139,6 @@ void	IrcReply::sendRPL(IRC_ERR error, Client* sender, const std::string& input) 
 		default:
 			std::cout << "CANT HAPPEN DUE TO ENUM" << std::endl;
 	}
-	msg += "\r\n";
-	send(sender->getFd(), msg.c_str(), msg.size(), 0);
+	protectedSend(sender->getFd(), msg);
 }
 
