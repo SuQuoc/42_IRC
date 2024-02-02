@@ -46,7 +46,7 @@ def	registerClients(processes, password):
 		sendMsg(process, pass_msg)
 		sendMsg(process, nick_msg)
 		sendMsg(process, user_msg)
-		time.sleep(0.5)
+		time.sleep(0.4)
 		i+=1
 
 
@@ -67,7 +67,7 @@ def runMultiNonRegisClientTest(test_name, n_clients, vector):
 			client_id = pair[0]
 			msg = pair[1]
 			sendMsg(processes[client_id], msg)
-			time.sleep(0.5)
+			time.sleep(0.4)
 		sigintAllClients(processes)
 
 	if not os.path.isfile(f'{test_name}.expected'):
@@ -85,7 +85,7 @@ def runMultiClientTest(test_name, n_clients, vector):
 			client_id = pair[0]
 			msg = pair[1]
 			sendMsg(processes[client_id], msg)
-			time.sleep(0.5)
+			time.sleep(0.4)
 		quitAllNetcats(processes)
 
 	if not os.path.isfile(f'{test_name}.expected'):
@@ -124,6 +124,21 @@ def errNeedMoreParams(msg):
 	test_name = "ERR_NEEDMOREPARAMS"
 	runMultiClientTest(test_name, 1, [(0, msg)])
 
+def errAlreadyRegisteredPASS():
+	test_name = "ERR_ALREADYREGISTERED"
+	vector = [
+		(0, "PASS"),
+		(0, "PASS pw1234567"), #correct password
+		(0, "PASS wrong_password"), #correct password
+	]
+
+def errAlreadyRegisteredUSER():
+	test_name = "ERR_ALREADYREGISTERED"
+	vector = [
+		(0, "USER"),
+		(0, "USER userX"), #correct password
+		(0, "USER userX hostX servX reealX"), #correct password
+	]
 
 def errNORECIPIENT(msg):
 	test_name = "ERR_NORECIPIENT"
@@ -142,17 +157,21 @@ def errNOSUCHNICK(msg):
 	runSingleClientTest(test_name, msg)
 
 #------------------PASS------------------
+def errWrongPassword():
+	vector = [
+		(0, "PASS wrongPW pw1234567"),
+		#(0, "PASS 2ndWrongPW"), #connection is lostand results in broken pipe in csript
+	]
+	runMultiNonRegisClientTest("errWrongPassword", 1, vector)
+
 def testPASS():
 	print(f"{Style.BRIGHT}{Fore.YELLOW}---PASS TESTS---")
 	print(Style.RESET_ALL)
 	os.chdir("py_tests/pass")
+	errWrongPassword()
 	errNeedMoreParamsNotRegis("PASS")
 	errNeedMoreParams("PASS")
-	#errAlreadyRegistered("PASS")
-	#errAlreadyRegistered("PASS pw1234567")
-	#errWrongPassword("PASS wrongpw")
-	#errWrongPassword("PASS pw1234567 wrongpw")
-	#errWrongPassword("PASS pw1234567)
+	errAlreadyRegisteredPASS()
 	os.chdir(original_directory)
 
 #------------------NICK------------------
@@ -210,14 +229,16 @@ def testNICK():
 
 
 #------------------USER------------------
+	
+
+
 def testUSER():
 	print(f"{Style.BRIGHT}{Fore.YELLOW}---USER TESTS---")
 	print(Style.RESET_ALL)
 	os.chdir("py_tests/user")
 	errNeedMoreParamsNotRegis("USER")
 	errNeedMoreParams("USER")
-	#errAlreadyRegistered("USER")
-	#errAlreadyRegistered("USER user1 host1 serv1 :real1")
+	errAlreadyRegisteredUSER()
 	os.chdir(original_directory)
 	
 #------------------PRIVMSG------------------
