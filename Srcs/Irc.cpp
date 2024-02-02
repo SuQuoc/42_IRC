@@ -67,7 +67,7 @@ void Irc::PASS(std::stringstream &sstream)
 	}
 	else if (password.empty())
 	{
-		_replier.sendError(ERR_NEEDMOREPARAMS, sender, ""); //already registered
+		_replier.sendError(ERR_NEEDMOREPARAMS, _sender, ""); //already registered
 		return ;
 	}
     else if (password == _password)
@@ -413,10 +413,10 @@ void Irc::OPER(std::stringstream &sstream)
 		_replier.sendError(ERR_PASSWDMISMATCH, _sender, "");
 	else
 	{
-		sender->elevateToServOp(); //what if send in next line fails?
-		_replier.sendRPL(RPL_YOUREOPER, sender, "");
+		_sender->elevateToServOp(); //what if send in next line fails?
+		_replier.sendRPL(RPL_YOUREOPER, _sender, "");
 		//should we make him channel op in all channels exsiting or he is in???
-		std::cout << "INFO: " << sender->getPrefix() << " is now server op, chaos is coming!" << std::endl; //out?
+		std::cout << "INFO: " << _sender->getPrefix() << " is now server op, chaos is coming!" << std::endl; //out?
 	}
 }
 

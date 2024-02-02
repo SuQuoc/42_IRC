@@ -141,7 +141,7 @@ def errAlreadyRegisteredUSER():
 		(0, "USER userX"),
 		(0, "USER userX hostX servX reealX"),
 	]
-	runMultiClientTest("errAlreadyRegisteredPASS", 1, vector)
+	runMultiClientTest("errAlreadyRegisteredUSER", 1, vector)
 
 
 def errNORECIPIENT(msg):
