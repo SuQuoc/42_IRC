@@ -4,11 +4,10 @@ void	TestServer::partEmptySstream()
 {
 	TestServer 			serv;
 	Client				*elena;
-	std::stringstream	sstream("");
 
 	serv.makeUserJoinChannel("#Channel", "Elena", 5);
 	elena = serv.getClient("Elena");
-	serv.PART(elena, sstream);
+	serv.runPart(elena, "");
 
 	if (elena->getChannelCount() != 1)
 		return (fail("elena should be in one channel"));
@@ -19,11 +18,10 @@ void	TestServer::partEmptySpacesSstream()
 {
 	TestServer 			serv;
 	Client				*elena;
-	std::stringstream	sstream("   ");
 
 	serv.makeUserJoinChannel("#Channel", "Elena", 5);
 	elena = serv.getClient("Elena");
-	serv.PART(elena, sstream);
+	serv.runPart(elena, "   ");
 
 	if (elena->getChannelCount() != 1)
 		return (fail("elena should be in one channel"));
@@ -36,14 +34,13 @@ void	TestServer::partChannelNotEmpty()
 	Channel		*channel;
 	Client		*elena;
 	std::string			channel_name("#channel");
-	std::stringstream	sstream(channel_name);
 
 	serv.makeUserJoinChannel(channel_name, "Sara", 5);
 	serv.makeUserJoinChannel(channel_name, "Elena", 6);
 
 	channel = serv.getChannel(channel_name);
 	elena = serv.getClient("Elena");
-	serv.PART(elena, sstream);
+	serv.runPart(elena, channel_name);
 
 	if (elena == NULL)
 		return (fail("elena shouldn't be NULL"));
@@ -62,13 +59,12 @@ void	TestServer::partChannelEmpty()
 	Channel		*channel;
 	Client		*elena;
 	std::string			channel_name("#channel");
-	std::stringstream	sstream(channel_name);
 
 	serv.makeUserJoinChannel(channel_name, "Elena", 6);
 
 	channel = serv.getChannel(channel_name);
 	elena = serv.getClient("Elena");
-	serv.PART(elena, sstream);
+	serv.runPart(elena, channel_name);
 
 	if (elena == NULL)
 		return (fail("elena shouldn't be NULL"));
@@ -90,8 +86,7 @@ void	TestServer::fromTooManyUsersToChannelEmpty()
 		serv.makeUserJoinChannel(channel_name, std::to_string(i), 5 + i);
 	for (int i = 0; i < MAX_CLIENTS; i++)
 	{
-		std::stringstream	sstream(channel_name);
-		serv.PART(serv._client_fds.find(i)->second, sstream);
+		serv.runPart(serv._client_fds.find(i)->second, channel_name);
 	}
 	
 	if (serv.getChannelIter(channel_name) != serv._channels.end())
@@ -104,14 +99,13 @@ void	TestServer::userNotInChannel()
 	Channel		*channel;
 	Client		*elena;
 	std::string			channel_name("#channel");
-	std::stringstream	sstream(channel_name);
 
 	serv.makeUserJoinChannel(channel_name, "Sara", 5);
 	serv.makeUser("Elena", 6);
 
 	channel = serv.getChannel(channel_name);
 	elena = serv.getClient("Elena");
-	serv.PART(elena, sstream);
+	serv.runPart(elena, channel_name);
 
 	if (elena == NULL)
 		return (fail("elena shouldn't be NULL"));
@@ -130,13 +124,12 @@ void	TestServer::noSuchChannel()
 	Channel		*channel;
 	Client		*elena;
 	std::string			channel_name("#channel");
-	std::stringstream	sstream(channel_name);
 
 	serv.makeUser("Elena", 6);
 
 	channel = serv.getChannel(channel_name);
 	elena = serv.getClient("Elena");
-	serv.PART(elena, sstream);
+	serv.runPart(elena, channel_name);
 
 	if (elena == NULL)
 		return (fail("elena shouldn't be NULL"));
@@ -155,14 +148,12 @@ void	TestServer::partMultipleChannels()
 	elena = serv.getClient("Elena");
 	for (int i = 0; i < LIST_LIMIT; i++)
 	{
-		std::stringstream	sstream("#" + std::to_string(i));
 		channels += "#" + std::to_string(i) + ",";
-		serv.JOIN(elena, sstream);
+		serv.runJoin(elena, "#" + std::to_string(i));
 	}
 	if (elena->getChannelCount() != LIST_LIMIT)
 		return (fail("elena should be in LIST_LIMIT(10) channels"));
-	std::stringstream	part_input(channels);
-	serv.PART(elena, part_input);
+	serv.runPart(elena, channels);
 	
 	if (elena->getChannelCount() != 0)
 		return (fail("elena should have parted from all channels"));
@@ -179,14 +170,12 @@ void	TestServer::partOverListLimit()
 	elena = serv.getClient("Elena");
 	for (int i = 0; i < LIST_LIMIT + 5; i++)
 	{
-		std::stringstream	sstream("#" + std::to_string(i));
 		channels += "#" + std::to_string(i) + ",";
-		serv.JOIN(elena, sstream);
+		serv.runJoin(elena, "#" + std::to_string(i));
 	}
 	if (elena->getChannelCount() != LIST_LIMIT)
 		return (fail("elena should be in LIST_LIMIT(10) channels"));
-	std::stringstream	part_input(channels);
-	serv.PART(elena, part_input);
+	serv.runPart(elena, channels);
 	
 	if (elena->getChannelCount() != 0)
 		return (fail("elena should have parted from all channels"));

@@ -11,14 +11,12 @@ void	TestServer::wrongOperHost()
 
 	serv.makeUserJoinChannel("#channel", "nickT", 5); //using it to create a client
 
-	std::stringstream ss("wrong_host pw");
-	serv.OPER(serv.getClient(5), ss);
+	serv.runOper(serv.getClient(5), "wrong_host pw");
 	if (serv.getClient(5)->isServerOp())
 		return (fail("client should not be operator, wrong host"));
 
 
-	std::stringstream ss2("passw");
-	serv.OPER(serv.getClient(5), ss2);
+	serv.runOper(serv.getClient(5), "passw");
 	if (serv.getClient(5)->isServerOp())
 		return (fail("client should not be operator, 'empty' host"));
 
@@ -37,13 +35,11 @@ void	TestServer::wrongOperPW()
 
 	serv.makeUserJoinChannel("#channel", "nickT", 5); //using it to create a client
 
-	std::stringstream ss("host wrong_pw");
-	serv.OPER(serv.getClient(5), ss);
+	serv.runOper(serv.getClient(5), "host wrong_pw");
 	if (serv.getClient(5)->isServerOp())
 		return (fail("client should not be operator, wrong pw"));
 
-	std::stringstream ss2("host");
-	serv.OPER(serv.getClient(5), ss2);
+	serv.runOper(serv.getClient(5), "host");
 	if (serv.getClient(5)->isServerOp())
 		return (fail("client should not be operator, 'empty' password"));
 	ok();
@@ -74,8 +70,7 @@ void	TestServer::correctOperDefault()
 	TestServer 	serv("Testserver", "password");
 	serv.makeUserJoinChannel("#channel", "nickT", 5); //using it to create a client
 
-	std::stringstream ss("OpHost OpPass");
-	serv.OPER(serv.getClient(5), ss);
+	serv.runOper(serv.getClient(5), "OpHost OpPass");
 	if (serv.getClient(5)->isServerOp() == false)
 		return (fail("client should be operator"));
 	ok();
@@ -91,16 +86,14 @@ void TestServer::twoCorrectOper()
 
 	serv.makeUserJoinChannel("#channel", "nickT", 5); //using it to create a client
 
-	std::stringstream ss("host pw");
-	serv.OPER(serv.getClient(5), ss);
+	serv.runOper(serv.getClient(5), "host pw");
 	if (serv.getClient(5)->isServerOp() == false)
 		return (fail("client should be operator"));
 	
 	
 	serv.makeUserJoinChannel("#channel2", "nickT2", 6); //using it to create a client
 
-	std::stringstream ss2("host pw");
-	serv.OPER(serv.getClient(6), ss2);
+	serv.runOper(serv.getClient(6), "host pw");
 	if (serv.getClient(6)->isServerOp() == false)
 		return (fail("client should be operator"));
 	ok();
