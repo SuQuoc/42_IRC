@@ -251,20 +251,69 @@ def joinTooManyChannelsWithList():
 	]
 	runMultiClientTest(test_name, 1, vector)
 
+def inviteOnlyChannel():
+	test_name = "inviteOnlyChannel"
+	vector = [
+		(0, "JOIN #chan"),
+		(0, "MODE #chan +i"),
+		(1, "JOIN #chan"), #cant join
+		(0, "INVITE client1 #chan"),
+		(1, "JOIN #chan"), #can join now
+		]
+	runMultiClientTest(test_name, 2, vector)
+
+def inviteOnlyChannelOrder():
+	test_name = "inviteOnlyChannelOrder"
+	vector = [
+		(0, "JOIN #chan"),
+		(0, "INVITE client1 #chan"),
+		(0, "MODE #chan +i"),
+		(1, "JOIN #chan"), #can join now
+		]
+	runMultiClientTest(test_name, 2, vector)
+	
+def badChannelKey():
+	test_name = "badChannelKey"
+	vector = [
+		(0, "JOIN #chan"),
+		(0, "MODE #chan +k Key"),
+		(1, "JOIN #chan"), #cant join
+		(1, "JOIN #chan wrong key"), #cant join
+		(1, "JOIN #chan key"), #cant join case sensitive?
+		(1, "JOIN #chan Key"), #cant join case sensitive?
+		]
+	runMultiClientTest(test_name, 2, vector)
+
 def testJOIN():
 	setupTest("join")
 	#errNeedMoreParams("JOIN")
 	#errNOSUCHCHANNEL("JOIN #nonexistentchannel")
+	
 	#joiningTooManyChannels() #1 client trying to join 11 channels
 	#joinTooManyChannelsWithList() #1 client trying to join 11 channels in a list
-	fullChannel() #11 clients trying to join  
+	#fullChannel() #11 clients trying to join  
+	inviteOnlyChannel()
+	inviteOnlyChannelOrder() #weird order
+	badChannelKey()
 	os.chdir(original_directory)
 
 #------------------PART------------------
+def partingChannel():
+	test_name = "partingChannel"
+	vector = [
+		(0, "JOIN #chan"),
+		(1, "JOIN #chan"),
+		(0, "PART #chan"),
+		(0, "PART #chan"),
+		(1, "MODE #chan +i"),
+		]
+	runMultiClientTest(test_name, 2, vector)
+
 def testPART():
 	setupTest("part")
 	#errNeedMoreParams("PART")
 	#errNOSUCHCHANNEL("PART #nonexistentchannel")
+	partingChannel()
 	os.chdir(original_directory)
 
 #------------------QUIT------------------
@@ -303,13 +352,26 @@ def testMODE():
 	os.chdir(original_directory)
 
 #------------------TOPIC------------------
+def rplTopic():
+	test_name = "rplTopic"
+	vector = [
+		(0, "JOIN #chan"),
+		(1, "TOPIC #chan"),
+		(0, "TOPIC #chan :new topic"),
+		(1, "TOPIC #chan"),
+	]
+	runMultiClientTest(test_name, 2, vector)
+
+
 def testTOPIC():
 	setupTest("topic")
 	#errNeedMoreParams("TOPIC")
 	#errNOSUCHCHANNEL("TOPIC #nonexistentchannel")
 	#errNOTONCHANNEL("TOPIC #nonexistentchannel")
 	#errCHANOPRIVSNEEDED("TOPIC #nonexistentchannel")
+	rplTopic()
 	os.chdir(original_directory)
+
 #------------------OPER + KILL------------------
 def wrongOperHost():
 	test_name = "wrongOperHost"
@@ -377,12 +439,12 @@ test_dir = "py_tests"
 #testNICK()
 #testUSER()
 #testPRIVMSG()
-testJOIN()
-#testPART()
+#testJOIN()
+testPART()
 #testQUIT()
 #testKICK()
 #testINVITE()
 #testMODE()
-#testTOPIC()
+testTOPIC()
 #testOPER() #also tests KILL
 #testServerLimit()
