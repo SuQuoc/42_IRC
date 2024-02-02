@@ -6,56 +6,17 @@ import signal
 import os
 import time
 from colorama import Fore, Style
-
-# ---------------------UTILS---------------------
-def get_ip_address():
-	hostname = socket.gethostname()    # get local machine name
-	IP = socket.gethostbyname(hostname)    # get IP address of that hostname
-	print(f"The IP address of this machine is: {IP}")
-	return IP
-
-def sendMsg(process, message):
-	process.stdin.write((message + "\r\n").encode())
-	process.stdin.flush()
-
-def start_netcat(host, port, n, filename):
-	processes = []
-	for _ in range(n):
-		process = subprocess.Popen(["nc", host, str(port)], stdin=subprocess.PIPE, stdout=filename)
-		processes.append(process)
-	return processes
-
-def quitAllNetcats(processes):
-    quit_message = "QUIT\r\n"
-    for process in processes:
-        process.communicate(quit_message.encode())
-
-def	registerClients(processes, password):
-	i = 0
-	pass_msg = "PASS " + password
-	for process in processes:
-		nickname = "client" + str(i)
-		username = "user" + str(i)
-		hostname = "host" + str(i)
-		servername = "serv" + str(i)
-		realname = "real " + str(i)
-
-		nick_msg = "NICK " + nickname
-		user_msg = "USER " + username + " " + hostname + " " + servername + " :" + realname
-		
-		sendMsg(process, pass_msg)
-		sendMsg(process, nick_msg)
-		sendMsg(process, user_msg)
-		time.sleep(0.5)
-		i+=1
-
-
-# ---------------------IRC UTILS---------------------
-def joinChannel(process, channel):
-	join_msg = "JOIN " + channel
-	sendMsg(process, join_msg)
+from utils import get_ip_address, sendMsg, start_netcat, quitAllNetcats, registerClients
 
 # ---------------------core framework?---------------------
+def setupTest(test_name):
+	print(f"{Style.BRIGHT}{Fore.YELLOW}---{test_name} test---")
+	print(Style.RESET_ALL)
+	dir_path = f"py_tests/{test_name}"
+	if not os.path.exists(dir_path):
+		os.makedirs(dir_path)
+	os.chdir(f"py_tests/{test_name}")
+
 def sigintAllClients(processes):
 	for process in processes:
 		os.kill(process.pid, signal.SIGINT)
@@ -86,8 +47,8 @@ def runMultiClientTest(test_name, n_clients, vector):
 			msg = pair[1]
 			sendMsg(processes[client_id], msg)
 			time.sleep(0.5)
-		sigintAllClients(processes)
-		#quitAllNetcats(processes)
+		quitAllNetcats(processes)
+		#sigintAllClients(processes)
 
 	if not os.path.isfile(f'{test_name}.expected'):
 		open(f'{test_name}.expected', 'w').close()
@@ -170,9 +131,7 @@ def errWrongPassword():
 	runMultiNonRegisClientTest("errWrongPassword", 1, vector)
 
 def testPASS():
-	print(f"{Style.BRIGHT}{Fore.YELLOW}---PASS TESTS---")
-	print(Style.RESET_ALL)
-	os.chdir("py_tests/pass")
+	setupTest("pass")
 	errWrongPassword()
 	errNeedMoreParamsNotRegis("PASS")
 	errNeedMoreParams("PASS")
@@ -211,7 +170,7 @@ def errErroneusNickname():
 def changingNick():
 	test_name = "changingNick"
 	vector = [
-		(1, "PRIVMSG client0 :NO error should be sent"),
+		(1, "PRIVMSG client0 :You should see this message"),
 		(0, "NICK newNick"),
 		(1, "PRIVMSG newNick :if you see this, it means that the nick was changed successfully"),
 		(1, "PRIVMSG client0 :'No such nick/channel' should be sent"),
@@ -222,9 +181,7 @@ def changingNick():
 	runMultiClientTest(test_name, 3, vector)
 
 def testNICK():
-	print(f"{Style.BRIGHT}{Fore.YELLOW}---NICK TESTS---")
-	print(Style.RESET_ALL)
-	os.chdir("py_tests/nick")
+	setupTest("nick")	
 	errNeedMoreParamsNotRegis("NICK") #ERR_NONICKNAMEGIVEN
 	errNeedMoreParams("NICK") #ERR_NONICKNAMEGIVEN
 	errErroneusNicknameNotRegis()
@@ -237,9 +194,7 @@ def testNICK():
 #------------------USER------------------
 	
 def testUSER():
-	print(f"{Style.BRIGHT}{Fore.YELLOW}---USER TESTS---")
-	print(Style.RESET_ALL)
-	os.chdir("py_tests/user")
+	setupTest("user")
 	errNeedMoreParamsNotRegis("USER")
 	errNeedMoreParams("USER")
 	errAlreadyRegisteredUSER()
@@ -253,9 +208,7 @@ def msgTest():
 	runMultiClientTest("privmsg_test", 2, vector)
 
 def testPRIVMSG():
-	print(f"{Style.BRIGHT}{Fore.YELLOW}---PRIVMSG TESTS---")
-	print(Style.RESET_ALL)
-	os.chdir("py_tests/privmsg")
+	setupTest("privmsg") #testname
 	errNeedMoreParams("PRIVMSG")
 	errNORECIPIENT("PRIVMSG")
 	#errNOTEXTTOSEND("PRIVMSG") #i need a user that exists or a channel
@@ -263,7 +216,6 @@ def testPRIVMSG():
 	errNOSUCHNICK("PRIVMSG nonexistentuser")
 	msgTest()
 	os.chdir(original_directory)
-
 
 #------------------JOIN------------------
 def joiningTooManyChannels():
@@ -291,39 +243,39 @@ def tooManyClientsInChannel():
 	]
 	runMultiClientTest(test_name, 11, vector)
 
+def joinTooManyChannelsWithList():
+	test_name = "joinTooManyChannelsWithList"
+	vector = [
+		(0, "JOIN #chan0,#chan1,#chan2,#chan3,#chan4,#chan5,#chan6,#chan7,#chan8,#chan9,#chan10"), #joining 11 channels
+	]
+	runMultiClientTest(test_name, 1, vector)
+
 def testJOIN():
-	print(f"{Style.BRIGHT}{Fore.YELLOW}---JOIN TESTS---")
-	print(Style.RESET_ALL)
-	os.chdir("py_tests/join")
+	setupTest("join")
 	#errNeedMoreParams("JOIN")
 	#errNOSUCHCHANNEL("JOIN #nonexistentchannel")
-	joiningTooManyChannels() #1 client trying to join 11
+	joiningTooManyChannels() #1 client trying to join 11 channels
+	joinTooManyChannelsWithList() #1 client trying to join 11 channels in a list
 	tooManyClientsInChannel() #11 clients trying to join  
 	os.chdir(original_directory)
 
 #------------------PART------------------
 def testPART():
-	print(f"{Style.BRIGHT}{Fore.YELLOW}---PART TESTS---")
-	print(Style.RESET_ALL)
-	os.chdir("py_tests/part")
+	setupTest("part")
 	#errNeedMoreParams("PART")
 	#errNOSUCHCHANNEL("PART #nonexistentchannel")
 	os.chdir(original_directory)
 
 #------------------QUIT------------------
 def testQUIT():
-	print(f"{Style.BRIGHT}{Fore.YELLOW}---QUIT TESTS---")
-	print(Style.RESET_ALL)
-	os.chdir("py_tests/quit")
+	setupTest("quit")
 	#errNeedMoreParams("QUIT")
 	os.chdir(original_directory)
 
 
 #------------------KICK------------------
 def testKICK():
-	print(f"{Style.BRIGHT}{Fore.YELLOW}---KICK TESTS---")
-	print(Style.RESET_ALL)
-	os.chdir("py_tests/kick")
+	setupTest("kick")
 	#errNeedMoreParams("KICK")
 	#errNOSUCHCHANNEL("KICK #nonexistentchannel")
 	#errNOSUCHNICK("KICK nonexistentuser")
@@ -333,9 +285,7 @@ def testKICK():
 
 #------------------INVITE------------------
 def testINVITE():
-	print(f"{Style.BRIGHT}{Fore.YELLOW}---INVITE TESTS---")
-	print(Style.RESET_ALL)
-	os.chdir("py_tests/invite")
+	setupTest("invite")
 	#errNeedMoreParams("INVITE")
 	#errNOSUCHNICK("INVITE nonexistentuser #nonexistentchannel")
 	#errNOSUCHCHANNEL("INVITE client0 #nonexistentchannel")
@@ -344,9 +294,7 @@ def testINVITE():
 
 #------------------MODE------------------
 def testMODE():
-	print(f"{Style.BRIGHT}{Fore.YELLOW}---MODE TESTS---")
-	print(Style.RESET_ALL)
-	os.chdir("py_tests/mode")
+	setupTest("mode")
 	#errNeedMoreParams("MODE")
 	#errNOSUCHNICK("MODE nonexistentuser")
 	#errNOSUCHCHANNEL("MODE #nonexistentchannel")
@@ -355,9 +303,7 @@ def testMODE():
 
 #------------------TOPIC------------------
 def testTOPIC():
-	print(f"{Style.BRIGHT}{Fore.YELLOW}---TOPIC TESTS---")
-	print(Style.RESET_ALL)
-	os.chdir("py_tests/topic")
+	setupTest("topic")
 	#errNeedMoreParams("TOPIC")
 	#errNOSUCHCHANNEL("TOPIC #nonexistentchannel")
 	#errNOTONCHANNEL("TOPIC #nonexistentchannel")
@@ -401,20 +347,11 @@ def testOPER():
 	kill()
 	os.chdir(original_directory)
 
-
-def setupTest(test_name):
-	print(f"{Style.BRIGHT}{Fore.YELLOW}---{test_name} test---")
-	print(Style.RESET_ALL)
-	dir_path = f"py_tests/{test_name}"
-	if not os.path.exists(dir_path):
-		os.makedirs(dir_path)
-	os.chdir(f"py_tests/{test_name}")
-
 #------------------Server limit------------------
 def testServerLimit():
 	test_name = "server_limit"
 	setupTest(test_name) #changes to a dir
-	runMultiClientTest(test_name, 11, [(0, "")])
+	runMultiClientTest(test_name, 11, [(0, "PASS smth")])
 	os.chdir(original_directory)
 
 # Start netcat
@@ -435,13 +372,13 @@ test_dir = "py_tests"
 # serv_pw = input("Enter server password: ")
 
 # -------main----------
-#testPASS()
-#testNICK()
-#testUSER()
-#testPRIVMSG()
+testPASS()
+testNICK()
+testUSER()
+testPRIVMSG()
 testJOIN()
-#testPART()
-#testQUIT()
+testPART()
+testQUIT()
 #testKICK()
 #testINVITE()
 #testMODE()
