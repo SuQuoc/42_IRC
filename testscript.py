@@ -268,12 +268,28 @@ def testPRIVMSG():
 #------------------JOIN------------------
 def joiningTooManyChannels():
 	test_name = "joiningTooManyChannels"
-	
 	vector = []
 	for i in range(11):
 		join_msg = "JOIN #chan" + str(i)
 		vector.append((0, join_msg))		
 	runMultiClientTest(test_name, 1, vector)
+
+def tooManyClientsInChannel():
+	test_name = "tooManyClientsInChannel"
+	vector = [
+		(0, "JOIN #chan"),
+		(1, "JOIN #chan"),
+		(2, "JOIN #chan"),
+		(3, "JOIN #chan"),
+		(4, "JOIN #chan"),
+		(5, "JOIN #chan"),
+		(6, "JOIN #chan"),
+		(7, "JOIN #chan"),
+		(8, "JOIN #chan"),
+		(9, "JOIN #chan"), #channel is full - 10 clients
+		(10, "JOIN #chan"), #trying to join a full channel
+	]
+	runMultiClientTest(test_name, 11, vector)
 
 def testJOIN():
 	print(f"{Style.BRIGHT}{Fore.YELLOW}---JOIN TESTS---")
@@ -281,7 +297,8 @@ def testJOIN():
 	os.chdir("py_tests/join")
 	#errNeedMoreParams("JOIN")
 	#errNOSUCHCHANNEL("JOIN #nonexistentchannel")
-	joiningTooManyChannels()
+	joiningTooManyChannels() #1 client trying to join 11
+	tooManyClientsInChannel() #11 clients trying to join  
 	os.chdir(original_directory)
 
 #------------------PART------------------
@@ -384,6 +401,22 @@ def testOPER():
 	kill()
 	os.chdir(original_directory)
 
+
+def setupTest(test_name):
+	print(f"{Style.BRIGHT}{Fore.YELLOW}---{test_name} test---")
+	print(Style.RESET_ALL)
+	dir_path = f"py_tests/{test_name}"
+	if not os.path.exists(dir_path):
+		os.makedirs(dir_path)
+	os.chdir(f"py_tests/{test_name}")
+
+#------------------Server limit------------------
+def testServerLimit():
+	test_name = "server_limit"
+	setupTest(test_name) #changes to a dir
+	runMultiClientTest(test_name, 11, [(0, "")])
+	os.chdir(original_directory)
+
 # Start netcat
 #processes = start_netcat(serv_host, serv_port, n, filename)
 #killAllProcesses(processes)
@@ -394,7 +427,7 @@ serv_host = get_ip_address()
 serv_port = 6667
 serv_pw = "pw1234567"
 original_directory = os.getcwd()
-
+test_dir = "py_tests"
 # Get user input
 # serv_host = input("Enter server ip: ")
 # n_connections = int(input("Enter number of connections: "))
@@ -402,15 +435,16 @@ original_directory = os.getcwd()
 # serv_pw = input("Enter server password: ")
 
 # -------main----------
-testPASS()
-testNICK()
-testUSER()
-testPRIVMSG()
+#testPASS()
+#testNICK()
+#testUSER()
+#testPRIVMSG()
 testJOIN()
-testPART()
-testQUIT()
-testKICK()
-testINVITE()
-testMODE()
-testTOPIC()
-testOPER() #also tests KILL
+#testPART()
+#testQUIT()
+#testKICK()
+#testINVITE()
+#testMODE()
+#testTOPIC()
+#testOPER() #also tests KILL
+testServerLimit()
