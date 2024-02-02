@@ -1,5 +1,9 @@
 :AfterLife 001 client0 :Welcome to the Internet Relay Network, user0
 :AfterLife 001 client1 :Welcome to the Internet Relay Network, user1
-:AfterLife 421 client0 KILL :Unknown command
+:AfterLife 481 client0 :Permission Denied- You're not an IRC operator
 :AfterLife 381 client0  :You are now an IRC operator
-:AfterLife 421 client0 KILL :Unknown command
+:AfterLife 461 client0  :Not enough parameters
+:AfterLife 401 client0 NoNick :No such nick/channel
+:client0!user0@10.14.3.10 PRIVMSG client1 :you should see this cuz client 1 is alive and was not kiled
+:client1!user1@10.14.3.10 PRIVMSG client0 :yes i am alive
+:AfterLife 401 client0 client1 :No such nick/channel

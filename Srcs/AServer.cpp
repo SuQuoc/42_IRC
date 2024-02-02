@@ -77,24 +77,29 @@ void	AServer::accept_connection()
 }
 
 
-void	AServer::disconnectClient(const int& client_fd)
+void	AServer::disconnectClient(const int& client_fd) //for case 0:
 {
 	disconnectClient(getClient(client_fd), "lost connection, bye bye, see you in the AfterLife");
 }
 
 void	AServer::disconnectClient(Client *client, const std::string& msg)
 {
-	if (!client) return;
-
+	if (!client)
+		return ;
+	
 	std::vector<Channel *> channels = client->getAllChannels();
 	for (std::vector<Channel *>::iterator it = channels.begin(); it != channels.end(); it++)
 	{
 		Channel *channel = (*it);
 		if (!channel) //necessary? checking if the channel is in map or null seems overkill, since this case should never happen
 			continue ;
-		int err = channel->rmClient(client, msg);
-		if (err == -1) //exchange -1 with CHANNEL_DEAD, and use rmClient with a message
+		std::cout << "Removing client from channel: " << channel->getName() << std::endl;
+		int err = channel->rmClientTest(client, client, msg);
+		if (err == DELETE_CHANNEL) //exchange -1 with CHANNEL_DEAD, and use rmClient with a message
+		{
 			rmChannelFromMap(channel->getName());		
+			std::cout << "Deleted Channel from Map!" << std::endl;
+		}
 	}
 	rmClientFromMaps(client);
 }
