@@ -57,10 +57,7 @@ int Client::setNickname(const std::string& name)
 int Client::setUser(std::string& uname, const std::string& hname, const std::string& sname, const std::string& rname)
 {
 	if (uname.empty() || hname.empty() || rname.empty() || sname.empty())
-	{
-		std::cout << "Need more params" << std::endl; //rm later
 		return ERR_NEEDMOREPARAMS;
-	}
 	else if (uname.size() > 9)
 		uname.resize(9); //removeed const from uname --> irc bad protocol
 	_username = uname;
