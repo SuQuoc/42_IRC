@@ -1,7 +1,8 @@
 NAME		= ircserv
+IP_ADDRESS 	= "10.14.3.7"
 ARGS 		= 6667 pw1234567
 CXX			= c++
-CXXFLAGS	= -Wall -Wextra -Werror -MMD -MP -g -std=c++98
+CXXFLAGS	= -Wall -Wextra -Werror -MMD -MP -g -std=c++98 -DOPER_IP='$(IP_ADDRESS)'
  
 INCLUDES 	= ./Includes
 
@@ -54,6 +55,10 @@ re: fclean all
 	@echo "$(GREEN)Recompilation successfully done!$(NC)"
 
 #ADD ONS_________________________________________________________
+oper: clean $(OBJ_DIR)
+	$(CXX) $(CXXFLAGS)  -I$(INCLUDES) $(SRCS) -o $(NAME)
+	@echo "$(GREEN)Compilation with new IP_ADDRESS successfully done!$(NC)"
+
 run: all
 	./$(NAME) $(ARGS)
 

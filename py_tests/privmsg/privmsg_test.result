@@ -1,3 +1,3 @@
 :AfterLife 001 client0 :Welcome to the Internet Relay Network, user0
 :AfterLife 001 client1 :Welcome to the Internet Relay Network, user1
-:client0!user0@10.14.3.10 PRIVMSG client1 :hello from client1 to you my dear client0
+:client0!user0@10.14.3.7 PRIVMSG client1 :hello from client1 to you my dear client0

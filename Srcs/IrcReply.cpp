@@ -130,7 +130,7 @@ void	IrcReply::sendRPL(IRC_ERR error, Client* sender, const std::string& input) 
 			msg = ":" + _server_name + " 001 " + sender->getNickname() + " :Welcome to the Internet Relay Network, " + input; //input = getPrefix() from Client; <nick>!<user>@<host>
 			break;
 		case RPL_YOUREOPER:
-			msg += " :You are now an IRC operator";
+			msg += ":You are now an IRC operator";
 			break;
 		case RPL_TOPIC:
 			msg = input; //"<channel> :<topic>"

@@ -1,11 +1,11 @@
 :AfterLife 001 client0 :Welcome to the Internet Relay Network, user0
-:AfterLife 432 client0  :Erroneus nickname
+:AfterLife 432 client0 123456789abc :Erroneus nickname
 :AfterLife 431 client0 :No nickname given
 :AfterLife 431 client0 :No nickname given
-:AfterLife 432 client0  :Erroneus nickname
-:AfterLife 432 client0  :Erroneus nickname
-:AfterLife 432 client0  :Erroneus nickname
-:client0 NICK space
-:AfterLife 433 space  :Nickname is already in use
-:space NICK space0
-:space0 NICK Nspace
+:AfterLife 432 client0 clie,nt0 :Erroneus nickname
+:AfterLife 432 client0 clie@nt0 :Erroneus nickname
+:AfterLife 432 client0 clie!nt0 :Erroneus nickname
+:client0!user0@10.14.3.7 NICK :space
+:AfterLife 433 space space :Nickname is already in use
+:space!user0@10.14.3.7 NICK :space0
+:space0!user0@10.14.3.7 NICK :Nspace

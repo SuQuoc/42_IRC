@@ -439,12 +439,12 @@ test_dir = "py_tests"
 #testNICK()
 #testUSER()
 #testPRIVMSG()
-#testJOIN()
+testJOIN()
 testPART()
-#testQUIT()
-#testKICK()
-#testINVITE()
-#testMODE()
+testQUIT()
+testKICK()
+testINVITE()
+testMODE()
 testTOPIC()
-#testOPER() #also tests KILL
+testOPER() #also tests KILL
 #testServerLimit()

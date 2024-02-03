@@ -22,7 +22,11 @@
 #include <string>
 #include <map>
 
-#define OPER_IP "10.14.3.10"
+
+# ifndef OPER_IP
+	#define OPER_IP "10.14.3.8"
+# endif
+
 #define OPER_PW "operPW"
 
 class AServer
