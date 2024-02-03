@@ -27,12 +27,8 @@ void	Irc::command_switch(Client *sender, const std::string message) //message-> 
 	std::getline(sstream >> std::ws, cmd, ' ');
 	if (cmd.at(0) == ':')
 	{
-		if (cmd != sender->getPrefix())
-		{
-			std::cout << "YOU are a imposter" << std::endl;
-			//send()
+		if (cmd != ":" + sender->getPrefix())
 			return;
-		}
 		std::getline(sstream, cmd, ' '); //extractWord?
 	}
 	if (cmd == "CAP")
@@ -68,7 +64,7 @@ void Irc::PASS(std::stringstream &sstream)
 	}
 	else if (password.empty())
 	{
-		_replier.sendError(ERR_NEEDMOREPARAMS, _sender, ""); //already registered
+		_replier.sendError(ERR_NEEDMOREPARAMS, _sender, "PASS"); //already registered
 		return ;
 	}
     else if (password == _password)
@@ -129,7 +125,7 @@ void	Irc::USER(std::stringstream &sstream)
     for (std::vector<std::string>::iterator it = info.begin(); it != info.end(); it++)
 		*it = extractWord(sstream);
     if (_sender->setUser(info[0], info[1], info[2], info[3]) == ERR_NEEDMOREPARAMS)
-		_replier.sendError(ERR_NEEDMOREPARAMS, _sender, "");
+		_replier.sendError(ERR_NEEDMOREPARAMS, _sender, "USER");
 	if (_sender->isRegistered())
 		_replier.sendRPL(RPL_WELCOME, _sender, _sender->getUsername());
 }
@@ -185,7 +181,7 @@ int	Irc::JOIN(std::stringstream &sstream)
 		channel->sendMsg(NULL, ":" + _sender->getPrefix() + " JOIN " + channel_name + " * :" + _sender->getUsername());
 	}
 	if (cnt == 0)
-		_replier.sendError(ERR_NEEDMOREPARAMS, _sender, "");
+		_replier.sendError(ERR_NEEDMOREPARAMS, _sender, "JOIN");
 	return (0);
 }
 
@@ -219,7 +215,7 @@ int	Irc::PART(std::stringstream &sstream)
 			rmChannelFromMap(channel_name);
 	}
 	if (cnt == 0)
-		_replier.sendError(ERR_NEEDMOREPARAMS, _sender, "");
+		_replier.sendError(ERR_NEEDMOREPARAMS, _sender, "PART");
 	if (!channel_name_sstream.eof())
 		return -1; //_replier.sendError(too many argument in list)!
 	return (0);
@@ -339,7 +335,7 @@ void Irc::TOPIC(std::stringstream &sstream)
 	Channel* 	channel;
 
 	if (channel_name.empty())
-		return (_replier.sendError(ERR_NEEDMOREPARAMS, _sender, ""), void());
+		return (_replier.sendError(ERR_NEEDMOREPARAMS, _sender, "TOPIC"), void());
 	channel = getChannel(channel_name);
 	if (channel == NULL)
 		return ; //no error listed in protocoll
@@ -407,7 +403,7 @@ void Irc::OPER(std::stringstream &sstream)
 	std::string	pw = extractWord(sstream);
 	
 	if (host.empty() || pw.empty())
-		_replier.sendError(ERR_NEEDMOREPARAMS, _sender, "");
+		_replier.sendError(ERR_NEEDMOREPARAMS, _sender, "OPER");
 	else if (host != _op_host || _sender->getHost() != _op_host) //u have to pass the correct host and u need to have that host-ip yourself ???
 		_replier.sendError(ERR_NOOPERHOST, _sender, "");
 	else if (pw != _op_password)
@@ -433,7 +429,7 @@ int Irc::KILL(std::stringstream &sstream)
 
 	nickname = extractWord(sstream);
 	if (nickname.empty())
-		return (_replier.sendError(ERR_NEEDMOREPARAMS, _sender, nickname));
+		return (_replier.sendError(ERR_NEEDMOREPARAMS, _sender, "KILL"));
 	
 	client_to_kill = getClient(nickname);
 	if (client_to_kill == NULL)

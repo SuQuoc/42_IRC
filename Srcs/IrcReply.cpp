@@ -60,7 +60,7 @@ int	IrcReply::sendError(IRC_ERR error, Client* sender, const std::string& input)
 			err_message += input + " :is already on channel"; //<user> <channel>
 			break;
 		case ERR_NOTREGISTERED:
-			err_message += ":You have not registered";
+			err_message = ":" + _server_name + " " + error_code.str() + " :You have not registered";
 			break;
 		case ERR_NEEDMOREPARAMS:
 			err_message += input + " :Not enough parameters"; //<command>

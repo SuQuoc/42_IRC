@@ -47,8 +47,8 @@ public:
 	void	OPER(std::stringstream &sstream);
 	int		KILL(std::stringstream &sstream);
 
-	void setOperatorHost(const std::string& hostname);
-	void setOperatorPW(const std::string& password);
+	void	setOperatorHost(const std::string& hostname);
+	void	setOperatorPW(const std::string& password);
 
 //MODE
 	int		MODE(std::stringstream& sstream);
