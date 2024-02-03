@@ -37,7 +37,7 @@ public:
 	int		KICK(std::stringstream& sstream);
 
 	void	PASS(std::stringstream& sstream);
-	void	NICK(std::stringstream& sstream);
+	int		NICK(std::stringstream& sstream);
 	void	USER(std::stringstream& sstream);
 	void	PRIVMSG(std::stringstream& sstream);
 

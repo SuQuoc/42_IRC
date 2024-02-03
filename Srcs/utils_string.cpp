@@ -1,4 +1,5 @@
 #include "../Includes/utils_string.hpp"
+#include "AServer.hpp"
 
 bool    containsForbiddenChars(const std::string& input, const std::string& forbiddenChars) 
 {
@@ -56,11 +57,13 @@ std::string extractWord(std::stringstream& sstream)
 void	protectedSend(int fd, std::string msg)
 {
 	msg += "\r\n";
-	if (send(fd, msg.c_str(), msg.size(), MSG_DONTWAIT) == -1) //MSG_DONTWAIT sets to non-block //should be nonblocking anyways because of fcntl(); added MSG_NOSOGNAL
+	if (send(fd, msg.c_str(), msg.size(), MSG_DONTWAIT | MSG_NOSIGNAL) == -1) //MSG_DONTWAIT sets to non-block //should be nonblocking anyways because of fcntl(); added MSG_NOSOGNAL
 	{
 		if (errno == EAGAIN || errno == EWOULDBLOCK)
 			return ;
-        /* throw (std::logic_error("send failed: ")); */ //when this happens something went fundamentally wrong
-	}
+        if(errno == EPIPE)
+            throw (std::logic_error("broken pipe: "));
+/*         throw (std::logic_error("send failed: ")); //when this happens something went fundamentally wrong
+ */	}
 	return ;
 }

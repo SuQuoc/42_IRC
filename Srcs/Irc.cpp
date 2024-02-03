@@ -84,35 +84,34 @@ void Irc::PASS(std::stringstream &sstream)
 		_replier.sendRPL(RPL_WELCOME, _sender, _sender->getUsername());
 }
 
-void Irc::NICK(std::stringstream &sstream)
+int Irc::NICK(std::stringstream &sstream)
 {
     std::string nickname = extractWord(sstream);
-	std::string old_nick;
-	// bool registered = sender->isRegistered();
+	std::string old_nick, old_prefix;
 
+	if (_sender->isAuthenticated() == false)
+		return 1;
 	if (nickname.empty())
-		_replier.sendError(ERR_NONICKNAMEGIVEN, _sender, "");
-	else if (getClient(nickname) != NULL)
-		_replier.sendError(ERR_NICKNAMEINUSE, _sender, "");
-	else  
+		return (_replier.sendError(ERR_NONICKNAMEGIVEN, _sender, ""));
+	if (getClient(nickname) != NULL)
+		return (_replier.sendError(ERR_NICKNAMEINUSE, _sender, ""));
+	old_prefix = _sender->getPrefix();
+	old_nick = _sender->getNickname();
+
+	if (_sender->setNickname(nickname) != 0)
+		return (_replier.sendError(ERR_ERRONEUSNICKNAME, _sender, ""));
+	if (old_nick.empty() == false)
 	{
-		old_nick = _sender->getNickname();
-		if (_sender->setNickname(nickname) != 0)
-		{
-			_replier.sendError(ERR_ERRONEUSNICKNAME, _sender, "");
-			return ;
-		}
-		else if (_sender->isRegistered())
-		{
-			rmClientFromNameMap(old_nick);
-			addClientToNameMap(_sender->getNickname(), _sender->getFd());
-			protectedSend(_sender->getFd(), ":" + old_nick + " NICK " + _sender->getNickname());
-			return;
-		}
+		rmClientFromNameMap(old_nick);
 		addClientToNameMap(_sender->getNickname(), _sender->getFd());
-		if (_sender->isRegistered() && old_nick.empty() == false)
-			_replier.sendRPL(RPL_WELCOME, _sender, _sender->getUsername());
+		if (_sender->isRegistered() == true)
+			protectedSend(_sender->getFd(), ":" + old_prefix + " NICK :" + _sender->getNickname());
+		return 2;
 	}
+	addClientToNameMap(_sender->getNickname(), _sender->getFd());
+	if (_sender->isRegistered() == true)
+		_replier.sendRPL(RPL_WELCOME, _sender, _sender->getUsername());
+	return 0;
 }
 
 void	Irc::USER(std::stringstream &sstream)
@@ -120,6 +119,8 @@ void	Irc::USER(std::stringstream &sstream)
     std::vector<std::string> info(4);
 	//if (sender->isAuthenticated() == false) //didnt do PASS before
     //   return  _replier.sendError(321, sender) and return; //NOTICE message? sendNotice?
+	if (_sender->isAuthenticated() == false)
+		return ;
 	if (_sender->isRegistered())
 	{
 		_replier.sendError(ERR_ALREADYREGISTERED, _sender, "");
