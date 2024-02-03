@@ -1,16 +1,16 @@
 #pragma once
 
-#include <sys/socket.h>     // ford send
+#include <sys/socket.h>
 #include <iostream>
-#include <cstdlib>			// exit
+#include <cstdlib>
 #include <vector>
 #include <cerrno>
-#include <algorithm>		// std::find
+#include <algorithm>
 
 #include "../Includes/Client.hpp"
 #include "IrcReply.hpp"
 
-#define MAX_CLIENTS 100 // How high should it be?
+#define MAX_CLIENTS 100
 #define EXIT_FAILURE 1
 #define CH_SUCCESS 0
 #define DELETE_CHANNEL -1

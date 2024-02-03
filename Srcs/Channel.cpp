@@ -32,7 +32,7 @@ int Channel::addInvited(Client *client)
 Channel::invited_itr	Channel::getInvited(const Client *client)
 {
 	if (client == NULL)
-		return (_invited.end()); //better than crashing
+		return (_invited.end());
 	return (std::find(_invited.begin(), _invited.end(), client));
 }
 
@@ -51,11 +51,6 @@ void Channel::sendMsg(const Client *sender, const std::string &msg)
 		if (sender && itr->members == sender)
 			continue ;
 		protectedSend(itr->members->getFd(), msg);
-		// {
-			// /* std::cerr << "send faild in channel.cpp" << std::endl;
-			// strerror(errno);
-			// std::exit(EXIT_FAILURE); //? */
-		// }
 	}
 }
 

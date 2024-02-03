@@ -64,9 +64,8 @@ int main(const int argc, const char *argv[])
 		return (0);
 
 	Irc	server("AfterLife", argv[2]);
-	// server.setOperatorHost("10.18.195.33"); //nikis laptop on the 42 network
-	server.setOperatorHost("10.14.3.10");
-	server.setOperatorPW("setOpPW");
+	server.setOperatorHost(OPER_IP);
+	server.setOperatorPW(OPER_PW);
 	if (server.createTcpSocket(stoi_(argv[1])) == -1)
 		return (1);
 	if (server.createEpoll() == -1)

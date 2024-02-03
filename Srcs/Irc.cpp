@@ -15,12 +15,12 @@ Irc::~Irc() {}
 
 //private methods 
 
-void	Irc::command_switch(Client *sender, const std::string message) //message-> 'request' better name? for us to discern
+void	Irc::command_switch(Client *sender, const std::string message)
 {
 	_sender = sender;
 	std::cout << "message =" << message << "!" << std::endl;
 
-    std::stringstream	sstream(message); //message can't be empty
+    std::stringstream	sstream(message);
     std::string	cmd;
 
 	//this block checks for Prefix 
@@ -29,14 +29,14 @@ void	Irc::command_switch(Client *sender, const std::string message) //message-> 
 	{
 		if (cmd != ":" + sender->getPrefix())
 			return;
-		std::getline(sstream, cmd, ' '); //extractWord?
+		std::getline(sstream, cmd, ' ');
 	}
 	if (cmd == "CAP")
 		return ;
 	else if (cmd == "PASS") PASS(sstream);
 	else if (cmd == "NICK") NICK(sstream);
 	else if (cmd == "USER")	USER(sstream);
-	else if (_sender->isRegistered() == false) _replier.sendError(ERR_NOTREGISTERED, _sender, ""); //?
+	else if (_sender->isRegistered() == false) _replier.sendError(ERR_NOTREGISTERED, _sender, "");
 	else if (cmd == "PRIVMSG") PRIVMSG(sstream);
 	else if (cmd == "JOIN") JOIN(sstream);
 	else if (cmd == "PART") PART(sstream);
@@ -73,7 +73,7 @@ void Irc::PASS(std::stringstream &sstream)
 	{
 		_sender->deauthenticate();
 		_replier.sendError(ERR_PASSWDMISMATCH, _sender, "");
-		disconnectClient(_sender, "Wrong password"); //delete Client and the entry from the map if Pw is wrong? --> multiple PASS not possible then
+		disconnectClient(_sender, "Wrong password");
 		return ;
 	}
 	if (_sender->isRegistered())
@@ -113,8 +113,7 @@ int Irc::NICK(std::stringstream &sstream)
 void	Irc::USER(std::stringstream &sstream)
 {
     std::vector<std::string> info(4);
-	//if (sender->isAuthenticated() == false) //didnt do PASS before
-    //   return  _replier.sendError(321, sender) and return; //NOTICE message? sendNotice?
+
 	if (_sender->isAuthenticated() == false)
 		return ;
 	if (_sender->isRegistered())
@@ -231,7 +230,7 @@ void	Irc::QUIT(std::stringstream &sstream)
 	std::string	comment = extractWord(sstream);
 	if (comment.empty())
 		comment = "Leaving";
-	disconnectClient(_sender, createMsg(_sender, "QUIT", "", comment)); //?? what if he had another cmd after that our program would fail
+	disconnectClient(_sender, createMsg(_sender, "QUIT", "", comment));
 }
 
 int	Irc::KICK(std::stringstream &sstream)
@@ -294,7 +293,7 @@ void Irc::PRIVMSG(std::stringstream &sstream)
 				_replier.sendError(ERR_NOTEXTTOSEND, _sender, ""); //return message is checked before to avoid checking in loop
 			else
 				channel->sendMsg(_sender, createMsg(_sender, "PRIVMSG", recipient, message));
-		} //mask?
+		}
 		else
 		{
 			Client *reciever = getClient(recipient);
@@ -304,10 +303,8 @@ void Irc::PRIVMSG(std::stringstream &sstream)
 				_replier.sendError(ERR_NOTEXTTOSEND, _sender, ""); //return message is checked before to avoid checking in loop
 			else
 			{
-				reply = createMsg(_sender, "PRIVMSG", recipient, message); //PART uses same method
-				std::cout << "--> Sending: " << reply << std::endl; //out!
-				if (send(reciever->getFd(), reply.c_str(), reply.size(), 0) == -1)
-					std::cerr << "send() failed" << std::endl;
+				reply = createMsg(_sender, "PRIVMSG", recipient, message);
+				protectedSend(reciever->getFd(), reply);
 			}
 		}
 	}
@@ -323,7 +320,7 @@ std::string Irc::createMsg(Client *sender, const std::string& cmd, const std::st
 	if (recipient.empty())
 		message = ":" + sender->getPrefix() + " " + cmd + " :" + msg;
     else
-		message = ":" + sender->getPrefix() + " " + cmd + " " + recipient + " :" + msg; //PART uses same method -> extra function?
+		message = ":" + sender->getPrefix() + " " + cmd + " " + recipient + " :" + msg;
     return message;
 }
 
@@ -338,7 +335,7 @@ void Irc::TOPIC(std::stringstream &sstream)
 		return (_replier.sendError(ERR_NEEDMOREPARAMS, _sender, "TOPIC"), void());
 	channel = getChannel(channel_name);
 	if (channel == NULL)
-		return ; //no error listed in protocoll
+		return ;
 	if (topic.empty()) //only wants to see current topic
 	{
 		if (channel->getTopic().empty())
@@ -351,7 +348,7 @@ void Irc::TOPIC(std::stringstream &sstream)
 	}
 	else
 	{
-		int err = channel->setTopic(_sender->getNickname(), topic); //checks if sender is operator??
+		int err = channel->setTopic(_sender->getNickname(), topic); //checks if sender is operator
 		if (err != TOPIC_SET)
 			_replier.sendError(static_cast<IRC_ERR>(err), _sender, channel_name);
 		else
@@ -378,7 +375,7 @@ int	Irc::INVITE(std::stringstream& sstream)
 	user_to_invite = getClient(nickname);
 	channel = getChannel(channel_name);
 	if (nickname.empty() || channel_name.empty())		//check if enough params
-		return (_replier.sendError(ERR_NEEDMOREPARAMS, _sender, "INVITE")); //INVITE?
+		return (_replier.sendError(ERR_NEEDMOREPARAMS, _sender, "INVITE"));
 	if (user_to_invite == NULL)							//check if nick exists
 		return (_replier.sendError(ERR_NOSUCHNICK, _sender, nickname));
 	if (channel == NULL)								//check if channel exists
@@ -412,12 +409,10 @@ void Irc::OPER(std::stringstream &sstream)
 	{
 		_sender->elevateToServOp(); //what if send in next line fails?
 		_replier.sendRPL(RPL_YOUREOPER, _sender, "");
-		//should we make him channel op in all channels exsiting or he is in???
-		std::cout << "INFO: " << _sender->getPrefix() << " is now server op, chaos is coming!" << std::endl; //out?
+		std::cout << "INFO: " << _sender->getPrefix() << " is now server op, chaos is coming!" << std::endl;
 	}
 }
 
-//483 ERR_CANTKILLSERVER; how do u even trigger this? not covered
 int Irc::KILL(std::stringstream &sstream)
 {
 	std::string nickname;
@@ -436,22 +431,22 @@ int Irc::KILL(std::stringstream &sstream)
 		return (_replier.sendError(ERR_NOSUCHNICK, _sender, nickname));
 	
 	comment = extractWord(sstream);
-	disconnectClient(client_to_kill, comment); //what about killing himself? and another command after that?? -> we check in cmd switch if client is not NULL
+	disconnectClient(client_to_kill, comment);
 	return (0);
 }
 
 void Irc::setOperatorHost(const std::string& hostname)
 {
-	if (containsForbiddenChars(hostname, " 	\r\n")) //could just use isValidPassword() from main?
+	if (containsForbiddenChars(hostname, " 	\r\n"))
 		return;
 	_op_host = hostname;
 }
 
 void Irc::setOperatorPW(const std::string& password)
 {
-	if (containsForbiddenChars(password, " 	\r\n")) //could just use isValidPassword() from main?
+	if (containsForbiddenChars(password, " 	\r\n"))
 		return;
-	_op_password = password; 
+	_op_password = password;
 }
 
 //returns 403 no such channel, returns 442 not on channel

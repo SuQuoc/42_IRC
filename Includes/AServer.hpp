@@ -22,6 +22,9 @@
 #include <string>
 #include <map>
 
+#define OPER_IP "10.14.3.10"
+#define OPER_PW "operPW"
+
 class AServer
 {
 protected:
@@ -34,7 +37,6 @@ protected:
 	int		_epoll_fd;
 	int		_sock_fd;
 
-	//server name? --> passed in constructor
 	typedef std::map<std::string, Channel*>::iterator	channel_map_iter_t;
 	typedef std::map<std::string, Client*>::iterator	client_name_map_iter_t;
 	typedef std::map<int, Client*>::iterator			client_fd_map_iter_t;
@@ -43,7 +45,7 @@ protected:
 	typedef std::map<int, Client*>::const_iterator				client_fd_map_const_it;
 
 //Canonical Form
-	AServer(); //? 
+	AServer();
 	AServer(const std::string& name, const std::string& password);
 
 //methods
@@ -76,10 +78,8 @@ protected:
 
 public:
 //con- and destructer
-	
-	//AServer(const AServer& S); ?
-	//AServer operator=(const AServer& S); //not possible?
-	virtual ~AServer(); //put this under protected?
+
+	virtual ~AServer();
 
 //methods
 	int		createTcpSocket(const int& port);

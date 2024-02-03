@@ -45,7 +45,7 @@ int Client::setNickname(const std::string& name)
 	if (name.size() > 9 || containsForbiddenChars(name, " ,*?!@$:.#"))		
 		return ERR_ERRONEUSNICKNAME;
 	_nickname = name;
-	_prefix = _nickname + "!" + _username + "@" + _hostname; //a lil ick but working
+	_prefix = _nickname + "!" + _username + "@" + _hostname;
 	if (_authenticated && !_nickname.empty() && !_username.empty())
 		_registered = true;
 	return 0;
@@ -59,16 +59,15 @@ int Client::setUser(std::string& uname, const std::string& hname, const std::str
 	if (uname.empty() || hname.empty() || rname.empty() || sname.empty())
 	{
 		std::cout << "Need more params" << std::endl; //rm later
-		return ERR_NEEDMOREPARAMS; //ERR_NEEDMOREPARAMS?
+		return ERR_NEEDMOREPARAMS;
 	}
 	else if (uname.size() > 9)
 		uname.resize(9); //removeed const from uname --> irc bad protocol
 	_username = uname;
 	_realname = rname;
 	_servername = sname;
-	(void)hname; //?????? i know kinda bad but kinda needed for scuffed OPER
+	(void)hname;
 
-	//Annahme das NICK immer zuerst gemacht wird aber dann ist dann nc nicht gecovered falls wirs covern müssen
 	_prefix = _nickname + "!" + _username + "@" + _hostname;
 	if (_authenticated && !_nickname.empty() && !_username.empty())
 		_registered = true;

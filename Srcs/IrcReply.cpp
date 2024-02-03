@@ -100,7 +100,6 @@ int	IrcReply::sendError(IRC_ERR error, Client* sender, const std::string& input)
 			break;
 		default:
 			std::cout << "CANT HAPPEN DUE TO ENUM" << std::endl;
-			//throw ;?
 	}
 	protectedSend(sender->getFd(), err_message);
 	return (error);
