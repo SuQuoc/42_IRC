@@ -209,7 +209,7 @@ std::vector<Channel::Member_t>::iterator Channel::getClient(const std::string &n
 
 const std::string &Channel::getTopic() const { return _topic; }
 const std::string &Channel::getPassword() const { return _password; }
-const std::string &Channel::getName() const { return _name; }
+std::string Channel::getName() const { return _name; }
 bool Channel::getRestrictTopic() const { return _restrict_topic; }
 bool Channel::getInviteOnly() const { return _invite_only; }
 int Channel::getMaxClients() const { return _max_clients; }

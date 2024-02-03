@@ -14,7 +14,10 @@ int	IrcReply::sendError(IRC_ERR error, Client* sender, const std::string& input)
 	std::stringstream error_code;
 
 	error_code << error;
-	err_message += ":" + _server_name + " " + error_code.str() + " " + sender->getNickname() + " ";
+	if(sender->getNickname().empty() == true)
+		err_message += ":" + _server_name + " " + error_code.str() + " ";
+	else
+		err_message += ":" + _server_name + " " + error_code.str() + " " + sender->getNickname() + " ";
 	switch (error)
 	{
 		case ERR_NOSUCHNICK:
@@ -69,7 +72,7 @@ int	IrcReply::sendError(IRC_ERR error, Client* sender, const std::string& input)
 			err_message += ":You may not reregister";
 			break;
 		case ERR_PASSWDMISMATCH:
-			err_message += ":Password incorrect"; //!!!!? THIS WILL BE DONE SOMEWHERE ELSE
+			err_message = ":" + _server_name + " " + error_code.str() + " :Password incorrect"; //!!!!? THIS WILL BE DONE SOMEWHERE ELSE
 			break;
 		case ERR_KEYSET:
 			err_message += input + " :Channel key already set"; //<channel>
@@ -134,6 +137,9 @@ void	IrcReply::sendRPL(IRC_ERR error, Client* sender, const std::string& input) 
 			break;
 		case RPL_NOTOPIC:
 			msg = input + " :No topic is set"; //channel
+			break;
+		case RPL_INVITING:
+			msg += input;
 			break;
 		default:
 			std::cout << "CANT HAPPEN DUE TO ENUM" << std::endl;

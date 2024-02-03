@@ -90,12 +90,12 @@ int Irc::NICK(std::stringstream &sstream)
 	if (nickname.empty())
 		return (_replier.sendError(ERR_NONICKNAMEGIVEN, _sender, ""));
 	if (getClient(nickname) != NULL)
-		return (_replier.sendError(ERR_NICKNAMEINUSE, _sender, ""));
+		return (_replier.sendError(ERR_NICKNAMEINUSE, _sender, nickname));
 	old_prefix = _sender->getPrefix();
 	old_nick = _sender->getNickname();
 
 	if (_sender->setNickname(nickname) != 0)
-		return (_replier.sendError(ERR_ERRONEUSNICKNAME, _sender, ""));
+		return (_replier.sendError(ERR_ERRONEUSNICKNAME, _sender, nickname));
 	if (old_nick.empty() == false)
 	{
 		rmClientFromNameMap(old_nick);
@@ -389,6 +389,7 @@ int	Irc::INVITE(std::stringstream& sstream)
 
 	channel->addInvited(user_to_invite);
 	protectedSend(user_to_invite->getFd(), ":" + _sender->getPrefix() + " INVITE " + nickname + " " + channel_name);
+	_replier.sendRPL(RPL_INVITING, _sender, nickname + " " + channel_name);
 	return (0);
 }
 

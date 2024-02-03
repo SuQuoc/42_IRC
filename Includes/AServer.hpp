@@ -57,19 +57,19 @@ protected:
 	int		printErrorReturn(const std::string& error_msg);
 	virtual void	command_switch(Client *sender, const std::string message) = 0;
 
-	void	addNewChannelToMap(Client *sender, const std::string& channel_name);
+	void	addNewChannelToMap(Client *sender, std::string channel_name);
 	void	addClientToNameMap(std::string user_name, const int& client_fd);
 	void	addNewClientToFdMap(const int& client_fd, const std::string& client_ip);
 
 	void 	rmClientFromNameMap(const std::string& nick_name);
 	void 	rmClientFromMaps(Client *client); 
 	void 	rmClientFromMaps(int client_fd);
-	void 	rmChannelFromMap(const std::string& channel_name);
+	void 	rmChannelFromMap(std::string channel_name);
 
 //getters
 	client_fd_map_const_it		getClientIter(int fd) const;
 	client_name_map_const_it	getClientIter(const std::string& name) const;
-	channel_map_const_it		getChannelIter(const std::string& name) const;
+	channel_map_const_it		getChannelIter(std::string name) const;
 
 	Client*		getClient(int fd) const;
 	Client*		getClient(const std::string& name) const;

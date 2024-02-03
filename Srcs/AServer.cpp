@@ -44,7 +44,7 @@ void	AServer::accept_connection()
 	struct epoll_event	ev_temp;
 	socklen_t			client_addr_len = sizeof(client_addr);
 	struct in_addr 		ipAddr; 
-	char				client_ip_buf[INET_ADDRSTRLEN];
+	char				*client_ip;
 	int					client_fd;
 
 	client_fd = accept(_sock_fd, reinterpret_cast<struct sockaddr*>(&client_addr), &client_addr_len);
@@ -55,10 +55,14 @@ void	AServer::accept_connection()
 			return ;
 		throw (std::logic_error("accept failed: "));//when this happens something went fundamentally wrong
 	}
-	memset(client_ip_buf, '\0', INET_ADDRSTRLEN);
 	ipAddr = client_addr.sin_addr;
-	inet_ntop(AF_INET, &ipAddr, client_ip_buf, INET_ADDRSTRLEN);
-	std::cout << "Client IP: " << client_ip_buf << "!\n";
+	client_ip = inet_ntoa(ipAddr);
+	if(!client_ip)
+	{
+		client_ip[0] = '0';
+		client_ip[1] = '\0'; 
+	}
+	std::cout << "Client IP: " << client_ip << "!\n";
 	ev_temp.data.fd = client_fd;
 	ev_temp.events = EPOLLIN | EPOLLET;
 	fcntl(client_fd, F_SETFL, O_NONBLOCK);
@@ -72,7 +76,7 @@ void	AServer::accept_connection()
 		std::cerr << "* Error: new fd already in map" << std::endl;
 		return ;
 	}
-	addNewClientToFdMap(client_fd, client_ip_buf); //allocatoes the client object
+	addNewClientToFdMap(client_fd, client_ip); //allocatoes the client object
 	std::cout << "Added new Client to Fd-Map!" << std::endl;
 }
 
@@ -110,7 +114,7 @@ void	AServer::process_event(const int& client_fd)
 	int		bytes_recieved = -1;
 	Client *sender = getClient(client_fd);
 
-	memset(buf, '\0', 513);
+	std::memset(buf, '\0', 513);
 	bytes_recieved = recv(client_fd, buf, sizeof(buf) - 1, 0);
 	switch (bytes_recieved)
 	{
@@ -141,8 +145,10 @@ int	AServer::printErrorReturn(const std::string& error_msg)
 	return (-1);
 }
 
-void	AServer::addNewChannelToMap(Client *sender, const std::string& channel_name)
+void	AServer::addNewChannelToMap(Client *sender, std::string channel_name)
 {
+	for(size_t i = 0; i < channel_name.size(); i++)
+		channel_name[i] = std::tolower(channel_name[i]);
 	Channel	*temp_channel = new Channel(sender, channel_name);
 	std::pair<std::string, Channel*>	pair(channel_name, temp_channel);
 	_channels.insert(pair);
@@ -199,8 +205,10 @@ void 	AServer::rmClientFromMaps(int client_fd)
 	_client_names.erase(it2);
 }
 
-void 	AServer::rmChannelFromMap(const std::string& channel_name)
+void 	AServer::rmChannelFromMap(std::string channel_name)
 {
+	for(size_t i = 0; i < channel_name.size(); i++)
+		channel_name[i] = std::tolower(channel_name[i]);
 	channel_map_iter_t it = _channels.find(channel_name);
 	if (it == _channels.end())
 		return ;
@@ -280,7 +288,12 @@ void	AServer::epollLoop()
 
 AServer::client_fd_map_const_it		AServer::getClientIter(int fd) const {return _client_fds.find(fd);}
 AServer::client_name_map_const_it	AServer::getClientIter(const std::string& name) const {return _client_names.find(name);}
-AServer::channel_map_const_it		AServer::getChannelIter(const std::string& name) const {return _channels.find(name);}
+AServer::channel_map_const_it		AServer::getChannelIter(std::string name) const 
+{
+	for(size_t i = 0; i < name.size(); i++)
+		name[i] = std::tolower(name[i]);
+	return _channels.find(name);
+}
 
 Channel*	AServer::getChannel(const std::string& name) const
 {

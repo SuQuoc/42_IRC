@@ -70,7 +70,7 @@ class Channel
 
 		const std::string	&getPassword() const;
 		const std::string	&getTopic() const;
-		const std::string	&getName() const;
+		std::string	getName() const;
 		bool	getRestrictTopic() const;
 		bool	getInviteOnly() const;
 		int		getMaxClients() const;
