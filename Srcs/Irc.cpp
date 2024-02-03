@@ -352,10 +352,7 @@ void Irc::TOPIC(std::stringstream &sstream)
 		if (err != TOPIC_SET)
 			_replier.sendError(static_cast<IRC_ERR>(err), _sender, channel_name);
 		else
-		{
-			std::string reply = channel_name + " :" + channel->getTopic();
-			_replier.sendRPL(TOPIC_SET, _sender, reply);
-		}
+			channel->sendMsg(NULL, ":" + _sender->getPrefix() + " TOPIC " + channel_name + " :" + channel->getTopic());
 	}
 }
 
@@ -538,7 +535,8 @@ int Irc::modesSwitch(Channel *channel, std::map<std::string, int> &operator_rpl_
 
 		case SET_OPERATOR:
 			argument = extractWord(sstream);
-			operator_rpl_map[argument] = channel->setOperator(pre_fix, getClient(argument));
+			if(argument.empty() == false)
+				operator_rpl_map[argument] = channel->setOperator(pre_fix, getClient(argument));
 			return (1);
 
 		case SET_LIMIT:

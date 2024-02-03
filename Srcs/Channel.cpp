@@ -63,7 +63,7 @@ int	Channel::rmClient(const Client *executor, const Client *rm_client, const std
 		return (-2);  //should never happen
 	itr = getClient(executor);
 	if (itr == _clients.end())
-		return ERR_USERNOTINCHANNEL;
+		return (ERR_NOTONCHANNEL);
 	if (itr->is_operator == false)
 		return ERR_CHANOPRIVSNEEDED;
 	return (rmClient(rm_client, leaving_msg));
@@ -78,7 +78,7 @@ int	Channel::rmClient(const Client *rm_client, const std::string &leaving_msg) /
 		return (-2); //should never happen
 	itr = getClient(rm_client);
 	if (itr == _clients.end())
-		return (ERR_NOTONCHANNEL);
+		return (ERR_USERNOTINCHANNEL);
 	sendMsg(NULL, leaving_msg);
 	_clients.erase(itr);
 	if (_clients.empty())
