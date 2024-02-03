@@ -57,7 +57,10 @@ int Client::setNickname(const std::string& name)
 int Client::setUser(std::string& uname, const std::string& hname, const std::string& sname, const std::string& rname)
 {
 	if (uname.empty() || hname.empty() || rname.empty() || sname.empty())
+	{
+		std::cout << "Need more params" << std::endl; //rm later
 		return ERR_NEEDMOREPARAMS;
+	}
 	else if (uname.size() > 9)
 		uname.resize(9); //removeed const from uname --> irc bad protocol
 	_username = uname;
@@ -119,17 +122,16 @@ void	Client::loadMsgBuf(const std::string& str)
 {
 	if (str.empty())
 		return ;
+
 	if (_msg_buf.empty() || *(_msg_buf.end() - 1)  == '\n')
 		_msg_buf = str;
 	else
-	{
 		_msg_buf += str;
-		if (_msg_buf.size() > 512)
-		{
-			_msg_buf.resize(512);
-			if (*(str.end() - 1) == '\n')
-				_msg_buf += '\n';
-		}	
+	if (_msg_buf.size() > 512)
+	{
+		_msg_buf.resize(512);
+		if (*(str.end() - 1) == '\n')
+			_msg_buf += '\n';
 	}
 }
 
