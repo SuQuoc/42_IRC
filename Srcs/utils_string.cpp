@@ -33,7 +33,7 @@ int splitMsg(std::stringstream& sstream, std::string& str)
         str += '\n';
         cnt++;
     }
-    while (!sstream.eof() && (sstream.peek() =='\n' || sstream.peek() == '\r'))
+    while (!sstream.eof() && (sstream.peek() == '\n' || sstream.peek() == '\r'))
         sstream.get();
     return (cnt);
 }
