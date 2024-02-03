@@ -102,6 +102,21 @@ int	Channel::rmClientTest(const Client *rm_client, const Client *ignore_me, cons
 	return (0);
 }
 
+void	Channel::sendWhoMessage(const Client *sender, const std::string server_name)
+{
+	std::string	msg = ":" + server_name + " 353 " + sender->getNickname() + " = " + _name;
+
+	for (clients_itr it = _clients.begin(); it != _clients.end(); it++)
+	{
+		msg += " ";
+		if (it->is_operator)
+			msg += "@";
+		msg += it->members->getNickname();
+	}
+	protectedSend(sender->getFd(), msg);
+	protectedSend(sender->getFd(), ":" + server_name + " 366 " + sender->getNickname() + " " + _name + " :End of /NAMES list.");
+}
+
 
 // -1 if client is NULL
 // -2 is already in channel

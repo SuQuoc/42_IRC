@@ -35,6 +35,7 @@ public:
 	int		PART(std::stringstream& sstream);
 	void	QUIT(std::stringstream& sstream);
 	int		KICK(std::stringstream& sstream);
+	int		WHO(std::stringstream& sstream);
 
 	void	PASS(std::stringstream& sstream);
 	int		NICK(std::stringstream& sstream);

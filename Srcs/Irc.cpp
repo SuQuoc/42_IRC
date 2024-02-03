@@ -42,6 +42,7 @@ void	Irc::command_switch(Client *sender, const std::string message)
 	else if (cmd == "PART") PART(sstream);
 	else if (cmd == "QUIT") QUIT(sstream);
 	else if (cmd == "KICK") KICK(sstream);
+	else if (cmd == "WHO") WHO(sstream);
 	else if (cmd == "INVITE") INVITE(sstream);
 	else if (cmd == "MODE") MODE(sstream);
 	else if (cmd == "TOPIC") TOPIC(sstream);
@@ -261,6 +262,20 @@ int	Irc::KICK(std::stringstream &sstream)
 	if (err == -1) //delete channel when empty()
 		rmChannelFromMap(channel_name);
 	return (0);
+}
+
+int	Irc::WHO(std::stringstream& sstream)
+{
+	Channel		*channel;
+	std::string	channel_name = extractWord(sstream);
+
+	channel = getChannel(channel_name);
+	if (channel == NULL)
+		return 1;
+	if (channel->isInChannel(_sender) == false)
+		return 2;
+	channel->sendWhoMessage(_sender, _name);
+	return 0;
 }
 
 
