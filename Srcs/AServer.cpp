@@ -53,7 +53,7 @@ void	AServer::accept_connection()
 		std::cerr << "Error: accept failed :" << std::strerror(errno) << std::endl;
 		if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EAGAIN || errno == EWOULDBLOCK || errno == ECONNABORTED || errno == EFAULT || errno == EINTR || errno == EMFILE || errno == ENFILE || errno == EPERM)
 			return ;
-		throw (std::logic_error("accept failed: "));//when this happens something went fundamentally wrong
+		throw (std::runtime_error("accept failed: "));//when this happens something went fundamentally wrong
 	}
 	ipAddr = client_addr.sin_addr;
 	client_ip = inet_ntoa(ipAddr);
@@ -121,7 +121,7 @@ void	AServer::process_event(const int& client_fd)
 		case (-1):
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
 				return ;
-			throw (std::logic_error("couldn't recieve data: "));
+			throw (std::runtime_error("couldn't recieve data: "));
 		case (0):
 			disconnectClient(client_fd); //ctrl+c at netcat
 			return ;
@@ -267,7 +267,7 @@ void	AServer::epollLoop()
 	{
 		ev_cnt = epoll_wait(_epoll_fd, events, 1000, 1000);
 		if (ev_cnt == -1)
-			throw (std::logic_error("epoll_wait failed: "));
+			throw (std::runtime_error("epoll_wait failed: "));
 		for (int i = 0; i < ev_cnt; i++)
 		{
 			std::cout << "fd: " << events[i].data.fd << std::endl;			

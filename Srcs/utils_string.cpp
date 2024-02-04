@@ -62,8 +62,8 @@ void	protectedSend(int fd, std::string msg)
 		if (errno == EAGAIN || errno == EWOULDBLOCK)
 			return ;
         if(errno == EPIPE)
-            throw (std::logic_error("broken pipe: "));
-/*         throw (std::logic_error("send failed: ")); //when this happens something went fundamentally wrong
- */	}
+            throw (std::runtime_error("broken pipe: "));
+        throw (std::runtime_error("send failed: ")); //when this happens something went fundamentally wrong
+	}
 	return ;
 }
