@@ -129,6 +129,9 @@ void	IrcReply::sendRPL(IRC_ERR error, Client* sender, const std::string& input) 
 		case RPL_WELCOME:
 			msg = ":" + _server_name + " 001 " + sender->getNickname() + " :Welcome to the Internet Relay Network, " + input; //input = getPrefix() from Client; <nick>!<user>@<host>
 			break;
+		case RPL_BOUNCE:
+			msg = ":" + _server_name + " 005 " + sender->getNickname() + " NICKLEN=9 CHANTYPES=#& CHANMODES=oiklt :are supported by this server";
+			break;
 		case RPL_YOUREOPER:
 			msg += ":You are now an IRC operator";
 			break;

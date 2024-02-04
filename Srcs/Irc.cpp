@@ -78,7 +78,10 @@ void Irc::PASS(std::stringstream &sstream)
 		return ;
 	}
 	if (_sender->isRegistered())
+	{
 		_replier.sendRPL(RPL_WELCOME, _sender, _sender->getUsername());
+		_replier.sendRPL(RPL_BOUNCE, _sender, "");
+	}
 }
 
 int Irc::NICK(std::stringstream &sstream)
@@ -107,7 +110,10 @@ int Irc::NICK(std::stringstream &sstream)
 	}
 	addClientToNameMap(_sender->getNickname(), _sender->getFd());
 	if (_sender->isRegistered() == true)
+	{
 		_replier.sendRPL(RPL_WELCOME, _sender, _sender->getUsername());
+		_replier.sendRPL(RPL_BOUNCE, _sender, "");
+	}
 	return 0;
 }
 
@@ -126,8 +132,11 @@ void	Irc::USER(std::stringstream &sstream)
 		*it = extractWord(sstream);
     if (_sender->setUser(info[0], info[1], info[2], info[3]) == ERR_NEEDMOREPARAMS)
 		_replier.sendError(ERR_NEEDMOREPARAMS, _sender, "USER");
-	if (_sender->isRegistered())
+	if (_sender->isRegistered() == true)
+	{
 		_replier.sendRPL(RPL_WELCOME, _sender, _sender->getUsername());
+		_replier.sendRPL(RPL_BOUNCE, _sender, "");
+	}
 }
 
 bool Irc::isChannelNameValid(const std::string &channel_name)
@@ -444,7 +453,9 @@ int Irc::KILL(std::stringstream &sstream)
 		return (_replier.sendError(ERR_NOSUCHNICK, _sender, nickname));
 	
 	comment = extractWord(sstream);
-	disconnectClient(client_to_kill, comment);
+	protectedSend(client_to_kill->getFd(), ":" + _sender->getPrefix() + " KILL " + nickname + " :" + comment);
+	setSender(client_to_kill);
+	disconnectClient(client_to_kill, createMsg(_sender, "QUIT", "", "i was killed by server operator"));
 	return (0);
 }
 
