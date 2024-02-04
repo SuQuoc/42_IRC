@@ -83,7 +83,14 @@ void	AServer::accept_connection()
 
 void	AServer::disconnectClient(const int& client_fd) //for case 0:
 {
-	disconnectClient(getClient(client_fd), "lost connection, bye bye, see you in the AfterLife");
+	Client	*sender = getClient(client_fd);
+
+	if (sender == NULL)
+	{
+		std::cout << "sender is null in diconnectClient" << std::endl;
+		return ;
+	}
+	disconnectClient(sender, ":" + sender->getPrefix() + " QUIT :" + "lost connection, bye bye, see you in the AfterLife");
 }
 
 void	AServer::disconnectClient(Client *client, const std::string& msg)
@@ -98,7 +105,7 @@ void	AServer::disconnectClient(Client *client, const std::string& msg)
 		if (!channel)
 			continue ;
 		std::cout << "Removing client from channel: " << channel->getName() << std::endl;
-		int err = channel->rmClientTest(client, client, msg);
+		int err = channel->rmClientIgnore(client, client, msg);
 		if (err == DELETE_CHANNEL)
 		{
 			rmChannelFromMap(channel->getName());		
@@ -106,6 +113,7 @@ void	AServer::disconnectClient(Client *client, const std::string& msg)
 		}
 	}
 	rmClientFromMaps(client);
+	std::cout << "deleted client from maps" << std::endl;
 }
 
 void	AServer::process_event(const int& client_fd)
@@ -123,6 +131,7 @@ void	AServer::process_event(const int& client_fd)
 				return ;
 			throw (std::runtime_error("couldn't recieve data: "));
 		case (0):
+			std::cout << "case 0" << std::endl;
 			disconnectClient(client_fd); //ctrl+c at netcat
 			return ;
 		default:
@@ -265,6 +274,7 @@ void	AServer::epollLoop()
 
 	while (str != "exit")
 	{
+		std::cout << "epoll loop" << std::endl;
 		ev_cnt = epoll_wait(_epoll_fd, events, 1000, 1000);
 		if (ev_cnt == -1)
 			throw (std::runtime_error("epoll_wait failed: "));

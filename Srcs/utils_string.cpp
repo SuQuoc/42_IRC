@@ -57,7 +57,7 @@ std::string extractWord(std::stringstream& sstream)
 void	protectedSend(int fd, std::string msg)
 {
 	msg += "\r\n";
-	if (send(fd, msg.c_str(), msg.size(), MSG_DONTWAIT | MSG_NOSIGNAL) == -1) //MSG_DONTWAIT sets to non-block //should be nonblocking anyways because of fcntl(); added MSG_NOSOGNAL
+	if (send(fd, msg.c_str(), msg.size(), MSG_DONTWAIT | MSG_NOSIGNAL) == -1) //MSG_DONTWAIT sets to non-block //should be nonblocking anyways because of fcntl()
 	{
 		if (errno == EAGAIN || errno == EWOULDBLOCK)
 			return ;

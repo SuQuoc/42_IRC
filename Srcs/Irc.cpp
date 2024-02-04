@@ -13,8 +13,7 @@ _op_password("OpPass")
 Irc::Irc operator=(const Irc& I); */
 Irc::~Irc() {}
 
-//private methods 
-
+//private methods
 void	Irc::command_switch(Client *sender, const std::string message)
 {
 	_sender = sender;
@@ -25,12 +24,15 @@ void	Irc::command_switch(Client *sender, const std::string message)
 
 	//this block checks for Prefix 
 	std::getline(sstream >> std::ws, cmd, ' ');
+	if (cmd.empty())
+		return ;
 	if (cmd.at(0) == ':')
 	{
 		if (cmd != ":" + sender->getPrefix())
 			return;
 		std::getline(sstream, cmd, ' ');
 	}
+
 	if (cmd == "CAP")
 		return ;
 	else if (cmd == "PASS") PASS(sstream);
@@ -80,7 +82,7 @@ void Irc::PASS(std::stringstream &sstream)
 	if (_sender->isRegistered())
 	{
 		_replier.sendRPL(RPL_WELCOME, _sender, _sender->getUsername());
-		_replier.sendRPL(RPL_BOUNCE, _sender, "");
+		_replier.sendRPL(RPL_ISUPPORT, _sender, "");
 	}
 }
 
@@ -112,7 +114,7 @@ int Irc::NICK(std::stringstream &sstream)
 	if (_sender->isRegistered() == true)
 	{
 		_replier.sendRPL(RPL_WELCOME, _sender, _sender->getUsername());
-		_replier.sendRPL(RPL_BOUNCE, _sender, "");
+		_replier.sendRPL(RPL_ISUPPORT, _sender, "");
 	}
 	return 0;
 }
@@ -135,7 +137,7 @@ void	Irc::USER(std::stringstream &sstream)
 	if (_sender->isRegistered() == true)
 	{
 		_replier.sendRPL(RPL_WELCOME, _sender, _sender->getUsername());
-		_replier.sendRPL(RPL_BOUNCE, _sender, "");
+		_replier.sendRPL(RPL_ISUPPORT, _sender, "");
 	}
 }
 
@@ -308,11 +310,13 @@ void Irc::PRIVMSG(std::stringstream &sstream)
 			_replier.sendError(ERR_NORECIPIENT, _sender, "PRIVMSG");
 			continue; 
 		}
-		else if (recipient.at(0) == '#')
+		else if (recipient.at(0) == '#' || recipient.at(0) == '&')
 		{
 			Channel *channel = getChannel(recipient);
 			if (channel == NULL)
 				_replier.sendError(ERR_NOSUCHCHANNEL, _sender, recipient);
+			else if (channel->isInChannel(_sender) == false)
+				_replier.sendError(ERR_CANNOTSENDTOCHAN, _sender, recipient);
 			else if (message.empty())
 				_replier.sendError(ERR_NOTEXTTOSEND, _sender, ""); //return message is checked before to avoid checking in loop
 			else

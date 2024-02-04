@@ -11,10 +11,7 @@ _server_op(false)
 
 Client::~Client()
 {
-	if (close(_fd) == -1)
-	{
-		/* perror("close:"); */
-	}
+	close(_fd);
 }
 
 bool Client::isServerOp() const {return _server_op;}

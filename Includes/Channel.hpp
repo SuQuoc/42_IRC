@@ -57,7 +57,7 @@ class Channel
 		int		rmClient(const Client *executor, const Client *rm_client, const std::string &leaving_msg);
 		int		addClient(Client *new_client, const std::string &password, bool is_operator);
 		int		rmClient(const Client *rm_client, const std::string &leaving_msg);
-		int		rmClientTest(const Client *rm_client, const Client *ignore_me, const std::string &leaving_msg);
+		int		rmClientIgnore(const Client *rm_client, const Client *ignore_me, const std::string &leaving_msg);
 		void	sendWhoMessage(const Client *sender, const std::string server_name);
 
 		void	sendMsg(const Client *sender, const std::string &msg);

@@ -86,7 +86,7 @@ int	Channel::rmClient(const Client *rm_client, const std::string &leaving_msg) /
 	return (0);
 }
 
-int	Channel::rmClientTest(const Client *rm_client, const Client *ignore_me, const std::string &leaving_msg)
+int	Channel::rmClientIgnore(const Client *rm_client, const Client *ignore_me, const std::string &leaving_msg)
 {
 	clients_itr itr;
 
@@ -104,7 +104,9 @@ int	Channel::rmClientTest(const Client *rm_client, const Client *ignore_me, cons
 
 void	Channel::sendWhoMessage(const Client *sender, const std::string server_name)
 {
-	std::string	msg = ":" + server_name + " 353 " + sender->getNickname() + " = " + _name;
+	std::string premsg = ":" + server_name + " 353 " + sender->getNickname() + " = " + _name;
+	std::string	msg = premsg;
+	int			name_cnt = 0;
 
 	for (clients_itr it = _clients.begin(); it != _clients.end(); it++)
 	{
@@ -112,8 +114,16 @@ void	Channel::sendWhoMessage(const Client *sender, const std::string server_name
 		if (it->is_operator)
 			msg += "@";
 		msg += it->members->getNickname();
+		name_cnt++;
+		if (name_cnt == 30)
+		{
+			protectedSend(sender->getFd(), msg);
+			msg = premsg;
+			name_cnt = 0;
+		}
 	}
-	protectedSend(sender->getFd(), msg);
+	if (name_cnt != 0)
+		protectedSend(sender->getFd(), msg);
 	protectedSend(sender->getFd(), ":" + server_name + " 366 " + sender->getNickname() + " " + _name + " :End of /NAMES list.");
 }
 
