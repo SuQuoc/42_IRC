@@ -62,17 +62,18 @@ int main(const int argc, const char *argv[])
 	}
 	if (!isValidPort(argv[1]) || !isValidPassword(argv[2]))
 		return (0);
-
-	Irc	server("AfterLife", argv[2]);
-	server.setOperatorHost(OPER_IP);
-	server.setOperatorPW(OPER_PW);
-	if (server.createTcpSocket(stoi_(argv[1])) == -1)
-		return (1);
-	if (server.createEpoll() == -1)
-		return (1);
-	try {
-		server.epollLoop();
-	} catch (std::exception& e) {
-		std::cerr << "Error: thrown: " << e.what() << std::strerror(errno) << std::endl;
+	{
+		Irc	server("AfterLife", argv[2]);
+		server.setOperatorHost(OPER_IP);
+		server.setOperatorPW(OPER_PW);
+		if (server.createTcpSocket(stoi_(argv[1])) == -1)
+			return (1);
+		if (server.createEpoll() == -1)
+			return (1);
+		try {
+			server.epollLoop();
+		} catch (std::exception& e) {
+			std::cerr << "Error: thrown: " << e.what() << std::strerror(errno) << std::endl;
+		}
 	}
 }

@@ -54,16 +54,3 @@ std::string extractWord(std::stringstream& sstream)
 }
 
 //joins \\r\\n to end of msg		\it's double '\' so it shows in description
-void	protectedSend(int fd, std::string msg)
-{
-	msg += "\r\n";
-	if (send(fd, msg.c_str(), msg.size(), MSG_DONTWAIT | MSG_NOSIGNAL) == -1) //MSG_DONTWAIT sets to non-block //should be nonblocking anyways because of fcntl()
-	{
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return ;
-        if(errno == EPIPE)
-            throw (std::runtime_error("broken pipe: "));
-        throw (std::runtime_error("send failed: ")); //when this happens something went fundamentally wrong
-	}
-	return ;
-}

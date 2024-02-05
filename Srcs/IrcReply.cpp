@@ -8,7 +8,7 @@ IrcReply::~IrcReply(){}
 
 //passing empty string on things that dont requie input?
 //takes in Client pointer to send()
-int	IrcReply::sendError(IRC_ERR error, Client* sender, const std::string& input) const
+int	IrcReply::sendError(IRC_ERR error, Client* sender, const std::string& input)
 {
 	std::string err_message;
 	std::stringstream error_code;
@@ -104,11 +104,11 @@ int	IrcReply::sendError(IRC_ERR error, Client* sender, const std::string& input)
 		default:
 			std::cout << "CANT HAPPEN DUE TO ENUM" << std::endl;
 	}
-	protectedSend(sender->getFd(), err_message);
+	ReplyProtectedSend(sender, err_message);
 	return (error);
 }
 
-void	IrcReply::sendRPL(IRC_ERR error, Client* sender, const std::string& input) const
+void	IrcReply::sendRPL(IRC_ERR error, Client* sender, const std::string& input)
 {
 	std::string msg;
 	std::stringstream error_code;
@@ -147,6 +147,24 @@ void	IrcReply::sendRPL(IRC_ERR error, Client* sender, const std::string& input) 
 		default:
 			std::cout << "CANT HAPPEN DUE TO ENUM" << std::endl;
 	}
-	protectedSend(sender->getFd(), msg);
+	ReplyProtectedSend(sender, msg);
 }
 
+void	IrcReply::ReplyProtectedSend(Client *client, std::string msg)
+{
+	msg += "\r\n";
+	if(client->getPipe() == true)
+		return ;
+	if (send(client->getFd(), msg.c_str(), msg.size(), MSG_DONTWAIT | MSG_NOSIGNAL) == -1) //MSG_DONTWAIT sets to non-block //should be nonblocking anyways because of fcntl()
+	{
+		if (errno == EAGAIN || errno == EWOULDBLOCK)
+			return ;
+        if (errno == EPIPE)
+		{
+			std::cerr << "\033[0;31mWarning: BROKEN PIPE\033[0m" << std::endl;
+            client->setPipe(true);
+			return ;
+		}
+       /*  throw (std::runtime_error("send failed: ")); */ //when this happens something went fundamentally wrong
+	}
+}

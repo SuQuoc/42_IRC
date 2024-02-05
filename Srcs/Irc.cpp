@@ -107,7 +107,7 @@ int Irc::NICK(std::stringstream &sstream)
 		rmClientFromNameMap(old_nick);
 		addClientToNameMap(_sender->getNickname(), _sender->getFd());
 		if (_sender->isRegistered() == true)
-			protectedSend(_sender->getFd(), ":" + old_prefix + " NICK :" + _sender->getNickname());
+			protectedSend(_sender, ":" + old_prefix + " NICK :" + _sender->getNickname());
 		return 2;
 	}
 	addClientToNameMap(_sender->getNickname(), _sender->getFd());
@@ -332,7 +332,7 @@ void Irc::PRIVMSG(std::stringstream &sstream)
 			else
 			{
 				reply = createMsg(_sender, "PRIVMSG", recipient, message);
-				protectedSend(reciever->getFd(), reply);
+				protectedSend(reciever, reply);
 			}
 		}
 	}
@@ -413,7 +413,7 @@ int	Irc::INVITE(std::stringstream& sstream)
 		return (_replier.sendError(ERR_USERONCHANNEL, _sender, nickname + " " + channel_name));
 
 	channel->addInvited(user_to_invite);
-	protectedSend(user_to_invite->getFd(), ":" + _sender->getPrefix() + " INVITE " + nickname + " " + channel_name);
+	protectedSend(user_to_invite, ":" + _sender->getPrefix() + " INVITE " + nickname + " " + channel_name);
 	_replier.sendRPL(RPL_INVITING, _sender, nickname + " " + channel_name);
 	return (0);
 }
@@ -457,7 +457,7 @@ int Irc::KILL(std::stringstream &sstream)
 		return (_replier.sendError(ERR_NOSUCHNICK, _sender, nickname));
 	
 	comment = extractWord(sstream);
-	protectedSend(client_to_kill->getFd(), ":" + _sender->getPrefix() + " KILL " + nickname + " :" + comment);
+	protectedSend(client_to_kill, ":" + _sender->getPrefix() + " KILL " + nickname + " :" + comment);
 	setSender(client_to_kill);
 	disconnectClient(client_to_kill, createMsg(_sender, "QUIT", "", "i was killed by server operator"));
 	return (0);
@@ -633,7 +633,7 @@ void Irc::operatorsSendSetModeToChannel(Channel *channel, Client *sender, const 
 		channel->sendMsg(NULL, ":" + sender->getPrefix() + " MODE " + channel->getName() + " " + o_modes_str + o_set_names);
 }
 
-void Irc::sendSetModeToChannel(Channel *channel, Client *sender, const int &inv_code, const int &topic_code)
+void	Irc::sendSetModeToChannel(Channel *channel, Client *sender, const int &inv_code, const int &topic_code)
 {
 	if(inv_code == MODE_SET_PLUS)
 		channel->sendMsg(NULL, ":" + sender->getPrefix() + " MODE " + channel->getName() + " +i");
@@ -644,3 +644,25 @@ void Irc::sendSetModeToChannel(Channel *channel, Client *sender, const int &inv_
 	else if(topic_code == MODE_SET_MINUS)
 		channel->sendMsg(NULL, ":" + sender->getPrefix() + " MODE " + channel->getName() + " -t");
 }
+
+void	Irc::protectedSend(Client *client, std::string msg)
+{
+	msg += "\r\n";
+	if(client->getPipe() == true)
+		return ;
+	if (send(client->getFd(), msg.c_str(), msg.size(), MSG_DONTWAIT | MSG_NOSIGNAL) == -1) //MSG_DONTWAIT sets to non-block //should be nonblocking anyways because of fcntl()
+	{
+		if (errno == EAGAIN || errno == EWOULDBLOCK)
+			return ;
+        if (errno == EPIPE)
+		{
+			client->setPipe(true);
+			std::cerr << "\033[0;31mWarning: BROKEN PIPE\033[0m" << std::endl;
+            return disconnectClient(client->getFd());
+		}
+       /*  throw (std::runtime_error("send failed: ")); */ //when this happens something went fundamentally wrong
+	}
+}
+
+void	Irc::setSender(Client *sender) { _sender = sender; }
+

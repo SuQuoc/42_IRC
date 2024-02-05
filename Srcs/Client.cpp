@@ -6,7 +6,8 @@ _channel_count(0),
 _hostname(ip_addr),
 _authenticated(false),
 _registered(false),
-_server_op(false)
+_server_op(false),
+broken_pipe(false)
 {}
 
 Client::~Client()
@@ -140,4 +141,14 @@ std::string	Client::readMsgBuf() const
 	}
 	else
 		return "";
+}
+
+void Client::setPipe(bool pipe)
+{
+	broken_pipe = pipe;
+}
+
+bool Client::getPipe() const
+{
+	return (broken_pipe);
 }

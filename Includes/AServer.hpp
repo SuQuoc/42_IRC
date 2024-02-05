@@ -79,7 +79,6 @@ protected:
 	Client*		getClient(const std::string& name) const;
 	Channel*	getChannel(const std::string& name) const;
 
-
 public:
 //con- and destructer
 
@@ -88,5 +87,5 @@ public:
 //methods
 	int		createTcpSocket(const int& port);
 	int		createEpoll();
-	void	epollLoop(); 
+	void	epollLoop();
 };

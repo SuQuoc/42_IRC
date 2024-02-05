@@ -33,12 +33,15 @@ private:
 	bool _authenticated;
 	bool _registered;
 	bool _server_op;
+	bool broken_pipe;
 
 	Client(const Client&);
     Client& operator=(const Client&);
 
 	std::vector<Channel *>::iterator getChannelIter(Channel *channel);
 public:
+
+
 	Client(int socketFd, const std::string& ip_addr);
 	~Client();
 
@@ -68,6 +71,9 @@ public:
 
 	void loadMsgBuf(const std::string& buf);
 	std::string	readMsgBuf() const;
+
+	void setPipe(bool pipe);
+	bool getPipe() const;
 };
 
 

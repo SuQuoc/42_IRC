@@ -24,6 +24,7 @@ private:
 	void	command_switch(Client *sender, const std::string message);
 	std::string	createMsg(Client *sender, const std::string& cmd, const std::string& recipient, const std::string& msg) const;
 	bool	isChannelNameValid(const std::string &channel_name);
+	void 	protectedSend(Client *client, std::string msg);
 
 public:
 //con- and destructer
@@ -59,5 +60,5 @@ public:
 	void	operatorsSendSetModeToChannel(Channel *channel, Client *sender, const std::map<std::string, int> &operator_rpl_map);
 	void	sendSetModeToChannel(Channel *channel, Client *sender, const int &inv_code, const int &topic_code);
 
-	void	setSender(Client *sender) { _sender = sender; }
+	void	setSender(Client *sender);
 };

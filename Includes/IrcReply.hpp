@@ -67,6 +67,7 @@ public:
     IrcReply(const std::string& server_name);
     ~IrcReply();
     
-    int     sendError(IRC_ERR error, Client* sender, const std::string& input) const;
-    void	sendRPL(IRC_ERR error, Client* sender, const std::string& input) const;
+    int     sendError(IRC_ERR error, Client* sender, const std::string& input);
+    void	sendRPL(IRC_ERR error, Client* sender, const std::string& input);
+    void	ReplyProtectedSend(Client *client, std::string msg);
 };

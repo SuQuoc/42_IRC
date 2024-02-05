@@ -1,2 +1,3 @@
 :AfterLife 001 client0 :Welcome to the Internet Relay Network, user0
+:AfterLife 005 client0 NICKLEN=9 CHANTYPES=#& CHANMODES=oiklt :are supported by this server
 :AfterLife 491 client0 :No O-lines for your host

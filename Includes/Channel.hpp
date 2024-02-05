@@ -14,6 +14,7 @@
 #define EXIT_FAILURE 1
 #define CH_SUCCESS 0
 #define DELETE_CHANNEL -1
+#define CH_SIGPIPE -1
 
 class Client;
 
@@ -57,10 +58,10 @@ class Channel
 		int		rmClient(const Client *executor, const Client *rm_client, const std::string &leaving_msg);
 		int		addClient(Client *new_client, const std::string &password, bool is_operator);
 		int		rmClient(const Client *rm_client, const std::string &leaving_msg);
-		int		rmClientIgnore(const Client *rm_client, const Client *ignore_me, const std::string &leaving_msg);
-		void	sendWhoMessage(const Client *sender, const std::string server_name);
+		int		rmClientIgnore(Client *rm_client, Client *ignore_me, const std::string &leaving_msg);
+		void	sendWhoMessage(Client *sender, const std::string server_name);
 
-		void	sendMsg(const Client *sender, const std::string &msg);
+		int		sendMsg(Client *sender, const std::string &msg);
 		bool	isInChannel(const Client *client);
 		bool	isOperator(const Client *client);
 
@@ -81,4 +82,6 @@ class Channel
 		int		setTopic(const std::string &name, const std::string &topic);
 		int		setOperator(const char &add, Client *client);
 		int		setTopicOrInv(const char &add, const char &mode);
+
+		void 	protectedSendChannel(Client *client, std::string msg);
 };

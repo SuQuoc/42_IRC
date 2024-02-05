@@ -44,14 +44,15 @@ bool	Channel::isInvited(const Client*client)
 }
 
 // if sender NULL send to all
-void Channel::sendMsg(const Client *sender, const std::string &msg)
+int Channel::sendMsg(Client *sender, const std::string &msg)
 {
 	for (clients_itr itr = _clients.begin(); itr != _clients.end(); itr++)
 	{
 		if (sender && itr->members == sender)
 			continue ;
-		protectedSend(itr->members->getFd(), msg);
+		protectedSendChannel(itr->members, msg);
 	}
+	return (0);
 }
 
 //does not rm client from clients._channels or the other maps in server
@@ -86,7 +87,7 @@ int	Channel::rmClient(const Client *rm_client, const std::string &leaving_msg) /
 	return (0);
 }
 
-int	Channel::rmClientIgnore(const Client *rm_client, const Client *ignore_me, const std::string &leaving_msg)
+int	Channel::rmClientIgnore(Client *rm_client, Client *ignore_me, const std::string &leaving_msg)
 {
 	clients_itr itr;
 
@@ -102,7 +103,7 @@ int	Channel::rmClientIgnore(const Client *rm_client, const Client *ignore_me, co
 	return (0);
 }
 
-void	Channel::sendWhoMessage(const Client *sender, const std::string server_name)
+void	Channel::sendWhoMessage(Client *sender, const std::string server_name)
 {
 	std::string premsg = ":" + server_name + " 353 " + sender->getNickname() + " = " + _name;
 	std::string	msg = premsg;
@@ -117,14 +118,14 @@ void	Channel::sendWhoMessage(const Client *sender, const std::string server_name
 		name_cnt++;
 		if (name_cnt == 30)
 		{
-			protectedSend(sender->getFd(), msg);
+			protectedSendChannel(sender, msg);
 			msg = premsg;
 			name_cnt = 0;
 		}
 	}
 	if (name_cnt != 0)
-		protectedSend(sender->getFd(), msg);
-	protectedSend(sender->getFd(), ":" + server_name + " 366 " + sender->getNickname() + " " + _name + " :End of /NAMES list.");
+		protectedSendChannel(sender, msg);
+	protectedSendChannel(sender, ":" + server_name + " 366 " + sender->getNickname() + " " + _name + " :End of /NAMES list.");
 }
 
 
@@ -313,4 +314,24 @@ int Channel::setTopicOrInv(const char &add, const char &ch_modes)
 		std::cerr << "Error wrong mode!" << ch_modes << std::endl;
 	}
 	return (0);
+}
+
+//if faild returns -1
+void	Channel::protectedSendChannel(Client *client, std::string msg)
+{
+	msg += "\r\n";
+	if(client->getPipe() == true)
+		return ;
+	if (send(client->getFd(), msg.c_str(), msg.size(), MSG_DONTWAIT | MSG_NOSIGNAL) == -1) //MSG_DONTWAIT sets to non-block //should be nonblocking anyways because of fcntl()
+	{
+		if (errno == EAGAIN || errno == EWOULDBLOCK)
+			return ;
+        if (errno == EPIPE)
+		{
+			std::cerr << "\033[0;31mWarning: BROKEN PIPE\033[0m" << std::endl;
+            client->setPipe(true);
+			return ;
+		}
+       /*  throw (std::runtime_error("send failed: ")); */ //when this happens something went fundamentally wrong
+	}
 }

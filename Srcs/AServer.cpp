@@ -97,7 +97,7 @@ void	AServer::disconnectClient(Client *client, const std::string& msg)
 {
 	if (!client)
 		return ;
-	
+
 	std::vector<Channel *> channels = client->getAllChannels();
 	for (std::vector<Channel *>::iterator it = channels.begin(); it != channels.end(); it++)
 	{
@@ -118,22 +118,27 @@ void	AServer::disconnectClient(Client *client, const std::string& msg)
 
 void	AServer::process_event(const int& client_fd)
 {
-	char	buf[513];
+	char	*buf = new char[513 * sizeof(char)];
 	int		bytes_recieved = -1;
+
 	Client *sender = getClient(client_fd);
 
 	std::memset(buf, '\0', 513);
-	bytes_recieved = recv(client_fd, buf, sizeof(buf) - 1, 0);
+	bytes_recieved = recv(client_fd, buf, 512 * sizeof(char), 0);
 	switch (bytes_recieved)
 	{
 		case (-1):
+			/* std::cout << "Warning: read faild" << std::endl;
+			disconnectClient(client_fd);
+			break ; */
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
-				return ;
+				break ;
 			throw (std::runtime_error("couldn't recieve data: "));
 		case (0):
 			std::cout << "case 0" << std::endl;
 			disconnectClient(client_fd); //ctrl+c at netcat
-			return ;
+			/* sender->loadMsgBuf(buf); */
+			break ;
 		default:
 			std::stringstream	sstream(buf);
 			std::string str;
@@ -146,6 +151,7 @@ void	AServer::process_event(const int& client_fd)
 				sender = getClient(client_fd);
 			}
 	}
+	delete [] buf;
 }
 
 int	AServer::printErrorReturn(const std::string& error_msg)
@@ -189,11 +195,12 @@ void 	AServer::rmClientFromMaps(Client *client)
 
 	client_fd_map_iter_t it = _client_fds.find(client->getFd());
 	client_name_map_iter_t it2 = _client_names.find(client->getNickname());
+	delete client;
+	
 	if (it == _client_fds.end())
 		return;
 
 	_client_fds.erase(it);
-	delete client;
 	
 	//this will only be triggerd if the client didnt finish registration before losing connection
 	if (it2 == _client_names.end()) 
@@ -268,31 +275,60 @@ int	AServer::createEpoll()
 
 void	AServer::epollLoop()
 {
-	struct epoll_event	events[1000];
+	struct epoll_event	events[10000];
 	std::string			str = "run";
 	int 				ev_cnt;
 
-	while (str != "exit")
+	while (str != "exit" && str != "Exit")
 	{
-		std::cout << "epoll loop" << std::endl;
-		ev_cnt = epoll_wait(_epoll_fd, events, 1000, 1000);
+		ev_cnt = epoll_wait(_epoll_fd, events, 10000, 1);
 		if (ev_cnt == -1)
 			throw (std::runtime_error("epoll_wait failed: "));
 		for (int i = 0; i < ev_cnt; i++)
 		{
-			std::cout << "fd: " << events[i].data.fd << std::endl;			
+
+			Client *client = getClient(events[i].data.fd);
+			if(client && client->getPipe() == true)
+			{
+				disconnectClient(events[i].data.fd);
+				continue ;
+			}
+
+			std::cout << "fd: " << events[i].data.fd << std::endl;	
 			if (events[i].data.fd == _sock_fd)
+			{
+				std::cerr << "new fd:" <<  events[i].data.fd  << std::endl;
 				accept_connection();
+			}
 			else if (events[i].data.fd == STDIN_FILENO)
-				std::cin >> str;
+			{
+				std::getline(std::cin, str);
+				if(str == "who")
+				{
+					std::cout << "client fds map = "<< _client_fds.size() << std::endl;
+					std::cout << "client names map = "<< _client_names.size() << std::endl;
+				}
+			}
 			else if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))
 			{
-				std::cerr << "Error: broken event" << std::endl;
+				if(events[i].events & EPOLLERR)
+					std::cerr << "\033[0;31mERROR: EPOLLERR\033[0m" << std::endl;
+				if(events[i].events & EPOLLHUP)
+					std::cerr << "\033[0;31mWarning: EPOLLHUP\033[0m" << std::endl;
+				if(events[i].events & EPOLLIN)
+					std::cerr << "\033[0;31mWarning: EPOLLIN\033[0m" << std::endl;
+				epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, events[i].data.fd, (epoll_event *)&events[i].events);
 				disconnectClient(events[i].data.fd);
+				/* throw (std::runtime_error("epoll event error")); */
 			}
 			else
-				process_event(events[i].data.fd); //recv
+				process_event(events[i].data.fd); //recv<
 		}
+		/* for(client_fd_map_iter_t itr = _client_fds.begin(); itr != _client_fds.end(); itr++)
+		{
+			if(itr->second->getPipe() == true)
+				disconnectClient(itr->first);
+		} */
 	}
 }
 
