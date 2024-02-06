@@ -41,7 +41,7 @@ AServer::~AServer()
 void	AServer::accept_connection()
 {
 	struct sockaddr_in	client_addr;
-	struct epoll_event	ev_temp;
+	/* struct epoll_event	ev_temp; */
 	socklen_t			client_addr_len = sizeof(client_addr);
 	struct in_addr 		ipAddr; 
 	char				*client_ip;
@@ -55,6 +55,22 @@ void	AServer::accept_connection()
 			return ;
 		throw (std::runtime_error("accept failed: "));//when this happens something went fundamentally wrong
 	}
+	EV_SET(change_event, client_fd , EVFILT_READ, EV_ADD, 0, 0, NULL);
+    if (kevent(_kevent_fd, change_event, 1, NULL, 0, NULL) < 0)
+    {
+		std::cout << client_fd << std::endl;
+        perror("kevent error accept: ");
+		if(close(client_fd) == -1)
+			perror("kevent error accept close: ");
+		
+		EV_SET(change_event, client_fd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+    	if (kevent(_kevent_fd, change_event, 1, NULL, 0, NULL) < 0) {
+        	perror("kevent error accept close event remove: ");
+    	}
+
+		return ;
+    }
+
 	ipAddr = client_addr.sin_addr;
 	client_ip = inet_ntoa(ipAddr);
 	if(!client_ip)
@@ -62,15 +78,9 @@ void	AServer::accept_connection()
 		client_ip[0] = '0';
 		client_ip[1] = '\0'; 
 	}
+
 	std::cout << "Client IP: " << client_ip << "!\n";
-	ev_temp.data.fd = client_fd;
-	ev_temp.events = EPOLLIN | EPOLLET;
-	fcntl(client_fd, F_SETFL, O_NONBLOCK);
-	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, client_fd, &ev_temp) == -1)
-	{
-		std::cerr << "Error: epoll_ctl failed in accept_connection" << std::endl;
-		return ;
-	}
+
 	if (_client_fds.find(client_fd) != _client_fds.end())
 	{
 		std::cerr << "* Error: new fd already in map" << std::endl;
@@ -258,49 +268,64 @@ int	AServer::createTcpSocket(const int& port)
 
 int	AServer::createEpoll()
 {
-	_ev.data.fd = _sock_fd;
-	_ev.events = EPOLLIN | EPOLLET;
-	_epoll_fd = epoll_create1(0);
-	if (_epoll_fd == -1)
-		return (printErrorReturn("couldn't create epoll"));
-	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, _sock_fd, &_ev) == -1)
-		return (printErrorReturn("epoll_ctrl failed"));
-
-	_ev.data.fd = STDIN_FILENO;
-	_ev.events = EPOLLIN | EPOLLET;
-	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, STDIN_FILENO, &_ev) == -1)
-		return (printErrorReturn("epoll_ctrl failed on stdin"));
+	_kevent_fd = kqueue();
+	EV_SET(change_event, _sock_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, 0);
+	if (kevent(_kevent_fd, change_event, 1, NULL, 0, NULL) == -1)
+	{
+		throw (std::runtime_error("kevent create failed: "));
+	}
 	return (0);
 }
 
 void	AServer::epollLoop()
 {
-	struct epoll_event	events[10000];
+	/* struct epoll_event	events[10000]; */
 	std::string			str = "run";
-	int 				ev_cnt;
+	int 				new_events;
 
 	while (str != "exit" && str != "Exit")
 	{
-		ev_cnt = epoll_wait(_epoll_fd, events, 10000, 1);
-		if (ev_cnt == -1)
-			throw (std::runtime_error("epoll_wait failed: "));
-		for (int i = 0; i < ev_cnt; i++)
-		{
+		new_events = kevent(_kevent_fd, NULL, 0, event, 1, NULL);
+        if (new_events == -1)
+            throw (std::runtime_error("kevent wait failed: "));
 
-			Client *client = getClient(events[i].data.fd);
+		for (int i = 0; i < new_events; i++)
+		{
+			int event_fd = event[i].ident;
+
+			if (event[i].flags & EV_EOF)
+            {
+
+				EV_SET(change_event, event_fd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+    			if (kevent(_kevent_fd, change_event, 1, NULL, 0, NULL) < 0) 
+				{
+        			perror("kevent error accept close event remove: ");
+    			}
+                disconnectClient(event_fd);
+                std::cout << ("Client has disconnected") << std::endl;
+				continue ;
+            }
+
+			Client *client = getClient(event_fd);
 			if(client && client->getPipe() == true)
 			{
-				disconnectClient(events[i].data.fd);
+
+				EV_SET(change_event, event_fd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+    			if (kevent(_kevent_fd, change_event, 1, NULL, 0, NULL) < 0) {
+        			perror("kevent error accept close event remove: ");
+    			}
+
+				disconnectClient(event_fd);
 				continue ;
 			}
 
-			std::cout << "fd: " << events[i].data.fd << std::endl;	
-			if (events[i].data.fd == _sock_fd)
+			std::cout << "fd: " << event_fd << std::endl;	
+			if (event_fd == _sock_fd)
 			{
-				std::cerr << "new fd:" <<  events[i].data.fd  << std::endl;
+				std::cerr << "new fd:" << event_fd << std::endl;
 				accept_connection();
 			}
-			else if (events[i].data.fd == STDIN_FILENO)
+			/* else if (event_fd == STDIN_FILENO)
 			{
 				std::getline(std::cin, str);
 				if(str == "who")
@@ -308,21 +333,9 @@ void	AServer::epollLoop()
 					std::cout << "client fds map = "<< _client_fds.size() << std::endl;
 					std::cout << "client names map = "<< _client_names.size() << std::endl;
 				}
-			}
-			else if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))
-			{
-				if(events[i].events & EPOLLERR)
-					std::cerr << "\033[0;31mERROR: EPOLLERR\033[0m" << std::endl;
-				if(events[i].events & EPOLLHUP)
-					std::cerr << "\033[0;31mWarning: EPOLLHUP\033[0m" << std::endl;
-				if(events[i].events & EPOLLIN)
-					std::cerr << "\033[0;31mWarning: EPOLLIN\033[0m" << std::endl;
-				epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, events[i].data.fd, (epoll_event *)&events[i].events);
-				disconnectClient(events[i].data.fd);
-				/* throw (std::runtime_error("epoll event error")); */
-			}
+			} */
 			else
-				process_event(events[i].data.fd); //recv<
+				process_event(event_fd);
 		}
 		/* for(client_fd_map_iter_t itr = _client_fds.begin(); itr != _client_fds.end(); itr++)
 		{

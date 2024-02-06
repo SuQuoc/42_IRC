@@ -21,6 +21,17 @@
 #include <cstdlib>
 #include <string>
 #include <map>
+#include <sys/event.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/event.h>
+#include <event2/event.h>
+#include <event.h>
+#include <string.h>
+#include <unistd.h>
 
 
 # ifndef OPER_IP
@@ -40,6 +51,9 @@ protected:
 	const std::string	_password;
 	int		_epoll_fd;
 	int		_sock_fd;
+	int		_kevent_fd;
+
+	struct kevent change_event[10000], event[10000];
 
 	typedef std::map<std::string, Channel*>::iterator	channel_map_iter_t;
 	typedef std::map<std::string, Client*>::iterator	client_name_map_iter_t;

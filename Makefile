@@ -2,7 +2,7 @@ NAME		= ircserv
 IP_ADDRESS 	= "10.14.3.10"
 ARGS 		= 6667 pw1234567
 CXX			= c++
-CXXFLAGS	= -Wall -Wextra -Werror -MMD -MP -g -std=c++98 -DOPER_IP='$(IP_ADDRESS)'
+CXXFLAGS	= -Wall -Wextra -Werror -I/usr/include/kqueue -MMD -MP -g -DOPER_IP='$(IP_ADDRESS)'
  
 INCLUDES 	= ./Includes
 
@@ -33,7 +33,7 @@ $(OBJ_DIR):
 	@mkdir -p $(OBJ_DIR)
 
 $(NAME): $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME)
+	$(CXX) $(CXXFLAGS) $(OBJS) -lkqueue  -o $(NAME)
 	@echo "$(GREEN)Executable \"$(NAME)\" succesfully created.$(NC)"
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
