@@ -415,11 +415,9 @@ void	AServer::epollLoop()
             throw (std::runtime_error("poll failed: "));
 		if(poll_return == 0)
 		{
-			for (int i = 2; i < MAX_CLIENTS; i++)
-			{
-				Client *client = getClient(pollfds[i].fd);
-				protectedSend(client, "ping");
-			}
+			/* std::cout << "time_out" << std::endl; */
+			for(client_fd_map_iter_t itr = _client_fds.begin(); itr != _client_fds.end(); itr++)
+				protectedSend(itr->second, "ping");
 		}
 		if ((pollfds[1].fd == 0 && pollfds[1].revents & POLLIN))
 		{
