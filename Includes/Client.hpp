@@ -35,12 +35,14 @@ private:
 	bool _server_op;
 	bool broken_pipe;
 
+
 	Client(const Client&);
     Client& operator=(const Client&);
 
 	std::vector<Channel *>::iterator getChannelIter(Channel *channel);
 public:
 
+	int	_index_poll_struct;
 
 	Client(int socketFd, const std::string& ip_addr);
 	~Client();

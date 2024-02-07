@@ -54,6 +54,7 @@ protected:
 	int		_epoll_fd;
 	int		_sock_fd;
 	int		_kevent_fd;
+	nfds_t	_useClient;
 
 	struct pollfd pollfds[MAX_CLIENTS + 1];
 
@@ -69,7 +70,7 @@ protected:
 	AServer(const std::string& name, const std::string& password);
 
 //methods
-	void	accept_connection(int &use_client);
+	void	accept_connection(pollfd *pollfds);
 	void	disconnectClient(const int& client_fd);
 	void	disconnectClient(Client *client, const std::string& msg);
 
@@ -79,7 +80,7 @@ protected:
 
 	void	addNewChannelToMap(Client *sender, std::string channel_name);
 	void	addClientToNameMap(std::string user_name, const int& client_fd);
-	void	addNewClientToFdMap(const int& client_fd, const std::string& client_ip);
+	void	addNewClientToFdMap(const int& client_fd, const std::string& client_ip, int index_poll_struct);
 
 	void 	rmClientFromNameMap(const std::string& nick_name);
 	void 	rmClientFromMaps(Client *client); 
@@ -94,6 +95,8 @@ protected:
 	Client*		getClient(int fd) const;
 	Client*		getClient(const std::string& name) const;
 	Channel*	getChannel(const std::string& name) const;
+
+	void 		protectedSend(Client *client, std::string msg);
 
 public:
 //con- and destructer

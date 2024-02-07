@@ -7,7 +7,8 @@ _hostname(ip_addr),
 _authenticated(false),
 _registered(false),
 _server_op(false),
-broken_pipe(false)
+broken_pipe(false),
+_index_poll_struct(-1)
 {}
 
 Client::~Client()

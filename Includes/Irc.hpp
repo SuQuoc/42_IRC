@@ -24,7 +24,6 @@ private:
 	void	command_switch(Client *sender, const std::string message);
 	std::string	createMsg(Client *sender, const std::string& cmd, const std::string& recipient, const std::string& msg) const;
 	bool	isChannelNameValid(const std::string &channel_name);
-	void 	protectedSend(Client *client, std::string msg);
 
 public:
 //con- and destructer

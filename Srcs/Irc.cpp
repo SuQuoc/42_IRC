@@ -17,7 +17,7 @@ Irc::~Irc() {}
 void	Irc::command_switch(Client *sender, const std::string message)
 {
 	_sender = sender;
-	std::cout << "message =" << message << "!" << std::endl;
+	/* std::cout << "message =" << message << "!" << std::endl; */
 
     std::stringstream	sstream(message);
     std::string	cmd;
@@ -51,7 +51,7 @@ void	Irc::command_switch(Client *sender, const std::string message)
 	else if (cmd == "OPER") OPER(sstream);
 	else if (cmd == "KILL") KILL(sstream);
 	else _replier.sendError(ERR_UNKNOWNCOMMAND, _sender, cmd);
-	std::cout << std::endl;
+	/* std::cout << std::endl; */
 }
 
 //methods (commands)
@@ -643,25 +643,6 @@ void	Irc::sendSetModeToChannel(Channel *channel, Client *sender, const int &inv_
 		channel->sendMsg(NULL, ":" + sender->getPrefix() + " MODE " + channel->getName() + " +t");
 	else if(topic_code == MODE_SET_MINUS)
 		channel->sendMsg(NULL, ":" + sender->getPrefix() + " MODE " + channel->getName() + " -t");
-}
-
-void	Irc::protectedSend(Client *client, std::string msg)
-{
-	msg += "\r\n";
-	if(client->getPipe() == true)
-		return ;
-	if (send(client->getFd(), msg.c_str(), msg.size(), MSG_DONTWAIT | MSG_NOSIGNAL) == -1) //MSG_DONTWAIT sets to non-block //should be nonblocking anyways because of fcntl()
-	{
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return ;
-        if (errno == EPIPE)
-		{
-			client->setPipe(true);
-			std::cerr << "\033[0;31mWarning: BROKEN PIPE\033[0m" << std::endl;
-            return disconnectClient(client->getFd());
-		}
-       /*  throw (std::runtime_error("send failed: ")); */ //when this happens something went fundamentally wrong
-	}
 }
 
 void	Irc::setSender(Client *sender) { _sender = sender; }
