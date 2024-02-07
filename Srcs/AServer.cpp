@@ -266,7 +266,7 @@ int	AServer::createTcpSocket(const int& port)
 	return (0);
 }
 
-int	AServer::createEpoll()
+/* int	AServer::createEpoll()
 {
 	_kevent_fd = kqueue();
 	EV_SET(change_event, _sock_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, 0);
@@ -274,6 +274,23 @@ int	AServer::createEpoll()
 	{
 		throw (std::runtime_error("kevent create failed: "));
 	}
+	return (0);
+} */
+
+int	AServer::createEpoll()
+{
+	_ev.data.fd = _sock_fd;
+	_ev.events = EPOLLIN | EPOLLET;
+	_epoll_fd = epoll_create1(0);
+	if (_epoll_fd == -1)
+		return (printErrorReturn("couldn't create epoll"));
+	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, _sock_fd, &_ev) == -1)
+		return (printErrorReturn("epoll_ctrl failed"));
+
+	_ev.data.fd = STDIN_FILENO;
+	_ev.events = EPOLLIN | EPOLLET;
+	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, STDIN_FILENO, &_ev) == -1)
+		return (printErrorReturn("epoll_ctrl failed on stdin"));
 	return (0);
 }
 
