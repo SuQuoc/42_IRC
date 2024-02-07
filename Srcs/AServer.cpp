@@ -296,6 +296,36 @@ int	AServer::createEpoll()
 
 void	AServer::epollLoop()
 {
+	struct epoll_event	events[1000];
+	std::string			str = "run";
+	int 				ev_cnt;
+
+	while (str != "exit")
+	{
+		std::cout << "epoll loop" << std::endl;
+		ev_cnt = epoll_wait(_epoll_fd, events, 1000, 1000);
+		if (ev_cnt == -1)
+			throw (std::runtime_error("epoll_wait failed: "));
+		for (int i = 0; i < ev_cnt; i++)
+		{
+			std::cout << "fd: " << events[i].data.fd << std::endl;			
+			if (events[i].data.fd == _sock_fd)
+				accept_connection();
+			else if (events[i].data.fd == STDIN_FILENO)
+				std::cin >> str;
+			else if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))
+			{
+				std::cerr << "Error: broken event" << std::endl;
+				disconnectClient(events[i].data.fd);
+			}
+			else
+				process_event(events[i].data.fd); //recv
+		}
+	}
+}
+
+void	AServer::epollLoop()
+{
 	/* struct epoll_event	events[10000]; */
 	std::string			str = "run";
 	int 				new_events;
