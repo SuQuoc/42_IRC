@@ -38,10 +38,12 @@ AServer::~AServer()
 }
 
 //private methods
+/* 
+//private methods
 void	AServer::accept_connection()
 {
 	struct sockaddr_in	client_addr;
-	/* struct epoll_event	ev_temp; */
+	struct epoll_event	ev_temp;
 	socklen_t			client_addr_len = sizeof(client_addr);
 	struct in_addr 		ipAddr; 
 	char				*client_ip;
@@ -55,22 +57,6 @@ void	AServer::accept_connection()
 			return ;
 		throw (std::runtime_error("accept failed: "));//when this happens something went fundamentally wrong
 	}
-	EV_SET(change_event, client_fd , EVFILT_READ, EV_ADD, 0, 0, NULL);
-    if (kevent(_kevent_fd, change_event, 1, NULL, 0, NULL) < 0)
-    {
-		std::cout << client_fd << std::endl;
-        perror("kevent error accept: ");
-		if(close(client_fd) == -1)
-			perror("kevent error accept close: ");
-		
-		EV_SET(change_event, client_fd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
-    	if (kevent(_kevent_fd, change_event, 1, NULL, 0, NULL) < 0) {
-        	perror("kevent error accept close event remove: ");
-    	}
-
-		return ;
-    }
-
 	ipAddr = client_addr.sin_addr;
 	client_ip = inet_ntoa(ipAddr);
 	if(!client_ip)
@@ -78,9 +64,15 @@ void	AServer::accept_connection()
 		client_ip[0] = '0';
 		client_ip[1] = '\0'; 
 	}
-
 	std::cout << "Client IP: " << client_ip << "!\n";
-
+	ev_temp.data.fd = client_fd;
+	ev_temp.events = EPOLLIN | EPOLLET;
+	fcntl(client_fd, F_SETFL, O_NONBLOCK);
+	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, client_fd, &ev_temp) == -1)
+	{
+		std::cerr << "Error: epoll_ctl failed in accept_connection" << std::endl;
+		return ;
+	}
 	if (_client_fds.find(client_fd) != _client_fds.end())
 	{
 		std::cerr << "* Error: new fd already in map" << std::endl;
@@ -88,7 +80,7 @@ void	AServer::accept_connection()
 	}
 	addNewClientToFdMap(client_fd, client_ip); //allocatoes the client object
 	std::cout << "Added new Client to Fd-Map!" << std::endl;
-}
+} */
 
 
 void	AServer::disconnectClient(const int& client_fd) //for case 0:
@@ -126,9 +118,9 @@ void	AServer::disconnectClient(Client *client, const std::string& msg)
 	std::cout << "deleted client from maps" << std::endl;
 }
 
-void	AServer::process_event(const int& client_fd)
+int	AServer::process_event(const int& client_fd)
 {
-	char	*buf = new char[513 * sizeof(char)];
+	char	buf[513];
 	int		bytes_recieved = -1;
 
 	Client *sender = getClient(client_fd);
@@ -138,17 +130,18 @@ void	AServer::process_event(const int& client_fd)
 	switch (bytes_recieved)
 	{
 		case (-1):
+			std::cout << "case -1" << std::endl;
 			/* std::cout << "Warning: read faild" << std::endl;
 			disconnectClient(client_fd);
 			break ; */
-			if (errno == EAGAIN || errno == EWOULDBLOCK)
-				break ;
-			throw (std::runtime_error("couldn't recieve data: "));
+			/* if (errno == EAGAIN || errno == EWOULDBLOCK) */
+			/* throw (std::runtime_error("couldn't recieve data: ")); */
+			return -1;
 		case (0):
 			std::cout << "case 0" << std::endl;
 			disconnectClient(client_fd); //ctrl+c at netcat
 			/* sender->loadMsgBuf(buf); */
-			break ;
+			return 0;
 		default:
 			std::stringstream	sstream(buf);
 			std::string str;
@@ -161,7 +154,7 @@ void	AServer::process_event(const int& client_fd)
 				sender = getClient(client_fd);
 			}
 	}
-	delete [] buf;
+	return (bytes_recieved);
 }
 
 int	AServer::printErrorReturn(const std::string& error_msg)
@@ -279,7 +272,7 @@ int	AServer::createTcpSocket(const int& port)
 
 int	AServer::createEpoll()
 {
-	_ev.data.fd = _sock_fd;
+	/* _ev.data.fd = _sock_fd;
 	_ev.events = EPOLLIN | EPOLLET;
 	_epoll_fd = epoll_create1(0);
 	if (_epoll_fd == -1)
@@ -290,13 +283,13 @@ int	AServer::createEpoll()
 	_ev.data.fd = STDIN_FILENO;
 	_ev.events = EPOLLIN | EPOLLET;
 	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, STDIN_FILENO, &_ev) == -1)
-		return (printErrorReturn("epoll_ctrl failed on stdin"));
+		return (printErrorReturn("epoll_ctrl failed on stdin")); */
 	return (0);
 }
 
-void	AServer::epollLoop()
+/* void	AServer::epollLoop()
 {
-	struct epoll_event	events[1000];
+	struct epoll_event	event[1000];
 	std::string			str = "run";
 	int 				ev_cnt;
 
@@ -322,36 +315,105 @@ void	AServer::epollLoop()
 				process_event(events[i].data.fd); //recv
 		}
 	}
+} */
+
+void	AServer::accept_connection(int &useClient)
+{
+	struct sockaddr_in	client_addr;
+	/* struct epoll_event	ev_temp; */
+	socklen_t			client_addr_len = sizeof(client_addr);
+	struct in_addr 		ipAddr; 
+	char				*client_ip;
+	int					client_fd;
+
+	client_fd = accept(_sock_fd, reinterpret_cast<struct sockaddr*>(&client_addr), &client_addr_len);
+	if (client_fd == -1)
+	{
+		std::cerr << "Error: accept failed :" << std::strerror(errno) << std::endl;
+		/* if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EAGAIN || errno == EWOULDBLOCK || errno == ECONNABORTED || errno == EFAULT || errno == EINTR || errno == EMFILE || errno == ENFILE || errno == EPERM)
+			return ; */
+		throw (std::runtime_error("accept failed: "));//when this happens something went fundamentally wrong
+	}
+	std::cerr << "new fd:" << client_fd << std::endl;
+	for (int i = 1; i < MAX_CLIENTS; i++)
+	{
+		if (pollfds[i].fd == 0)
+		{
+			pollfds[i].fd = client_fd;
+			pollfds[i].events = POLLIN | POLLPRI;
+			useClient++;
+			break;
+		}
+	}
+	if (fcntl(client_fd, F_SETFL, O_NONBLOCK) == -1)
+	{
+		printErrorReturn("fcntl failed");
+		return ;
+	}
+
+	ipAddr = client_addr.sin_addr;
+	client_ip = inet_ntoa(ipAddr);
+	if(!client_ip)
+	{
+		client_ip[0] = '0';
+		client_ip[1] = '\0'; 
+	}
+
+	std::cout << "Client IP: " << client_ip << "!\n";
+
+
+	if (_client_fds.find(client_fd) != _client_fds.end())
+	{
+		std::cerr << "* Error: new fd already in map" << std::endl;
+		return ;
+	}
+	addNewClientToFdMap(client_fd, "666"); //allocatoes the client object
+	std::cout << "Added new Client to Fd-Map!" << std::endl;
 }
 
 void	AServer::epollLoop()
 {
-	/* struct epoll_event	events[10000]; */
+	struct pollfd pollfds[MAX_CLIENTS + 1];
+    pollfds[0].fd = _sock_fd;
+    pollfds[0].events = POLLIN | POLLPRI;
+    int useClient = 0;
+
 	std::string			str = "run";
-	int 				new_events;
+	int 				poll_return;
 
 	while (str != "exit" && str != "Exit")
 	{
-		new_events = kevent(_kevent_fd, NULL, 0, event, 1, NULL);
-        if (new_events == -1)
-            throw (std::runtime_error("kevent wait failed: "));
-
-		for (int i = 0; i < new_events; i++)
+		poll_return = poll(pollfds, useClient + 1, 5000);
+        if (poll_return == -1)
+            throw (std::runtime_error("poll failed: "));
+		if (pollfds[0].revents & POLLIN)
+			accept_connection(useClient);
+		for (int i = 1; i < MAX_CLIENTS; i++)
 		{
-			int event_fd = event[i].ident;
-
-			if (event[i].flags & EV_EOF)
-            {
-
-				EV_SET(change_event, event_fd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
-    			if (kevent(_kevent_fd, change_event, 1, NULL, 0, NULL) < 0) 
+			Client *client = getClient(pollfds[i].fd);
+			if(client && client->getPipe() == true)
+			{
+				std::cout << "broken pipe event in poll" << std::endl;
+				disconnectClient(pollfds[i].fd);
+			}
+			else if (pollfds[i].fd > 0 && pollfds[i].revents & POLLIN)
+			{
+				if(process_event(pollfds[i].fd) < 1)
 				{
-        			perror("kevent error accept close event remove: ");
-    			}
-                disconnectClient(event_fd);
-                std::cout << ("Client has disconnected") << std::endl;
-				continue ;
-            }
+					pollfds[i].fd = 0;
+					pollfds[i].events = 0;
+					pollfds[i].revents = 0;
+					useClient--;
+					disconnectClient(pollfds[i].fd);
+				}
+			}
+		}
+		/* for (int i = 0; i < new_events; i++)
+		{
+
+			std::cout << "hello" << std::endl;
+			int event_fd = event[i].data.fd;
+
 
 			Client *client = getClient(event_fd);
 			if(client && client->getPipe() == true)
@@ -361,29 +423,16 @@ void	AServer::epollLoop()
     			if (kevent(_kevent_fd, change_event, 1, NULL, 0, NULL) < 0) {
         			perror("kevent error accept close event remove: ");
     			}
+				std::cout << "broken pipe event in epoll" << std::endl;
+				if (epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, event_fd, &event[i]) == -1)
+					throw (std::runtime_error("epoll loop ctl faild: "));
 
 				disconnectClient(event_fd);
 				continue ;
 			}
-
-			std::cout << "fd: " << event_fd << std::endl;	
-			if (event_fd == _sock_fd)
-			{
-				std::cerr << "new fd:" << event_fd << std::endl;
-				accept_connection();
-			}
-			/* else if (event_fd == STDIN_FILENO)
-			{
-				std::getline(std::cin, str);
-				if(str == "who")
-				{
-					std::cout << "client fds map = "<< _client_fds.size() << std::endl;
-					std::cout << "client names map = "<< _client_names.size() << std::endl;
-				}
-			} */
 			else
 				process_event(event_fd);
-		}
+		} */
 		/* for(client_fd_map_iter_t itr = _client_fds.begin(); itr != _client_fds.end(); itr++)
 		{
 			if(itr->second->getPipe() == true)

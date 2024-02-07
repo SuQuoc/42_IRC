@@ -10,7 +10,7 @@
 #include "../Includes/Client.hpp"
 #include "IrcReply.hpp"
 
-#define MAX_CLIENTS 100
+#define MAX_CLIENTS 10000
 #define EXIT_FAILURE 1
 #define CH_SUCCESS 0
 #define DELETE_CHANNEL -1

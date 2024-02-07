@@ -40,6 +40,8 @@
 
 #define OPER_PW "operPW"
 
+#include <poll.h>
+
 class AServer
 {
 protected:
@@ -53,7 +55,7 @@ protected:
 	int		_sock_fd;
 	int		_kevent_fd;
 
-	/* struct kevent change_event[10000], event[10000]; */
+	struct pollfd pollfds[MAX_CLIENTS + 1];
 
 	typedef std::map<std::string, Channel*>::iterator	channel_map_iter_t;
 	typedef std::map<std::string, Client*>::iterator	client_name_map_iter_t;
@@ -67,11 +69,11 @@ protected:
 	AServer(const std::string& name, const std::string& password);
 
 //methods
-	void	accept_connection();
+	void	accept_connection(int &use_client);
 	void	disconnectClient(const int& client_fd);
 	void	disconnectClient(Client *client, const std::string& msg);
 
-	void	process_event(const int& client_sock);
+	int		process_event(const int& client_sock);
 	int		printErrorReturn(const std::string& error_msg);
 	virtual void	command_switch(Client *sender, const std::string message) = 0;
 
