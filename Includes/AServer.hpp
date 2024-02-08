@@ -40,6 +40,8 @@
 
 #define OPER_PW "operPW"
 
+#define SERVER_MAX_CLIENTS 1020
+
 #include <poll.h>
 
 class AServer
@@ -56,7 +58,7 @@ protected:
 	int		_kevent_fd;
 	nfds_t	_useClient;
 
-	struct pollfd pollfds[MAX_CLIENTS + 1];
+	struct pollfd pollfds[SERVER_MAX_CLIENTS];
 
 	typedef std::map<std::string, Channel*>::iterator	channel_map_iter_t;
 	typedef std::map<std::string, Client*>::iterator	client_name_map_iter_t;

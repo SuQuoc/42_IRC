@@ -266,7 +266,7 @@ int	AServer::createTcpSocket(const int& port)
 	if (bind(_sock_fd, reinterpret_cast<sockaddr*>(&saddr), sizeof(struct sockaddr_in)) == -1)
 		return (printErrorReturn("couldn't bind to socket"));
 
-	if (listen(_sock_fd, 1000) == -1)
+	if (listen(_sock_fd, 4) == -1)
 		return (printErrorReturn("couldn't listen to socket"));
 
 	if (fcntl(_sock_fd, F_SETFL, O_NONBLOCK) == -1)
@@ -350,45 +350,44 @@ void	AServer::accept_connection(pollfd *pollfds)
 			return ; */
 		throw (std::runtime_error("accept failed: "));//when this happens something went fundamentally wrong
 	}
-	/* std::cerr << "new fd:" << client_fd << std::endl; */
-	int index_poll_struct = -1;
-	for (index_poll_struct = 2; index_poll_struct < MAX_CLIENTS; index_poll_struct++)
+	int index_poll_struct;
+	for (index_poll_struct = 2; index_poll_struct < SERVER_MAX_CLIENTS; index_poll_struct++)
 	{
 		if (pollfds[index_poll_struct].fd == 0)
 		{
-			/* std::cerr << "i:" << index_poll_struct << std::endl; */
 			pollfds[index_poll_struct].fd = client_fd;
 			pollfds[index_poll_struct].events = POLLIN | POLLHUP;
 			_useClient++;
 			break;
 		}
 	}
-
-	ipAddr = client_addr.sin_addr;
-	client_ip = inet_ntoa(ipAddr);
-	if(!client_ip)
+	if(index_poll_struct == SERVER_MAX_CLIENTS)
 	{
-		client_ip[0] = '0';
-		client_ip[1] = '\0'; 
+		send(client_fd, ":Server full", 13, MSG_DONTWAIT | MSG_NOSIGNAL);
+		close(client_fd);
+		return ;
 	}
-
-	/* std::cout << "Client IP: " << client_ip << "!\n"; */
-
 
 	if (_client_fds.find(client_fd) != _client_fds.end())
 	{
 		std::cerr << "* Error: new fd already in map" << std::endl;
 		return ;
 	}
-	addNewClientToFdMap(client_fd, client_ip, index_poll_struct); //allocatoes the client object
-	/* std::cout << "Added new Client to Fd-Map!" << std::endl; */
+
+	ipAddr = client_addr.sin_addr;
+	client_ip = inet_ntoa(ipAddr);
+	if(client_ip)
+		addNewClientToFdMap(client_fd, client_ip, index_poll_struct);
+	else
+		addNewClientToFdMap(client_fd, "9.6.9.6", index_poll_struct);
+
 }
 
 #include <iomanip>
 
 void	AServer::epollLoop()
 {
-	struct pollfd pollfds[MAX_CLIENTS + 2];
+	/* struct pollfd pollfds[SERVER_MAX_CLIENTS + 2]; */
     pollfds[0].fd = _sock_fd;
     pollfds[0].events = POLLIN | POLLPRI | POLLHUP;
 	pollfds[0].revents = 0;
@@ -398,7 +397,7 @@ void	AServer::epollLoop()
 	pollfds[1].revents = 0;
 	_useClient = 0;
 
-	for (int i = 2; i < MAX_CLIENTS; i++)
+	for (int i = 2; i < SERVER_MAX_CLIENTS; i++)
 	{
 		pollfds[i].fd = 0;
 		pollfds[i].events = POLLIN | POLLHUP;
@@ -410,14 +409,13 @@ void	AServer::epollLoop()
 
 	while (str != "exit" && str != "Exit")
 	{
-		poll_return = poll(pollfds, _useClient + 2, 1000);
+		poll_return = poll(pollfds, _useClient + 2, 5000);
         if (poll_return == -1)
             throw (std::runtime_error("poll failed: "));
 		if(poll_return == 0)
 		{
-			/* std::cout << "time_out" << std::endl; */
 			for(client_fd_map_iter_t itr = _client_fds.begin(); itr != _client_fds.end(); itr++)
-				protectedSend(itr->second, "ping");
+				protectedSend(itr->second, ":ping");
 		}
 		if ((pollfds[1].fd == 0 && pollfds[1].revents & POLLIN))
 		{
@@ -432,7 +430,7 @@ void	AServer::epollLoop()
 				std::cout << "|" << std::setw(20) << "FDS" << std::setw(20) << "|" << std::endl;
 				std::cout << "+" << std::setfill ('-') << std::setw (40) << "+" << std::setfill (' ') << std::endl;
 				int i = 0;
-				for(client_fd_map_iter_t itr = _client_fds.begin(); itr != _client_fds.end(); itr++)
+				for(client_fd_map_iter_t itr = _client_fds.begin(); itr != _client_fds.end() && i < 30; itr++)
 				{
 					std::cout << itr->first;
 					if(i != 10)
@@ -449,7 +447,7 @@ void	AServer::epollLoop()
 		}
 		if (pollfds[0].revents & POLLIN)
 			accept_connection(pollfds);
-		for (int i = 2; i < MAX_CLIENTS; i++)
+		for (int i = 2; i < SERVER_MAX_CLIENTS; i++)
 		{
 			Client *client = getClient(pollfds[i].fd);
 			if((client && client->getPipe() == true) || (pollfds[i].revents & POLLHUP))
