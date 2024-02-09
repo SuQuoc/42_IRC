@@ -55,15 +55,14 @@ class Channel
 
 		int		addInvited(Client *client);
 		bool	isInvited(const Client*client);
-		int		rmClient(const Client *executor, const Client *rm_client, const std::string &leaving_msg);
-		int		addClient(Client *new_client, const std::string &password, bool is_operator);
-		int		rmClient(const Client *rm_client, const std::string &leaving_msg);
-		int		rmClientIgnore(Client *rm_client, Client *ignore_me, const std::string &leaving_msg);
-		void	sendWhoMessage(Client *sender, const std::string server_name);
-
-		int		sendMsg(Client *sender, const std::string &msg);
 		bool	isInChannel(const Client *client);
 		bool	isOperator(const Client *client);
+		int		addClient(Client *new_client, const std::string &password, bool is_operator);
+		int		rmClient(const Client *executor, const Client *rm_client, const std::string &leaving_msg);
+		int		rmClient(const Client *rm_client, const std::string &leaving_msg);
+		int		rmClientIgnore(Client *rm_client, Client *ignore_me, const std::string &leaving_msg);
+
+		void	sendWhoMessage(Client *sender, const std::string server_name);
 
 		void	setName(const std::string &name);
 		void	setMaxClients(const int &max_clients);
@@ -83,5 +82,6 @@ class Channel
 		int		setOperator(const char &add, Client *client);
 		int		setTopicOrInv(const char &add, const char &mode);
 
+		int		sendMsg(Client *sender, const std::string &msg);
 		void 	protectedSendChannel(Client *client, std::string msg);
 };

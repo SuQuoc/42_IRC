@@ -53,6 +53,23 @@ static bool isValidPassword(const std::string& password)
     return true;
 }
 
+#include <csignal>
+
+void signalHandler(int signum) {
+	if(signum == SIGINT)
+    	std::cout << " Signal SIGINT(" << signum << ") received." << std::endl;
+}
+
+void signalHandler()
+{
+	struct sigaction sigact;
+    sigact.sa_handler = signalHandler; // Set signal handler function
+    sigemptyset(&sigact.sa_mask); // Clear the signal mask
+	sigact.sa_flags = 0;
+
+    sigaction(SIGINT, &sigact, NULL);
+}
+
 int main(const int argc, const char *argv[])
 {
 	if (argc != 3)
@@ -63,15 +80,16 @@ int main(const int argc, const char *argv[])
 	if (!isValidPort(argv[1]) || !isValidPassword(argv[2]))
 		return (0);
 	{
+		signalHandler();
 		Irc	server("AfterLife", argv[2]);
 		server.setOperatorHost(OPER_IP);
 		server.setOperatorPW(OPER_PW);
 		if (server.createTcpSocket(stoi_(argv[1])) == -1)
 			return (1);
-		if (server.createEpoll() == -1)
+		if (server.createpoll() == -1)
 			return (1);
 		try {
-			server.epollLoop();
+			server.pollLoop();
 		} catch (std::exception& e) {
 			std::cerr << "Error: thrown: " << e.what() << std::strerror(errno) << std::endl;
 		}

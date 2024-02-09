@@ -20,19 +20,8 @@
 #include <sstream>
 #include <cstdlib>
 #include <string>
+#include <poll.h>
 #include <map>
-/* #include <sys/event.h>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/event.h>
-#include <event2/event.h>
-#include <event.h>
-#include <string.h>
-#include <unistd.h> */
-
 
 # ifndef OPER_IP
 	#define OPER_IP "10.14.3.8"
@@ -40,9 +29,8 @@
 
 #define OPER_PW "operPW"
 
-#define SERVER_MAX_CLIENTS 1020
-
-#include <poll.h>
+#define SERVER_MAX_CLIENTS	1020
+#define POLL_TIMEOUT		5000
 
 class AServer
 {
@@ -55,8 +43,6 @@ protected:
 	const std::string	_password;
 	int		_epoll_fd;
 	int		_sock_fd;
-	int		_kevent_fd;
-	nfds_t	_useClient;
 
 	struct pollfd pollfds[SERVER_MAX_CLIENTS];
 
@@ -72,7 +58,6 @@ protected:
 	AServer(const std::string& name, const std::string& password);
 
 //methods
-	void	accept_connection(pollfd *pollfds);
 	void	disconnectClient(const int& client_fd);
 	void	disconnectClient(Client *client, const std::string& msg);
 
@@ -107,6 +92,10 @@ public:
 
 //methods
 	int		createTcpSocket(const int& port);
-	int		createEpoll();
-	void	epollLoop();
+	int		createpoll();
+	void	accept_connection(pollfd *pollfds);
+	void	pollLoop();
+	void	protectedPoll(int timeout);
+
+	void	pollPrintClientsWho(std::string &stdin_input);
 };

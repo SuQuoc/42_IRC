@@ -1,5 +1,6 @@
 #include "../Includes/Channel.hpp"
 
+//con- and destroctors
 Channel::Channel(Client *owner, const std::string &channel_name) :
 _name(channel_name),
 _restrict_topic(true),
@@ -19,6 +20,30 @@ Channel::Channel(const Channel &C) : _clients(C._clients), _password(C._password
 }
 Channel::~Channel() {}
 
+//private
+std::vector<Channel::Member_t>::iterator Channel::getClient(const Client *client)
+{
+	for (clients_itr itr = _clients.begin(); itr != _clients.end(); itr++)
+		if(itr->members == client)
+			return itr;
+	return _clients.end();
+}
+
+std::vector<Channel::Member_t>::iterator Channel::getClient(const std::string &name)
+{
+	for (clients_itr itr = _clients.begin(); itr != _clients.end(); itr++)
+		if (itr->members->getNickname() == name)
+			return itr;
+	return _clients.end();
+}
+
+Channel::invited_itr	Channel::getInvited(const Client *client)
+{
+	if (client == NULL)
+		return (_invited.end());
+	return (std::find(_invited.begin(), _invited.end(), client));
+}
+
 
 int Channel::addInvited(Client *client)
 {
@@ -29,13 +54,6 @@ int Channel::addInvited(Client *client)
 	return (0);
 }
 
-Channel::invited_itr	Channel::getInvited(const Client *client)
-{
-	if (client == NULL)
-		return (_invited.end());
-	return (std::find(_invited.begin(), _invited.end(), client));
-}
-
 bool	Channel::isInvited(const Client*client)
 {
 	if (getInvited(client) == _invited.end())
@@ -43,15 +61,49 @@ bool	Channel::isInvited(const Client*client)
 	return (true);
 }
 
-// if sender NULL send to all
-int Channel::sendMsg(Client *sender, const std::string &msg)
+//return true if user is member of this channel
+bool Channel::isInChannel(const Client *client)
 {
-	for (clients_itr itr = _clients.begin(); itr != _clients.end(); itr++)
+	if (client == NULL)
 	{
-		if (sender && itr->members == sender)
-			continue ;
-		protectedSendChannel(itr->members, msg);
+		std::cout << "Error client is NULL isInChannel()" << std::endl;
+		return false;
 	}
+	if (getClient(client) == _clients.end())
+		return false;
+	return true;
+}
+
+bool	Channel::isOperator(const Client *client)
+{
+	if (getClient(client)->is_operator == true)
+		return true;
+	return false;
+}
+
+
+// -1 if client is NULL
+// -2 is already in channel
+int	Channel::addClient(Client *new_client, const std::string &password, bool is_operator)
+{
+	struct Member_t member;
+	bool			invited = isInvited(new_client);
+
+	if (new_client == NULL)
+		return (-1); // -1 if client is NULL
+	if (getClient(new_client) != _clients.end())
+		return (-2); // -2 is already in channel
+	if (invited == false && _invite_only == true)
+		return (ERR_INVITEONLYCHAN);
+	if (size() >= MAX_CLIENTS || (invited == false && size() >= _max_clients))
+		return (ERR_CHANNELISFULL);
+	if (_password.empty() == false && _password != password)
+		return ERR_BADCHANNELKEY;
+	member.is_operator = is_operator;
+	member.members = new_client;
+	_clients.push_back(member);
+	if (invited == true)
+		_invited.erase(getInvited(new_client));
 	return (0);
 }
 
@@ -69,6 +121,7 @@ int	Channel::rmClient(const Client *executor, const Client *rm_client, const std
 		return ERR_CHANOPRIVSNEEDED;
 	return (rmClient(rm_client, leaving_msg));
 }
+
 
 //returns -1 if last client leaves channel
 int	Channel::rmClient(const Client *rm_client, const std::string &leaving_msg) //add
@@ -128,52 +181,6 @@ void	Channel::sendWhoMessage(Client *sender, const std::string server_name)
 	protectedSendChannel(sender, ":" + server_name + " 366 " + sender->getNickname() + " " + _name + " :End of /NAMES list.");
 }
 
-
-// -1 if client is NULL
-// -2 is already in channel
-int	Channel::addClient(Client *new_client, const std::string &password, bool is_operator)
-{
-	struct Member_t member;
-	bool			invited = isInvited(new_client);
-
-	if (new_client == NULL)
-		return (-1); // -1 if client is NULL
-	if (getClient(new_client) != _clients.end())
-		return (-2); // -2 is already in channel
-	if (invited == false && _invite_only == true)
-		return (ERR_INVITEONLYCHAN);
-	if (size() >= MAX_CLIENTS || (invited == false && size() >= _max_clients))
-		return (ERR_CHANNELISFULL);
-	if (_password.empty() == false && _password != password)
-		return ERR_BADCHANNELKEY;
-	member.is_operator = is_operator;
-	member.members = new_client;
-	_clients.push_back(member);
-	if (invited == true)
-		_invited.erase(getInvited(new_client));
-	return (0);
-}
-
-bool	Channel::isOperator(const Client *client)
-{
-	if (getClient(client)->is_operator == true)
-		return true;
-	return false;
-}
-
-//return true if user is member of this channel
-bool Channel::isInChannel(const Client *client)
-{
-	if (client == NULL)
-	{
-		std::cout << "Error client is NULL isInChannel()" << std::endl;
-		return false;
-	}
-	if (getClient(client) == _clients.end())
-		return false;
-	return true;
-}
-
 //			setter
 void	Channel::setName(const std::string &name) { _name = name; }
 void	Channel::setMaxClients(const int &max_clients){ _max_clients = max_clients; }
@@ -217,24 +224,9 @@ int	Channel::setPassword(const std::string &password, const char &add)
 }
 
 //			getter
-std::vector<Channel::Member_t>::iterator Channel::getClient(const Client *client)
-{
-	for (clients_itr itr = _clients.begin(); itr != _clients.end(); itr++)
-		if(itr->members == client)
-			return itr;
-	return _clients.end();
-}
 
-std::vector<Channel::Member_t>::iterator Channel::getClient(const std::string &name)
-{
-	for (clients_itr itr = _clients.begin(); itr != _clients.end(); itr++)
-		if (itr->members->getNickname() == name)
-			return itr;
-	return _clients.end();
-}
-
-const std::string &Channel::getTopic() const { return _topic; }
 const std::string &Channel::getPassword() const { return _password; }
+const std::string &Channel::getTopic() const { return _topic; }
 std::string Channel::getName() const { return _name; }
 bool Channel::getRestrictTopic() const { return _restrict_topic; }
 bool Channel::getInviteOnly() const { return _invite_only; }
@@ -312,6 +304,18 @@ int Channel::setTopicOrInv(const char &add, const char &ch_modes)
 		return changeMode(add, _invite_only);
 	default:
 		std::cerr << "Error wrong mode!" << ch_modes << std::endl;
+	}
+	return (0);
+}
+
+// if sender NULL send to all
+int Channel::sendMsg(Client *sender, const std::string &msg)
+{
+	for (clients_itr itr = _clients.begin(); itr != _clients.end(); itr++)
+	{
+		if (sender && itr->members == sender)
+			continue ;
+		protectedSendChannel(itr->members, msg);
 	}
 	return (0);
 }

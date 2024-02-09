@@ -1,34 +1,14 @@
 #include "../Includes/AServer.hpp"
 
 //con- and destructer
-AServer::AServer(): _epoll_fd(-1), _sock_fd(-1), _useClient(0){}
+AServer::AServer(): _epoll_fd(-1), _sock_fd(-1)/* , _useClient(0) */{}
 
 AServer::AServer(const std::string& name, const std::string& password): _name(name), _password(password), _epoll_fd(-1), _sock_fd(-1) {}
-/* AServer::AServer(const AServer& S)
-{
-	for (int i = 0; i < S._channels.size(); i++)
-	{
 
-	}
-}
-AServer AServer::operator=(const AServer& S)
-{
-	_ev.data.fd = S._ev.data.fd;
-	_ev.data.ptr = S._ev.data.ptr;
-	_ev.data.u32 = S._ev.data.u32;
-	_ev.data.u64 = S._ev.data.u64;
-	_ev.events = S._ev.events;
-
-	_epoll_fd = S._epoll_fd;
-	_sock_fd = S._sock_fd;
-	return (*this);
-} */
 AServer::~AServer()
 {
 	for (channel_map_iter_t it = _channels.begin(); it != _channels.end(); it++)
 		delete it->second;
-	/* for (client_name_map_iter_t it = _client_names.begin(); it != _client_names.end(); it++)
-		delete it->second; */
 	for (client_fd_map_iter_t it = _client_fds.begin(); it != _client_fds.end(); it++)
 		delete it->second;
 	if (_epoll_fd != -1)
@@ -36,52 +16,6 @@ AServer::~AServer()
 	if (_sock_fd != -1)
 		close(_sock_fd);
 }
-
-//private methods
-/* 
-//private methods
-void	AServer::accept_connection()
-{
-	struct sockaddr_in	client_addr;
-	struct epoll_event	ev_temp;
-	socklen_t			client_addr_len = sizeof(client_addr);
-	struct in_addr 		ipAddr; 
-	char				*client_ip;
-	int					client_fd;
-
-	client_fd = accept(_sock_fd, reinterpret_cast<struct sockaddr*>(&client_addr), &client_addr_len);
-	if (client_fd == -1)
-	{
-		std::cerr << "Error: accept failed :" << std::strerror(errno) << std::endl;
-		if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EAGAIN || errno == EWOULDBLOCK || errno == ECONNABORTED || errno == EFAULT || errno == EINTR || errno == EMFILE || errno == ENFILE || errno == EPERM)
-			return ;
-		throw (std::runtime_error("accept failed: "));//when this happens something went fundamentally wrong
-	}
-	ipAddr = client_addr.sin_addr;
-	client_ip = inet_ntoa(ipAddr);
-	if(!client_ip)
-	{
-		client_ip[0] = '0';
-		client_ip[1] = '\0'; 
-	}
-	std::cout << "Client IP: " << client_ip << "!\n";
-	ev_temp.data.fd = client_fd;
-	ev_temp.events = EPOLLIN | EPOLLET;
-	fcntl(client_fd, F_SETFL, O_NONBLOCK);
-	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, client_fd, &ev_temp) == -1)
-	{
-		std::cerr << "Error: epoll_ctl failed in accept_connection" << std::endl;
-		return ;
-	}
-	if (_client_fds.find(client_fd) != _client_fds.end())
-	{
-		std::cerr << "* Error: new fd already in map" << std::endl;
-		return ;
-	}
-	addNewClientToFdMap(client_fd, client_ip); //allocatoes the client object
-	std::cout << "Added new Client to Fd-Map!" << std::endl;
-} */
-
 
 void	AServer::disconnectClient(const int& client_fd) //for case 0:
 {
@@ -199,14 +133,14 @@ void 	AServer::rmClientFromMaps(Client *client)
 
 	client_fd_map_iter_t it = _client_fds.find(client->getFd());
 	client_name_map_iter_t it2 = _client_names.find(client->getNickname());
-	delete client;
 	if(pollfds[client->_index_poll_struct].fd != 0)
 	{
 		pollfds[client->_index_poll_struct].fd = 0;
 		pollfds[client->_index_poll_struct].events = 0;
 		pollfds[client->_index_poll_struct].revents = 0;
-		_useClient--;
+		/* _useClient--; */
 	}
+	delete client;
 	
 	if (it == _client_fds.end())
 		return;
@@ -245,241 +179,9 @@ void 	AServer::rmChannelFromMap(std::string channel_name)
 }
 
 
-//public methods
-int	AServer::createTcpSocket(const int& port)
-{
-	int	optval = 1;
-
-	struct sockaddr_in saddr;
-	saddr.sin_family = AF_INET; 
-	saddr.sin_port = htons(port);
-	saddr.sin_addr.s_addr = INADDR_ANY;
-
-	_sock_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (_sock_fd == -1)
-		return (printErrorReturn("couldn't create socket"));
-
-	if (setsockopt(_sock_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1)
-		return (printErrorReturn("couldn't set socket options"));
-	//SO_REUSEADDR == to reuse the same socked adress. Otherwise server cloud not instaned bind socked after exit.
-
-	if (bind(_sock_fd, reinterpret_cast<sockaddr*>(&saddr), sizeof(struct sockaddr_in)) == -1)
-		return (printErrorReturn("couldn't bind to socket"));
-
-	if (listen(_sock_fd, 4) == -1)
-		return (printErrorReturn("couldn't listen to socket"));
-
-	if (fcntl(_sock_fd, F_SETFL, O_NONBLOCK) == -1)
-		return (printErrorReturn("fcntl failed"));
-
-	return (0);
-}
-
-/* int	AServer::createEpoll()
-{
-	_kevent_fd = kqueue();
-	EV_SET(change_event, _sock_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, 0);
-	if (kevent(_kevent_fd, change_event, 1, NULL, 0, NULL) == -1)
-	{
-		throw (std::runtime_error("kevent create failed: "));
-	}
-	return (0);
-} */
-
-int	AServer::createEpoll()
-{
-	/* _ev.data.fd = _sock_fd;
-	_ev.events = EPOLLIN | EPOLLET;
-	_epoll_fd = epoll_create1(0);
-	if (_epoll_fd == -1)
-		return (printErrorReturn("couldn't create epoll"));
-	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, _sock_fd, &_ev) == -1)
-		return (printErrorReturn("epoll_ctrl failed"));
-
-	_ev.data.fd = STDIN_FILENO;
-	_ev.events = EPOLLIN | EPOLLET;
-	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, STDIN_FILENO, &_ev) == -1)
-		return (printErrorReturn("epoll_ctrl failed on stdin")); */
-	return (0);
-}
-
-/* void	AServer::epollLoop()
-{
-	struct epoll_event	event[1000];
-	std::string			str = "run";
-	int 				ev_cnt;
-
-	while (str != "exit")
-	{
-		std::cout << "epoll loop" << std::endl;
-		ev_cnt = epoll_wait(_epoll_fd, events, 1000, 1000);
-		if (ev_cnt == -1)
-			throw (std::runtime_error("epoll_wait failed: "));
-		for (int i = 0; i < ev_cnt; i++)
-		{
-			std::cout << "fd: " << events[i].data.fd << std::endl;			
-			if (events[i].data.fd == _sock_fd)
-				accept_connection();
-			else if (events[i].data.fd == STDIN_FILENO)
-				std::cin >> str;
-			else if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))
-			{
-				std::cerr << "Error: broken event" << std::endl;
-				disconnectClient(events[i].data.fd);
-			}
-			else
-				process_event(events[i].data.fd); //recv
-		}
-	}
-} */
-
-void	AServer::accept_connection(pollfd *pollfds)
-{
-	struct sockaddr_in	client_addr;
-	/* struct epoll_event	ev_temp; */
-	socklen_t			client_addr_len = sizeof(client_addr);
-	struct in_addr 		ipAddr; 
-	char				*client_ip;
-	int					client_fd;
-
-	client_fd = accept(_sock_fd, reinterpret_cast<struct sockaddr*>(&client_addr), &client_addr_len);
-	if (client_fd == -1)
-	{
-		std::cerr << "Error: accept failed :" << std::strerror(errno) << std::endl;
-		/* if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EAGAIN || errno == EWOULDBLOCK || errno == ECONNABORTED || errno == EFAULT || errno == EINTR || errno == EMFILE || errno == ENFILE || errno == EPERM)
-			return ; */
-		throw (std::runtime_error("accept failed: "));//when this happens something went fundamentally wrong
-	}
-	int index_poll_struct;
-	for (index_poll_struct = 2; index_poll_struct < SERVER_MAX_CLIENTS; index_poll_struct++)
-	{
-		if (pollfds[index_poll_struct].fd == 0)
-		{
-			pollfds[index_poll_struct].fd = client_fd;
-			pollfds[index_poll_struct].events = POLLIN | POLLHUP;
-			_useClient++;
-			break;
-		}
-	}
-	if(index_poll_struct == SERVER_MAX_CLIENTS)
-	{
-		send(client_fd, ":Server full", 13, MSG_DONTWAIT | MSG_NOSIGNAL);
-		close(client_fd);
-		return ;
-	}
-
-	if (_client_fds.find(client_fd) != _client_fds.end())
-	{
-		std::cerr << "* Error: new fd already in map" << std::endl;
-		return ;
-	}
-
-	ipAddr = client_addr.sin_addr;
-	client_ip = inet_ntoa(ipAddr);
-	if(client_ip)
-		addNewClientToFdMap(client_fd, client_ip, index_poll_struct);
-	else
-		addNewClientToFdMap(client_fd, "9.6.9.6", index_poll_struct);
-
-}
 
 #include <iomanip>
 
-void	AServer::epollLoop()
-{
-	/* struct pollfd pollfds[SERVER_MAX_CLIENTS + 2]; */
-    pollfds[0].fd = _sock_fd;
-    pollfds[0].events = POLLIN | POLLPRI | POLLHUP;
-	pollfds[0].revents = 0;
-
-	pollfds[1].fd = 0;
-   	pollfds[1].events = POLLIN;
-	pollfds[1].revents = 0;
-	_useClient = 0;
-
-	for (int i = 2; i < SERVER_MAX_CLIENTS; i++)
-	{
-		pollfds[i].fd = 0;
-		pollfds[i].events = POLLIN | POLLHUP;
-		pollfds[i].revents = 0;
-	}
-
-	std::string			str = "run";
-	int 				poll_return;
-
-	while (str != "exit" && str != "Exit")
-	{
-		poll_return = poll(pollfds, _useClient + 2, 5000);
-        if (poll_return == -1)
-            throw (std::runtime_error("poll failed: "));
-		if(poll_return == 0)
-		{
-			for(client_fd_map_iter_t itr = _client_fds.begin(); itr != _client_fds.end(); itr++)
-				protectedSend(itr->second, ":ping");
-		}
-		if ((pollfds[1].fd == 0 && pollfds[1].revents & POLLIN))
-		{
-			std::getline(std::cin, str);
-			if(str == "who")
-			{
-				std::cout << "+" << std::setfill ('-') << std::setw (40) << "+" << std::setfill (' ') << std::endl;
-				std::cout << "|" << std::setw(40) << "|" << std::endl;
-				std::cout << "|" << std::setw(11) << _client_fds.size() << "  CLIENTS CONECTED" << std::setw(11) << "|" << std::endl;
-				std::cout << "|" << std::setw(40) << "|" << std::endl;
-				std::cout << "+" << std::setfill ('-') << std::setw (40) << "+" << std::setfill (' ') << std::endl;
-				std::cout << "|" << std::setw(20) << "FDS" << std::setw(20) << "|" << std::endl;
-				std::cout << "+" << std::setfill ('-') << std::setw (40) << "+" << std::setfill (' ') << std::endl;
-				int i = 0;
-				for(client_fd_map_iter_t itr = _client_fds.begin(); itr != _client_fds.end() && i < 30; itr++)
-				{
-					std::cout << itr->first;
-					if(i != 10)
-						std::cout << ", ";
-					else
-					{
-						std::cout << std::endl;
-						i = 0;
-					}
-					i++;
-				}
-				std::cout << std::endl << _useClient << std::endl;
-			}
-		}
-		if (pollfds[0].revents & POLLIN)
-			accept_connection(pollfds);
-		for (int i = 2; i < SERVER_MAX_CLIENTS; i++)
-		{
-			Client *client = getClient(pollfds[i].fd);
-			if((client && client->getPipe() == true) || (pollfds[i].revents & POLLHUP))
-			{
-				std::cout << "broken pipe event in poll" << std::endl;
-				disconnectClient(pollfds[i].fd);
-				if(pollfds[i].fd != 0)
-				{
-					pollfds[i].fd = 0;
-					pollfds[i].events = 0;
-					pollfds[i].revents = 0;
-					_useClient--;
-				}
-			}
-			else if ((pollfds[i].fd > 0) && (pollfds[i].revents & POLLIN))
-			{
-				/* std::cout << "poll event" << std::endl; */
-				if(process_event(pollfds[i].fd) < 1)
-				{
-					disconnectClient(pollfds[i].fd);
-					if(pollfds[i].fd != 0)
-					{
-						pollfds[i].fd = 0;
-						pollfds[i].events = 0;
-						pollfds[i].revents = 0;
-						_useClient--;
-					}
-				}
-			}
-		}
-	}
-}
 
 AServer::client_fd_map_const_it		AServer::getClientIter(int fd) const {return _client_fds.find(fd);}
 AServer::client_name_map_const_it	AServer::getClientIter(const std::string& name) const {return _client_names.find(name);}
@@ -530,5 +232,164 @@ void	AServer::protectedSend(Client *client, std::string msg)
             return disconnectClient(client->getFd());
 		}
        /*  throw (std::runtime_error("send failed: ")); */ //when this happens something went fundamentally wrong
+	}
+}
+
+//public methods
+int	AServer::createTcpSocket(const int& port)
+{
+	int	optval = 1;
+
+	struct sockaddr_in saddr;
+	saddr.sin_family = AF_INET; 
+	saddr.sin_port = htons(port);
+	saddr.sin_addr.s_addr = INADDR_ANY;
+
+	_sock_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (_sock_fd == -1)
+		return (printErrorReturn("couldn't create socket"));
+
+	if (setsockopt(_sock_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1)
+		return (printErrorReturn("couldn't set socket options"));
+	//SO_REUSEADDR == to reuse the same socked adress. Otherwise server cloud not instaned bind socked after exit.
+
+	if (bind(_sock_fd, reinterpret_cast<sockaddr*>(&saddr), sizeof(struct sockaddr_in)) == -1)
+		return (printErrorReturn("couldn't bind to socket"));
+
+	if (listen(_sock_fd, 4) == -1)
+		return (printErrorReturn("couldn't listen to socket"));
+
+	if (fcntl(_sock_fd, F_SETFL, O_NONBLOCK) == -1)
+		return (printErrorReturn("fcntl failed"));
+
+	return (0);
+}
+
+
+void	AServer::accept_connection(pollfd *pollfds)
+{
+	struct sockaddr_in	client_addr;
+	struct in_addr 		ipAddr; 
+	socklen_t			client_addr_len = sizeof(client_addr);
+	int 				index_poll_struct;
+	char				*client_ip;
+	int					client_fd;
+
+	client_fd = accept(_sock_fd, reinterpret_cast<struct sockaddr*>(&client_addr), &client_addr_len);
+	if (client_fd == -1)
+	{
+		std::cerr << "Error: accept failed :" << std::strerror(errno) << std::endl;
+		/* if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EAGAIN || errno == EWOULDBLOCK || errno == ECONNABORTED || errno == EFAULT || errno == EINTR || errno == EMFILE || errno == ENFILE || errno == EPERM)
+			return ; */
+		throw (std::runtime_error("accept failed: "));//when this happens something went fundamentally wrong
+	}
+	for (index_poll_struct = 2; index_poll_struct < SERVER_MAX_CLIENTS; index_poll_struct++)		// look for a free spot in the pool struct
+	{
+		if (pollfds[index_poll_struct].fd == 0)
+		{
+			pollfds[index_poll_struct].fd = client_fd;
+			pollfds[index_poll_struct].events = POLLIN | POLLHUP | POLLERR;
+			break;
+		}
+	}
+	if(index_poll_struct == SERVER_MAX_CLIENTS)
+	{
+		send(client_fd, ":Server full", 13, MSG_DONTWAIT | MSG_NOSIGNAL);
+		close(client_fd);
+		return ;
+	}
+
+	if (_client_fds.find(client_fd) != _client_fds.end())
+	{
+		std::cerr << "* Error: new fd already in map" << std::endl;
+		return ;
+	}
+
+	ipAddr = client_addr.sin_addr;
+	client_ip = inet_ntoa(ipAddr);
+	if(client_ip)
+		addNewClientToFdMap(client_fd, client_ip, index_poll_struct);
+	else
+		addNewClientToFdMap(client_fd, "9.6.9.6", index_poll_struct);
+}
+
+int	AServer::createpoll()
+{
+	pollfds[0].fd = _sock_fd;
+    pollfds[0].events = POLLIN | POLLPRI | POLLHUP | POLLERR;
+	pollfds[0].revents = 0;
+
+	pollfds[1].fd = 0;
+   	pollfds[1].events = POLLIN;
+	pollfds[1].revents = 0;
+
+	for (int i = 2; i < SERVER_MAX_CLIENTS; i++)
+	{
+		pollfds[i].fd = 0;
+		pollfds[i].events = 0;
+		pollfds[i].revents = 0;
+	}
+	return (0);
+}
+
+void	AServer::pollLoop()
+{
+	std::string			stdin_input = "run";
+	Client 				*client;
+
+	while (stdin_input != "exit" && stdin_input != "Exit")
+	{
+		protectedPoll(POLL_TIMEOUT);
+		if ((pollfds[1].fd == 0 && pollfds[1].revents & POLLIN))
+			pollPrintClientsWho(stdin_input);
+		if (pollfds[0].revents & POLLIN)
+			accept_connection(pollfds);
+		for (int i = 2; i < SERVER_MAX_CLIENTS; i++)
+		{
+			client = getClient(pollfds[i].fd);
+			if((pollfds[i].revents & POLLHUP) || (pollfds[i].revents & POLLERR) || (client && client->getPipe() == true)) // client disconect or broken pipe
+				disconnectClient(pollfds[i].fd);
+			else if ((pollfds[i].fd > 0) && (pollfds[i].revents & POLLIN))
+				if(process_event(pollfds[i].fd) < 1)
+					disconnectClient(pollfds[i].fd);
+		}
+	}
+}
+
+void	AServer::protectedPoll(int timeout)
+{
+	int		poll_return;
+
+	poll_return = poll(pollfds, static_cast<nfds_t>(_client_fds.size() + 2), timeout); 			// + 2 for the stdin watching and the poll also needs one
+	if (poll_return == -1)
+		throw (std::runtime_error("poll: "));
+	if (poll_return == 0)																		// if poll == 0(timeout), ping clients to see if pipe is broken.
+		for(client_fd_map_iter_t itr = _client_fds.begin(); itr != _client_fds.end(); itr++)
+			protectedSend(itr->second, ":ping");
+}
+
+void	AServer::pollPrintClientsWho(std::string &stdin_input)
+{
+	std::getline(std::cin, stdin_input);
+	if(stdin_input == "who")
+	{
+		std::cout << "+" << std::setfill ('-') << std::setw (40) << "+" << std::setfill (' ') << std::endl;
+		std::cout << "|" << std::setw(40) << "|" << std::endl;
+		std::cout << "|" << std::setw(11) << _client_fds.size() << " CLIENTS CONNECTED" << std::setw(11) << "|" << std::endl;
+		std::cout << "|" << std::setw(40) << "|" << std::endl;
+		std::cout << "+" << std::setfill ('-') << std::setw (40) << "+" << std::setfill (' ') << std::endl;
+		std::cout << "|" << std::setw(20) << "FDS" << std::setw(20) << "|" << std::endl;
+		std::cout << "+" << std::setfill ('-') << std::setw (40) << "+" << std::setfill (' ') << std::endl;
+		int i = 0;
+		for(client_fd_map_iter_t itr = _client_fds.begin(); itr != _client_fds.end() && i < 10; itr++)
+		{
+			std::cout << itr->first;
+			if(i < 9)
+				std::cout << ", ";
+			else
+				std::cout << "...";
+			i++;
+		}
+		std::cout << std::endl;
 	}
 }
