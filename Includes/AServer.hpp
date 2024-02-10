@@ -30,7 +30,7 @@
 #define OPER_PW "operPW"
 
 #define SERVER_MAX_CLIENTS	1020
-#define POLL_TIMEOUT		5000
+#define POLL_TIMEOUT		3
 
 class AServer
 {
@@ -41,8 +41,10 @@ protected:
 	struct epoll_event	_ev;
 	const std::string	_name;
 	const std::string	_password;
+	struct itimerspec timeout;
 	int		_epoll_fd;
 	int		_sock_fd;
+	int		_timer_fd;
 
 	struct pollfd pollfds[SERVER_MAX_CLIENTS];
 
@@ -92,6 +94,8 @@ public:
 
 //methods
 	int		createTcpSocket(const int& port);
+	void	resetTimerfd();
+	void 	setPollFd(pollfd &pollfd, int fd, short int events, short int revents);
 	int		createpoll();
 	void	accept_connection(pollfd *pollfds);
 	void	pollLoop();

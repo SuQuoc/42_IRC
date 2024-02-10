@@ -15,6 +15,8 @@ AServer::~AServer()
 		close(_epoll_fd);
 	if (_sock_fd != -1)
 		close(_sock_fd);
+	if (_timer_fd != -1)
+		close(_timer_fd);
 }
 
 void	AServer::disconnectClient(const int& client_fd) //for case 0:
@@ -220,7 +222,10 @@ void	AServer::protectedSend(Client *client, std::string msg)
 {
 	msg += "\r\n";
 	if(!client || client->getPipe() == true)
+	{
+		disconnectClient(client->getFd());
 		return ;
+	}
 	if (send(client->getFd(), msg.c_str(), msg.size(), MSG_DONTWAIT | MSG_NOSIGNAL) == -1) //MSG_DONTWAIT sets to non-block //should be nonblocking anyways because of fcntl()
 	{
 		if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -283,7 +288,7 @@ void	AServer::accept_connection(pollfd *pollfds)
 			return ; */
 		throw (std::runtime_error("accept failed: "));//when this happens something went fundamentally wrong
 	}
-	for (index_poll_struct = 2; index_poll_struct < SERVER_MAX_CLIENTS; index_poll_struct++)		// look for a free spot in the pool struct
+	for (index_poll_struct = 3; index_poll_struct < SERVER_MAX_CLIENTS; index_poll_struct++)		// look for a free spot in the pool struct
 	{
 		if (pollfds[index_poll_struct].fd == 0)
 		{
@@ -313,38 +318,69 @@ void	AServer::accept_connection(pollfd *pollfds)
 		addNewClientToFdMap(client_fd, "9.6.9.6", index_poll_struct);
 }
 
+#include <sys/timerfd.h>
+
+void AServer::resetTimerfd()
+{
+	timeout.it_interval.tv_sec = POLL_TIMEOUT;
+    timeout.it_interval.tv_nsec = 0;
+    timeout.it_value.tv_sec = POLL_TIMEOUT;
+    timeout.it_value.tv_nsec = 0;
+	if (timerfd_settime(_timer_fd, 0, &timeout, NULL) == -1)
+        throw (std::runtime_error("timerfd_settime: "));
+}
+
+void AServer::setPollFd(pollfd &pollfd, int fd, short int events, short int revents)
+{
+	pollfd.fd = fd;
+    pollfd.events = events;
+	pollfd.revents = revents;
+}
+
 int	AServer::createpoll()
 {
-	pollfds[0].fd = _sock_fd;
-    pollfds[0].events = POLLIN | POLLPRI | POLLHUP | POLLERR;
-	pollfds[0].revents = 0;
-
-	pollfds[1].fd = 0;
-   	pollfds[1].events = POLLIN;
-	pollfds[1].revents = 0;
-
-	for (int i = 2; i < SERVER_MAX_CLIENTS; i++)
+	_timer_fd = timerfd_create(CLOCK_MONOTONIC, 0);
+    if (_timer_fd == -1)
 	{
-		pollfds[i].fd = 0;
-		pollfds[i].events = 0;
-		pollfds[i].revents = 0;
+        throw (std::runtime_error("timerfd_create: "));
 	}
+	resetTimerfd();
+	setPollFd(pollfds[0], _sock_fd, POLLIN | POLLPRI | POLLHUP | POLLERR, 0);
+	/* pollfds[0].fd = _sock_fd;
+    pollfds[0].events = POLLIN | POLLPRI | POLLHUP | POLLERR;
+	pollfds[0].revents = 0; */
+	setPollFd(pollfds[1], 0, POLLIN, 0);
+	/* pollfds[1].fd = 0;
+   	pollfds[1].events = POLLIN;
+	pollfds[1].revents = 0; */
+	setPollFd(pollfds[2], _timer_fd, POLLIN, 0);
+	/* pollfds[2].fd = _timer_fd;
+    pollfds[2].events = POLLIN;
+	pollfds[2].revents = 0; */
+	for (int i = 3; i < SERVER_MAX_CLIENTS; i++)
+		setPollFd(pollfds[i], 0, 0, 0);
 	return (0);
 }
 
 void	AServer::pollLoop()
 {
-	std::string			stdin_input = "run";
-	Client 				*client;
+	std::string	stdin_input = "run";
+	Client 		*client;
 
 	while (stdin_input != "exit" && stdin_input != "Exit")
 	{
-		protectedPoll(POLL_TIMEOUT);
+		protectedPoll(-1);
 		if ((pollfds[1].fd == 0 && pollfds[1].revents & POLLIN))
+		{
 			pollPrintClientsWho(stdin_input);
+			pollfds[1].revents = 0;
+		}
 		if (pollfds[0].revents & POLLIN)
+		{
 			accept_connection(pollfds);
-		for (int i = 2; i < SERVER_MAX_CLIENTS; i++)
+			pollfds[1].revents = 0;
+		}
+		for (int i = 3; i < SERVER_MAX_CLIENTS; i++)
 		{
 			client = getClient(pollfds[i].fd);
 			if((pollfds[i].revents & POLLHUP) || (pollfds[i].revents & POLLERR) || (client && client->getPipe() == true)) // client disconect or broken pipe
@@ -353,6 +389,13 @@ void	AServer::pollLoop()
 				if(process_event(pollfds[i].fd) < 1)
 					disconnectClient(pollfds[i].fd);
 		}
+		if (pollfds[2].revents & POLLIN)
+		{
+			for(client_fd_map_iter_t itr = _client_fds.begin(); itr != _client_fds.end(); itr++)
+				protectedSend(itr->second, ":ping");
+			resetTimerfd();
+			pollfds[2].revents = 0;
+    	}
 	}
 }
 
@@ -360,12 +403,14 @@ void	AServer::protectedPoll(int timeout)
 {
 	int		poll_return;
 
-	poll_return = poll(pollfds, static_cast<nfds_t>(_client_fds.size() + 2), timeout); 			// + 2 for the stdin watching and the poll also needs one
+	poll_return = poll(pollfds, static_cast<nfds_t>(_client_fds.size() + 3), timeout); 			// + 2 for the stdin watching and the poll also needs one
 	if (poll_return == -1)
 		throw (std::runtime_error("poll: "));
-	if (poll_return == 0)																		// if poll == 0(timeout), ping clients to see if pipe is broken.
+/* 	if (poll_return == 0)
+	{																// if poll == 0(timeout), ping clients to see if pipe is broken.
 		for(client_fd_map_iter_t itr = _client_fds.begin(); itr != _client_fds.end(); itr++)
 			protectedSend(itr->second, ":ping");
+	} */
 }
 
 void	AServer::pollPrintClientsWho(std::string &stdin_input)
