@@ -288,6 +288,7 @@ void	AServer::accept_connection(pollfd *pollfds)
 			return ; */
 		throw (std::runtime_error("accept failed: "));//when this happens something went fundamentally wrong
 	}
+
 	for (index_poll_struct = 3; index_poll_struct < SERVER_MAX_CLIENTS; index_poll_struct++)		// look for a free spot in the pool struct
 	{
 		if (pollfds[index_poll_struct].fd == 0)
@@ -297,6 +298,7 @@ void	AServer::accept_connection(pollfd *pollfds)
 			break;
 		}
 	}
+
 	if(index_poll_struct == SERVER_MAX_CLIENTS)
 	{
 		send(client_fd, ":Server full", 13, MSG_DONTWAIT | MSG_NOSIGNAL);
@@ -378,7 +380,7 @@ void	AServer::pollLoop()
 		if (pollfds[0].revents & POLLIN)
 		{
 			accept_connection(pollfds);
-			pollfds[1].revents = 0;
+			pollfds[0].revents = 0;
 		}
 		for (int i = 3; i < SERVER_MAX_CLIENTS; i++)
 		{
@@ -389,7 +391,7 @@ void	AServer::pollLoop()
 				if(process_event(pollfds[i].fd) < 1)
 					disconnectClient(pollfds[i].fd);
 		}
-		if (pollfds[2].revents & POLLIN)
+		if (pollfds[2].revents & POLLIN)		// timed fd for clearing broken pipes
 		{
 			for(client_fd_map_iter_t itr = _client_fds.begin(); itr != _client_fds.end(); itr++)
 				protectedSend(itr->second, ":ping");
