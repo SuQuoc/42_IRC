@@ -161,7 +161,7 @@ void	IrcReply::ReplyProtectedSend(Client *client, std::string msg)
 			return ;
         if (errno == EPIPE)
 		{
-			std::cerr << "\033[0;31mWarning: BROKEN PIPE\033[0m" << std::endl;
+			/* std::cerr << "\033[0;31mWarning: BROKEN PIPE\033[0m" << std::endl; */
             client->setPipe(true);
 			return ;
 		}
