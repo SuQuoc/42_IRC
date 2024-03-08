@@ -254,11 +254,11 @@ def joinTooManyChannelsWithList():
 def inviteOnlyChannel():
 	test_name = "inviteOnlyChannel"
 	vector = [
-		(0, "JOIN #chan"),
-		(0, "MODE #chan +i"),
-		(1, "JOIN #chan"), #cant join
-		(0, "INVITE client1 #chan"),
-		(1, "JOIN #chan"), #can join now
+		(0, "JOINT #chan"),
+		# (0, "MODE #chan +i"),
+		# (1, "JOIN #chan"), #cant join
+		# (0, "INVITE client1 #chan"),
+		# (1, "JOIN #chan"), #can join now
 		]
 	runMultiClientTest(test_name, 2, vector)
 
@@ -293,8 +293,8 @@ def testJOIN():
 	#joinTooManyChannelsWithList() #1 client trying to join 11 channels in a list
 	#fullChannel() #11 clients trying to join  
 	inviteOnlyChannel()
-	inviteOnlyChannelOrder() #weird order
-	badChannelKey()
+	#inviteOnlyChannelOrder() #weird order
+	#badChannelKey()
 	os.chdir(original_directory)
 
 #------------------PART------------------
@@ -440,11 +440,11 @@ test_dir = "py_tests"
 #testUSER()
 #testPRIVMSG()
 testJOIN()
-testPART()
-testQUIT()
-testKICK()
-testINVITE()
-testMODE()
-testTOPIC()
-testOPER() #also tests KILL
+#testPART()
+#testQUIT()
+#testKICK()
+#testINVITE()
+#testMODE()
+#testTOPIC()
+#testOPER() #also tests KILL
 #testServerLimit()

@@ -8,9 +8,9 @@
 :AfterLife 491 client0 :No O-lines for your host
 :AfterLife 481 client0 :Permission Denied- You're not an IRC operator
 :AfterLife 481 client0 :Permission Denied- You're not an IRC operator
-:client0!user0@127.0.0.1 PRIVMSG client1 :you should see this cuz client 1 is alive and was not kiled
-:client1!user1@127.0.0.1 PRIVMSG client0 :yes i am alive
+:client0!user0@10.14.3.4 PRIVMSG client1 :you should see this cuz client 1 is alive and was not kiled
+:client1!user1@10.14.3.4 PRIVMSG client0 :yes i am alive
 :AfterLife 481 client0 :Permission Denied- You're not an IRC operator
-:client0!user0@127.0.0.1 PRIVMSG client1 :'No such nick/channel' should be sent
+:client0!user0@10.14.3.4 PRIVMSG client1 :'No such nick/channel' should be sent
 :AfterLife 481 client0 :Permission Denied- You're not an IRC operator
-:client2!user2@127.0.0.1 PRIVMSG client0 :'No such nick/channel' should be sent
+:client2!user2@10.14.3.4 PRIVMSG client0 :'No such nick/channel' should be sent

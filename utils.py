@@ -23,9 +23,13 @@ def start_netcat(host, port, n, filename):
 
 def quitAllNetcats(processes):
 	quit_message = "QUIT\r\n"
-	for process in processes:
-		process.communicate(quit_message.encode())
+	for process in reversed(processes):
+		process.stdin.write(quit_message.encode())
+		process.stdin.flush()
+		print("QUITTING")
+		""" process.communicate(quit_message.encode()) """
 		time.sleep(0.5)
+
 
 def	registerClients(processes, password):
 	i = 0
@@ -43,7 +47,7 @@ def	registerClients(processes, password):
 		sendMsg(process, pass_msg)
 		sendMsg(process, nick_msg)
 		sendMsg(process, user_msg)
-		time.sleep(0.5)
+		time.sleep(1)
 		i+=1
 
 

@@ -17,7 +17,7 @@ Irc::~Irc() {}
 void	Irc::command_switch(Client *sender, const std::string message)
 {
 	_sender = sender;
-	/* std::cout << "message =" << message << "!" << std::endl; */
+	std::cout << "msg from fd" << sender->getFd() << ": " << message << "!" << std::endl;
 
     std::stringstream	sstream(message);
     std::string	cmd;
