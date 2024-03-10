@@ -268,7 +268,7 @@ int	AServer::createTcpSocket(const int& port)
 	if (bind(_sock_fd, reinterpret_cast<sockaddr*>(&saddr), sizeof(struct sockaddr_in)) == -1)
 		return (printErrorReturn("couldn't bind to socket"));
 
-	if (listen(_sock_fd, 4) == -1)
+	if (listen(_sock_fd, 1) == -1)
 		return (printErrorReturn("couldn't listen to socket"));
 
 	if (fcntl(_sock_fd, F_SETFL, O_NONBLOCK) == -1)
@@ -376,7 +376,7 @@ void	AServer::pollLoop()
 
 	while (stdin_input != "exit" && stdin_input != "Exit")
 	{
-		protectedPoll(-1);
+		protectedPoll(1000);
 		if ((pollfds[1].fd == 0 && pollfds[1].revents & POLLIN))
 		{
 			pollPrintClientsWho(stdin_input);
@@ -413,12 +413,12 @@ void	AServer::protectedPoll(int timeout)
 	poll_return = poll(pollfds, static_cast<nfds_t>(_client_fds.size() + 2), timeout); 			// + 2 for the stdin watching and the poll also needs one
 	if (poll_return == -1)
 		throw (std::runtime_error("poll: "));
-	if (poll_return == 0)
+	/* if (poll_return == 0)
 	{			
-		/* std::cout << "Clean up" << std::endl; */													// if poll == 0(timeout), ping clients to see if pipe is broken.
+		std::cout << "Clean up" << std::endl;													// if poll == 0(timeout), ping clients to see if pipe is broken.
 		for(client_fd_map_iter_t itr = _client_fds.begin(); itr != _client_fds.end(); itr++)
 			protectedSend(itr->second, ":ping");
-	}
+	} */
 }
 
 void	AServer::pollPrintClientsWho(std::string &stdin_input)
