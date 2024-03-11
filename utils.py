@@ -26,9 +26,8 @@ def quitAllNetcats(processes):
 	for process in processes:
 		process.stdin.write(quit_message.encode())
 		process.stdin.flush()
-		print("QUITTING")
 		""" process.communicate(quit_message.encode()) """
-		time.sleep(0.5)
+		time.sleep(0.2)
 
 
 def	registerClients(processes, password):

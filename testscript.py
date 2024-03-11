@@ -46,7 +46,7 @@ def runMultiClientTest(test_name, n_clients, vector):
 			client_id = pair[0]
 			msg = pair[1]
 			sendMsg(processes[client_id], msg)
-			time.sleep(0.5)
+			time.sleep(0.2)
 		quitAllNetcats(processes)
 		#sigintAllClients(processes)
 
@@ -91,7 +91,7 @@ def errAlreadyRegisteredPASS():
 	#doesnt lose connection because client already registered
 	vector = [
 		(0, "PASS"),
-		#(0, "PASS pw1234567"), #correct password
+		#(0, "PASS " + serv_pw), #correct password
 		#(0, "PASS wrong_password"), #correct password
 	]
 	runMultiClientTest("errAlreadyRegisteredPASS", 1, vector)
@@ -125,7 +125,7 @@ def errNOSUCHNICK(msg):
 #------------------PASS------------------
 def errWrongPassword():
 	vector = [
-		(0, "PASS wrongPW pw1234567"),
+		(0, "PASS wrongPW"),
 		#(0, "PASS 2ndWrongPW"), #connection is lostand results in broken pipe in csript
 	]
 	runMultiNonRegisClientTest("errWrongPassword", 1, vector)
@@ -142,11 +142,11 @@ def testPASS():
 def errErroneusNicknameNotRegis():
 	test_name = "errErroneusNicknameNotRegis"
 	vector = [
+		(0, "PASS " + serv_pw),
 		(0, "NICK clie,nt0"),
 		(0, "NICK clie@nt0"),
 		(0, "NICK clie!nt0"),
-		(0, "NICK clie nt0"),
-		(0, "PASS pw1234567"),
+		(0, "NICK client0 TEXT"),
 		(0, "USER user0 host0 serv0 real0"),]
 	runMultiNonRegisClientTest(test_name, 1, vector)
 
@@ -163,6 +163,7 @@ def errErroneusNickname():
 		(0, "NICK space nt0"), #changing nick to the same nick
 		(0, "NICK space0 1 2"),
 		(0, "NICK     Nspace   1   2"),
+		(0, "NICK"),
 		]
 	runMultiClientTest(test_name, 1, vector)
 
@@ -289,12 +290,12 @@ def testJOIN():
 	#errNeedMoreParams("JOIN")
 	#errNOSUCHCHANNEL("JOIN #nonexistentchannel")
 	
-	#joiningTooManyChannels() #1 client trying to join 11 channels
-	#joinTooManyChannelsWithList() #1 client trying to join 11 channels in a list
-	#fullChannel() #11 clients trying to join  
+	joiningTooManyChannels() #1 client trying to join 11 channels
+	joinTooManyChannelsWithList() #1 client trying to join 11 channels in a list
+	fullChannel() #11 clients trying to join  
 	inviteOnlyChannel()
-	#inviteOnlyChannelOrder() #weird order
-	#badChannelKey()
+	inviteOnlyChannelOrder() #weird order
+	badChannelKey()
 	os.chdir(original_directory)
 
 #------------------PART------------------
@@ -435,16 +436,16 @@ test_dir = "py_tests"
 # serv_pw = input("Enter server password: ")
 
 # -------main----------
-#testPASS()
-#testNICK()
-#testUSER()
-#testPRIVMSG()
+testPASS()
+testNICK()
+testUSER()
+testPRIVMSG()
 testJOIN()
-#testPART()
-#testQUIT()
-#testKICK()
-#testINVITE()
-#testMODE()
-#testTOPIC()
-#testOPER() #also tests KILL
+testPART()
+testQUIT()
+testKICK()
+testINVITE()
+testMODE()
+testTOPIC()
+testOPER() #also tests KILL
 #testServerLimit()
