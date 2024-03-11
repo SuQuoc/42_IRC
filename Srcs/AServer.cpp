@@ -417,16 +417,16 @@ void	AServer::protectedPoll(int timeout)
 {
 	int		poll_return;
 
-	poll_return = poll(pollfds, static_cast<nfds_t>(_client_fds.size() + 2), timeout); 			// + 2 for the stdin watching and the poll also needs one
+	poll_return = poll(pollfds, static_cast<nfds_t>(SERVER_MAX_CLIENTS), timeout); 			// + 2 for the stdin watching and the poll also needs one
 	if (poll_return == -1)
 		throw (std::runtime_error("poll: "));
 	/* if (poll_return == 0)
 	{			
-		/* std::cout << "Clean up" << std::endl; */													// if poll == 0(timeout), ping clients to see if pipe is broken.
-		for(client_fd_map_iter_t itr = _client_fds.begin(); itr != _client_fds.end(); itr++)
-			protectedSend(itr->second, ":ping");
-	}
+		std::cout << "Clean up" << std::endl; */													// if poll == 0(timeout), ping clients to see if pipe is broken.
+	// for(client_fd_map_iter_t itr = _client_fds.begin(); itr != _client_fds.end(); itr++)
+		// protectedSend(itr->second, ":ping");
 }
+
 
 void	AServer::pollPrintClientsWho(std::string &stdin_input)
 {
