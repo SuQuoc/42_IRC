@@ -33,6 +33,7 @@ void	AServer::disconnectClient(const int& client_fd) //for case 0:
 
 void	AServer::disconnectClient(Client *client, const std::string& msg)
 {
+	// std::cout << "trying to disconnect client" << std::endl;
 	if (!client)
 		return ;
 
@@ -51,7 +52,7 @@ void	AServer::disconnectClient(Client *client, const std::string& msg)
 		}
 	}
 	rmClientFromMaps(client);
-	/* std::cout << "deleted client from maps" << std::endl; */
+	std::cout << "deleted client from maps" << std::endl;
 }
 
 int	AServer::process_event(const int& client_fd)
@@ -131,9 +132,15 @@ void 	AServer::rmClientFromNameMap(const std::string& nick_name)
 
 void 	AServer::rmClientFromMaps(Client *client)
 {
-	if (!client) 
+	if (!client)
 		return;
 	std::string nickname = client->getNickname();
+	std::cout << "deleting client: index" << client->_index_poll_struct << std::endl;
+	/* if (client->getFd() != pollfds[client->_index_poll_struct].fd)
+	{
+		std::cerr << "Error: client fd and pollfd fd are not the same" << std::endl;
+		return;
+	} */
 	if(pollfds[client->_index_poll_struct].fd != 0)
 	{
 		pollfds[client->_index_poll_struct].fd = 0;
@@ -413,11 +420,14 @@ void	AServer::protectedPoll(int timeout)
 	poll_return = poll(pollfds, static_cast<nfds_t>(_client_fds.size() + 2), timeout); 			// + 2 for the stdin watching and the poll also needs one
 	if (poll_return == -1)
 		throw (std::runtime_error("poll: "));
-	if (poll_return == 0)
+	if (poll_return == 0) //IS ONLY FOR TIMEOUT
 	{			
-		/* std::cout << "Clean up" << std::endl; */													// if poll == 0(timeout), ping clients to see if pipe is broken.
-		for(client_fd_map_iter_t itr = _client_fds.begin(); itr != _client_fds.end(); itr++)
+		// std::cout << "Clean up" << std::endl;													// if poll == 0(timeout), ping clients to see if pipe is broken.
+		for(client_fd_map_iter_t itr = _client_fds.begin(); itr != _client_fds.end(); itr++) //DOESNT SEND TO ANYONE
+		{
+			// std::cout << "pinging" << std::endl;
 			protectedSend(itr->second, ":ping");
+		}
 	}
 }
 

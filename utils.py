@@ -23,7 +23,7 @@ def start_netcat(host, port, n, filename):
 
 def quitAllNetcats(processes):
 	quit_message = "QUIT\r\n"
-	for process in reversed(processes):
+	for process in processes:
 		process.stdin.write(quit_message.encode())
 		process.stdin.flush()
 		print("QUITTING")
