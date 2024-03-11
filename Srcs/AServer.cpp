@@ -136,6 +136,7 @@ void 	AServer::rmClientFromMaps(Client *client)
 	std::string nickname = client->getNickname();
 	if(pollfds[client->_index_poll_struct].fd != 0)
 	{
+		std::cout << "hello" << std::endl;
 		pollfds[client->_index_poll_struct].fd = 0;
 		pollfds[client->_index_poll_struct].events = 0;
 		pollfds[client->_index_poll_struct].revents = 0;
@@ -144,10 +145,13 @@ void 	AServer::rmClientFromMaps(Client *client)
 
 	client_fd_map_iter_t it = _client_fds.find(client->getFd());
 	if (it == _client_fds.end())
+	{
 		return;
+	}
 	delete client;
 	_client_fds.erase(it);
 	//this will only be triggerd if the client didnt finish registration before losing connection
+	std::cout << "deleted client!!" << std::endl;
 	client_name_map_iter_t it2 = _client_names.find(nickname);
 	if (it2 == _client_names.end()) 
 		return;
@@ -159,7 +163,6 @@ void 	AServer::rmClientFromMaps(int client_fd)
 	client_fd_map_iter_t it = _client_fds.find(client_fd);
 	if (it == _client_fds.end())
 		return;
-	_client_fds.erase(it);
 	if(pollfds[it->second->_index_poll_struct].fd != 0)
 	{
 		pollfds[it->second->_index_poll_struct].fd = 0;
@@ -168,6 +171,7 @@ void 	AServer::rmClientFromMaps(int client_fd)
 		/* _useClient--; */
 	}
 	delete it->second;
+	_client_fds.erase(it);
 	client_name_map_iter_t it2 = _client_names.find(it->second->getNickname());
 	if (it2 == _client_names.end())
 		return;
@@ -381,11 +385,13 @@ void	AServer::pollLoop()
 		{
 			pollPrintClientsWho(stdin_input);
 			pollfds[1].revents = 0;
+			/* continue; */
 		}
 		if (pollfds[0].revents & POLLIN)
 		{
 			accept_connection(pollfds);
 			pollfds[1].revents = 0;
+			/* continue; */
 		}
 		for (int i = 2; i < SERVER_MAX_CLIENTS; i++)
 		{
@@ -410,7 +416,7 @@ void	AServer::protectedPoll(int timeout)
 {
 	int		poll_return;
 
-	poll_return = poll(pollfds, static_cast<nfds_t>(_client_fds.size() + 2), timeout); 			// + 2 for the stdin watching and the poll also needs one
+	poll_return = poll(pollfds, static_cast<nfds_t>(SERVER_MAX_CLIENTS), timeout); 			// + 2 for the stdin watching and the poll also needs one
 	if (poll_return == -1)
 		throw (std::runtime_error("poll: "));
 	/* if (poll_return == 0)
