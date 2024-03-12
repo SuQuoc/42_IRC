@@ -6,7 +6,7 @@ import signal
 import os
 import time
 from colorama import Fore, Style
-from utils import get_ip_address, sendMsg, start_netcat, quitAllNetcats, registerClients
+from py_modules.utils import get_ip_address, sendMsg, start_netcat, quitAllNetcats, registerClients
 
 # ---------------------core framework?---------------------
 def setupTest(test_name): #creates and changes to a dir
