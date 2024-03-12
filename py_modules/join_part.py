@@ -10,6 +10,14 @@ def joiningTooManyChannels(server):
 		vector.append((0, join_msg))		
 	runMultiClientTest(test_name, 1, vector, server)
 
+def joinTooManyChannelsWithList(server):
+	test_name = "joinTooManyChannelsWithList"
+	vector = [
+		(0, "JOIN #chan0,#chan1,#chan2,#chan3,#chan4,#chan5,#chan6,#chan7,#chan8,#chan9,#chan10"), #joining 11 channels
+		(0, "JOIN #chan10,#chan11,"), #only joined 10 before due to list limit, now error should be triggered
+	]
+	runMultiClientTest(test_name, 1, vector, server)
+
 def fullChannel(server):
 	test_name = "fullChannel"
 	vector = [
@@ -27,22 +35,14 @@ def fullChannel(server):
 	]
 	runMultiClientTest(test_name, 11, vector, server)
 
-def joinTooManyChannelsWithList(server):
-	test_name = "joinTooManyChannelsWithList"
-	vector = [
-		(0, "JOIN #chan0,#chan1,#chan2,#chan3,#chan4,#chan5,#chan6,#chan7,#chan8,#chan9,#chan10"), #joining 11 channels
-		(0, "JOIN #chan10,#chan11,"), #only joined 10 before due to list limit, now error should be triggered
-	]
-	runMultiClientTest(test_name, 1, vector, server)
-
 def inviteOnlyChannel(server):
 	test_name = "inviteOnlyChannel"
 	vector = [
-		(0, "JOINT #chan"),
-		# (0, "MODE #chan +i"),
-		# (1, "JOIN #chan"), #cant join
-		# (0, "INVITE client1 #chan"),
-		# (1, "JOIN #chan"), #can join now
+		(0, "JOIN #chan"),
+		(0, "MODE #chan +i"),
+		(1, "JOIN #chan"), #cant join
+		(0, "INVITE client1 #chan"),
+		(1, "JOIN #chan"), #can join now
 		]
 	runMultiClientTest(test_name, 2, vector, server)
 
@@ -65,13 +65,15 @@ def badChannelKey(server):
 		(1, "JOIN #chan wrong key"), #cant join
 		(1, "JOIN #chan key"), #cant join case sensitive?
 		(1, "JOIN #chan Key"), #cant join case sensitive?
+		(1, "JOIN #chan"), #cant join case sensitive?
+		(1, "JOIN #chan Key"), #cant join case sensitive?
 		]
 	runMultiClientTest(test_name, 2, vector, server)
 
 def testJOIN(server, original_directory):
 	setupTest("join")
-	#errNeedMoreParams("JOIN", server)
-	#errNOSUCHCHANNEL("JOIN #nonexistentchannel", server)
+	errNeedMoreParams("JOIN", server)
+	errNOSUCHCHANNEL("JOIN #nonexistentchannel", server) #dumb test, just creates the channel
 	
 	joiningTooManyChannels(server) #1 client trying to join 11 channels
 	joinTooManyChannelsWithList(server) #1 client trying to join 11 channels in a list
@@ -95,7 +97,7 @@ def partingChannel(server):
 
 def testPART(server, original_directory):
 	setupTest("part")
-	#errNeedMoreParams("PART", server)
-	#errNOSUCHCHANNEL("PART #nonexistentchannel", server)
+	errNeedMoreParams("PART", server)
+	errNOSUCHCHANNEL("PART #nonexistentchannel", server)
 	partingChannel(server)
 	os.chdir(original_directory)

@@ -1,14 +1,25 @@
 :AfterLife 001 client0 :Welcome to the Internet Relay Network, user0
+:AfterLife 005 client0 NICKLEN=9 CHANTYPES=#& CHANMODES=oiklt :are supported by this server
 :AfterLife 001 client1 :Welcome to the Internet Relay Network, user1
+:AfterLife 005 client1 NICKLEN=9 CHANTYPES=#& CHANMODES=oiklt :are supported by this server
 :AfterLife 001 client2 :Welcome to the Internet Relay Network, user2
+:AfterLife 005 client2 NICKLEN=9 CHANTYPES=#& CHANMODES=oiklt :are supported by this server
 :AfterLife 001 client3 :Welcome to the Internet Relay Network, user3
+:AfterLife 005 client3 NICKLEN=9 CHANTYPES=#& CHANMODES=oiklt :are supported by this server
 :AfterLife 001 client4 :Welcome to the Internet Relay Network, user4
+:AfterLife 005 client4 NICKLEN=9 CHANTYPES=#& CHANMODES=oiklt :are supported by this server
 :AfterLife 001 client5 :Welcome to the Internet Relay Network, user5
+:AfterLife 005 client5 NICKLEN=9 CHANTYPES=#& CHANMODES=oiklt :are supported by this server
 :AfterLife 001 client6 :Welcome to the Internet Relay Network, user6
+:AfterLife 005 client6 NICKLEN=9 CHANTYPES=#& CHANMODES=oiklt :are supported by this server
 :AfterLife 001 client7 :Welcome to the Internet Relay Network, user7
+:AfterLife 005 client7 NICKLEN=9 CHANTYPES=#& CHANMODES=oiklt :are supported by this server
 :AfterLife 001 client8 :Welcome to the Internet Relay Network, user8
+:AfterLife 005 client8 NICKLEN=9 CHANTYPES=#& CHANMODES=oiklt :are supported by this server
 :AfterLife 001 client9 :Welcome to the Internet Relay Network, user9
+:AfterLife 005 client9 NICKLEN=9 CHANTYPES=#& CHANMODES=oiklt :are supported by this server
 :AfterLife 001 client10 :Welcome to the Internet Relay Network, user10
+:AfterLife 005 client10 NICKLEN=9 CHANTYPES=#& CHANMODES=oiklt :are supported by this server
 :client0!user0@10.12.2.6 JOIN #chan * :user0
 :client1!user1@10.12.2.6 JOIN #chan * :user1
 :client1!user1@10.12.2.6 JOIN #chan * :user1
@@ -64,7 +75,17 @@
 :client9!user9@10.12.2.6 JOIN #chan * :user9
 :client9!user9@10.12.2.6 JOIN #chan * :user9
 :client9!user9@10.12.2.6 JOIN #chan * :user9
-:AfterLife 471 client10 #chan :Cannot join channel (+l)
+:client10!user10@10.12.2.6 JOIN #chan * :user10
+:client10!user10@10.12.2.6 JOIN #chan * :user10
+:client10!user10@10.12.2.6 JOIN #chan * :user10
+:client10!user10@10.12.2.6 JOIN #chan * :user10
+:client10!user10@10.12.2.6 JOIN #chan * :user10
+:client10!user10@10.12.2.6 JOIN #chan * :user10
+:client10!user10@10.12.2.6 JOIN #chan * :user10
+:client10!user10@10.12.2.6 JOIN #chan * :user10
+:client10!user10@10.12.2.6 JOIN #chan * :user10
+:client10!user10@10.12.2.6 JOIN #chan * :user10
+:client10!user10@10.12.2.6 JOIN #chan * :user10
 :client0!user0@10.12.2.6 QUIT :Leaving
 :client0!user0@10.12.2.6 QUIT :Leaving
 :client0!user0@10.12.2.6 QUIT :Leaving
@@ -74,6 +95,8 @@
 :client0!user0@10.12.2.6 QUIT :Leaving
 :client0!user0@10.12.2.6 QUIT :Leaving
 :client0!user0@10.12.2.6 QUIT :Leaving
+:client0!user0@10.12.2.6 QUIT :Leaving
+:client1!user1@10.12.2.6 QUIT :Leaving
 :client1!user1@10.12.2.6 QUIT :Leaving
 :client1!user1@10.12.2.6 QUIT :Leaving
 :client1!user1@10.12.2.6 QUIT :Leaving
@@ -89,6 +112,8 @@
 :client2!user2@10.12.2.6 QUIT :Leaving
 :client2!user2@10.12.2.6 QUIT :Leaving
 :client2!user2@10.12.2.6 QUIT :Leaving
+:client2!user2@10.12.2.6 QUIT :Leaving
+:client3!user3@10.12.2.6 QUIT :Leaving
 :client3!user3@10.12.2.6 QUIT :Leaving
 :client3!user3@10.12.2.6 QUIT :Leaving
 :client3!user3@10.12.2.6 QUIT :Leaving
@@ -100,6 +125,8 @@
 :client4!user4@10.12.2.6 QUIT :Leaving
 :client4!user4@10.12.2.6 QUIT :Leaving
 :client4!user4@10.12.2.6 QUIT :Leaving
+:client4!user4@10.12.2.6 QUIT :Leaving
+:client5!user5@10.12.2.6 QUIT :Leaving
 :client5!user5@10.12.2.6 QUIT :Leaving
 :client5!user5@10.12.2.6 QUIT :Leaving
 :client5!user5@10.12.2.6 QUIT :Leaving
@@ -107,6 +134,10 @@
 :client6!user6@10.12.2.6 QUIT :Leaving
 :client6!user6@10.12.2.6 QUIT :Leaving
 :client6!user6@10.12.2.6 QUIT :Leaving
+:client6!user6@10.12.2.6 QUIT :Leaving
+:client7!user7@10.12.2.6 QUIT :Leaving
 :client7!user7@10.12.2.6 QUIT :Leaving
 :client7!user7@10.12.2.6 QUIT :Leaving
 :client8!user8@10.12.2.6 QUIT :Leaving
+:client8!user8@10.12.2.6 QUIT :Leaving
+:client9!user9@10.12.2.6 QUIT :Leaving
