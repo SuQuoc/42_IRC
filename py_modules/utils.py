@@ -163,3 +163,19 @@ def errNOSUCHNICK(msg, server):
 	vector = [(0, msg)]
 	runMultiClientTest(test_name, 1, vector, server)
 
+def errNOTONCHANNEL(msg, server):
+	test_name = "ERR_NOTONCHANNEL"
+	vector = [
+		(0, "JOIN #chan"),
+		(1, msg),
+		   ]
+	runMultiClientTest(test_name, 2, vector, server)
+
+def errCHANOPRIVSNEEDED(msg, server):
+	test_name = "ERR_CHANOPRIVSNEEDED"
+	vector = [
+		(0, "JOIN #chan"),
+		(1, "JOIN #chan"),
+		(1, msg),
+			]
+	runMultiClientTest(test_name, 2, vector, server)

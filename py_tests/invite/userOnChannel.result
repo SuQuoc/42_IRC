@@ -5,8 +5,5 @@
 :client0!user0@10.12.2.6 JOIN #chan * :user0
 :client1!user1@10.12.2.6 JOIN #chan * :user1
 :client1!user1@10.12.2.6 JOIN #chan * :user1
-#chan :No topic is set
-:client0!user0@10.12.2.6 TOPIC #chan :new topic
-:client0!user0@10.12.2.6 TOPIC #chan :new topic
-#chan :new topic
+:AfterLife 443 client0 client1 #chan :is already on channel
 :client0!user0@10.12.2.6 QUIT :Leaving

@@ -74,7 +74,6 @@ def testJOIN(server, original_directory):
 	setupTest("join")
 	errNeedMoreParams("JOIN", server)
 	errNOSUCHCHANNEL("JOIN #nonexistentchannel", server) #dumb test, just creates the channel
-	
 	joiningTooManyChannels(server) #1 client trying to join 11 channels
 	joinTooManyChannelsWithList(server) #1 client trying to join 11 channels in a list
 	fullChannel(server) #11 clients trying to join  
