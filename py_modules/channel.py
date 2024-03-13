@@ -54,10 +54,9 @@ def rplTopic(server):
 def testTOPIC(server, original_directory):
 	setupTest("topic")
 	errNeedMoreParams("TOPIC", server)
-	#not in IRC errNOSUCHCHANNEL("TOPIC #nonexistentchannel", server)
-	# HOW DOES AFTERNET HANDLE TOPIC #nonexistentchannel
+	#not in IRC errNOSUCHCHANNEL("TOPIC #nonexistentchannel", server) #AfterNet sends ERR_NOSUCHCHANNEL
 	#notOnChannel(server)
-	errNOTONCHANNEL("TOPIC #chan", server) #user can see topic although not in channekl
+	errNOTONCHANNEL("TOPIC #chan", server) #user can see topic although not in channel --> NOT WORKING
 	errCHANOPRIVSNEEDED("TOPIC #chan im not operator", server)
-	rplTopic(server) #also tests RPL_NOTOPIC
+	rplTopic(server) #also tests RPL_NOTOPIC --> NOT WORKING missing afterlife prefix
 	os.chdir(original_directory)
