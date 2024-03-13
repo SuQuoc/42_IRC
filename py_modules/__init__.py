@@ -5,3 +5,4 @@ from .messaging import testPRIVMSG
 from .oper_kill import testOPER
 from .quit_kick import testQUIT, testKICK
 from .registration import testPASS, testNICK, testUSER
+from .serverlimit import testServerLimit

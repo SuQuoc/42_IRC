@@ -30,15 +30,6 @@ def testMODE(server, original_directory):
 	os.chdir(original_directory)
 
 #------------------TOPIC------------------
-def notOnChannel(server):
-	test_name = "notOnChannel"
-	vector = [
-		(0, "JOIN #chan"),
-		(0, "TOPIC #chan new topic"),
-		(1, "TOPIC #chan"),
-	]
-	runMultiClientTest(test_name, 2, vector, server)
-
 def rplTopic(server):
 	test_name = "rplTopic"
 	vector = [
@@ -54,8 +45,7 @@ def rplTopic(server):
 def testTOPIC(server, original_directory):
 	setupTest("topic")
 	errNeedMoreParams("TOPIC", server)
-	#not in IRC errNOSUCHCHANNEL("TOPIC #nonexistentchannel", server) #AfterNet sends ERR_NOSUCHCHANNEL
-	#notOnChannel(server)
+	errNOSUCHCHANNEL("TOPIC #nonexistentchannel", server) #AfterNet sends ERR_NOSUCHCHANNEL
 	errNOTONCHANNEL("TOPIC #chan", server) #user can see topic although not in channel --> NOT WORKING
 	errCHANOPRIVSNEEDED("TOPIC #chan im not operator", server)
 	rplTopic(server) #also tests RPL_NOTOPIC --> NOT WORKING missing afterlife prefix

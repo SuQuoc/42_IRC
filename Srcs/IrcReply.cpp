@@ -136,10 +136,10 @@ void	IrcReply::sendRPL(IRC_ERR error, Client* sender, const std::string& input)
 			msg += ":You are now an IRC operator";
 			break;
 		case RPL_TOPIC:
-			msg = input; //"<channel> :<topic>"
+			msg = ":" + _server_name + " 332 " + input; //"<channel> :<topic>"
 			break;
 		case RPL_NOTOPIC:
-			msg = input + " :No topic is set"; //channel
+			msg = ":" + _server_name + " 331 " + input + " :No topic is set"; //channel
 			break;
 		case RPL_INVITING:
 			msg += input;

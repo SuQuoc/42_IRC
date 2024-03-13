@@ -5,12 +5,12 @@
 :AfterLife 001 client2 :Welcome to the Internet Relay Network, user2
 :AfterLife 005 client2 NICKLEN=9 CHANTYPES=#& CHANMODES=oiklt :are supported by this server
 :AfterLife 481 client0 :Permission Denied- You're not an IRC operator
-:AfterLife 491 client0 :No O-lines for your host
-:AfterLife 481 client0 :Permission Denied- You're not an IRC operator
-:AfterLife 481 client0 :Permission Denied- You're not an IRC operator
+:AfterLife 381 client0 :You are now an IRC operator
+:AfterLife 461 client0 KILL :Not enough parameters
+:AfterLife 401 client0 NoNick :No such nick/channel
 :client0!user0@10.12.2.6 PRIVMSG client1 :you should see this cuz client 1 is alive and was not kiled
 :client1!user1@10.12.2.6 PRIVMSG client0 :yes i am alive
-:AfterLife 481 client0 :Permission Denied- You're not an IRC operator
-:client0!user0@10.12.2.6 PRIVMSG client1 :'No such nick/channel' should be sent
-:AfterLife 481 client0 :Permission Denied- You're not an IRC operator
-:client2!user2@10.12.2.6 PRIVMSG client0 :'No such nick/channel' should be sent
+:client0!user0@10.12.2.6 KILL client1 :successfull kill of client1
+:AfterLife 401 client0 client1 :No such nick/channel
+:client0!user0@10.12.2.6 KILL client0 :killing myself??
+:AfterLife 401 client2 client0 :No such nick/channel

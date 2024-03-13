@@ -60,7 +60,7 @@ def	registerClients(processes, password):
 		sendMsg(process, pass_msg)
 		sendMsg(process, nick_msg)
 		sendMsg(process, user_msg)
-		time.sleep(1)
+		time.sleep(0.5)
 		i+=1
 
 
