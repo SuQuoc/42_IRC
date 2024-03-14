@@ -136,14 +136,13 @@ void TestServer::CheckingWrongListInput()
 
 void TestServer::addChannelWithPWandJoin()
 {
-	Client		*channel_ower;
 	Channel		*channel;
 	Client		*michi;
 	Client		*niki;
 	TestServer	serv;
 	
 	serv.makeUserJoinChannel("#pw", "Fiona", 5);
-	channel_ower = serv.getClient("Fiona");
+	serv.getClient("Fiona");
 
 	channel = serv.getChannel("#pw");
 	if(channel == NULL)
