@@ -25,7 +25,7 @@ async def tcp_echo_client(message:str, cmpstr:str):
     await writer.drain()
 
     data = await reader.read(600)
-    if data.decode("utf-8") != cmpstr:
+    if data.decode("utf-8") == cmpstr:
         print(f'Received: {data.decode("utf-8")!r}')
         print(f'cmpstr  : {cmpstr!r}')
         writer.close()
