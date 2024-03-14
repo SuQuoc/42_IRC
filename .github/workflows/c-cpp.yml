@@ -2,9 +2,9 @@ name: C/C++ CI
 
 on:
   push:
-    branches: [ "working_poll_no_timer" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "working_poll_no_timer" ]
+    branches: [ "main" ]
 
 jobs:
   build:
