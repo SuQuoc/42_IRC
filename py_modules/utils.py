@@ -38,7 +38,7 @@ def quitAllNetcats(processes):
 		process.stdin.write(quit_message.encode())
 		process.stdin.flush()
 		""" process.communicate(quit_message.encode()) """
-		time.sleep(0.2)
+		time.sleep(0.1)
 
 def sigintAllClients(processes):
 	for process in processes:
@@ -60,7 +60,7 @@ def	registerClients(processes, password):
 		sendMsg(process, pass_msg)
 		sendMsg(process, nick_msg)
 		sendMsg(process, user_msg)
-		time.sleep(0.5)
+		time.sleep(0.1)
 		i+=1
 
 
@@ -86,7 +86,7 @@ def runMultiNonRegisClientTest(test_name, n_clients, vector, server):
 			client_id = pair[0]
 			msg = pair[1]
 			sendMsg(processes[client_id], msg)
-			time.sleep(0.5)
+			time.sleep(0.1)
 		sigintAllClients(processes)
 	
 	if not os.path.isfile(f'{test_name}.expected'):
@@ -105,8 +105,7 @@ def runMultiClientTest(test_name, n_clients, vector, server):
 			msg = pair[1]
 			sendMsg(processes[client_id], msg)
 			time.sleep(0.2)
-		quitAllNetcats(processes)
-		#sigintAllClients(processes)
+		quitAllNetcats(processes) #sigintAllClients(processes)
 
 	if not os.path.isfile(f'{test_name}.expected'):
 		open(f'{test_name}.expected', 'w').close()

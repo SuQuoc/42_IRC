@@ -3,6 +3,8 @@
 .nfs*
 
 
+__pycache__/
+
 # Build
 objects_and_dependencies
 

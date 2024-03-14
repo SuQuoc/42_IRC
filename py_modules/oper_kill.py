@@ -30,7 +30,6 @@ def kill(server):
 	]
 	runMultiClientTest(test_name, 3, vector, server)
 
-
 def deleteChannelwithKill(server):
 	test_name = "deleteChannelwithKill"
 	vector = [
