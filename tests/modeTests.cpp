@@ -101,9 +101,12 @@ void TestServer::lTest()
     Client*     vonix = serv.makeUser("Vonix", 6);
     Channel*    ch = serv.getChannel("#Silbermond");
 
-    serv.runMode(sylvanas, "#Silbermond +l 144");
+    serv.runMode(sylvanas, "#Silbermond +l " + std::to_string(MAX_CLIENTS + 1));
     if(ch->getMaxClients() != MAX_CLIENTS)
+    {
+        std::cout << ch->getMaxClients() << std::endl;
         return (fail("Should still be MAX_CLIENTS (01)"));
+    }
 
     serv.runMode(sylvanas, "#Silbermond    +l    1         3;[[;];'];]              -l");
     ch->addClient(vonix, "", false);
@@ -130,16 +133,16 @@ void TestServer::lTest()
     if(ch->getMaxClients() != 96)
         return (fail("Should be 96 (07)"));
     
-    if(ch->setMaxClients("100", '+') != MODE_SET_PLUS)
+    if(ch->setMaxClients(std::to_string(MAX_CLIENTS), '+') != MODE_SET_PLUS)
         return (fail("return value should be MODE_SET_PLUS 1003"));
     if(ch->setMaxClients("123123123123", '-') != 0)
-        return (fail("return value should be 0"));
+        return (fail("return value should be 0 (1)"));
     if(ch->setMaxClients("", '+') != ERR_NEEDMOREPARAMS)
         return (fail("return value should be ERR_NEEDMOREPARAMS 461"));
     if(ch->setMaxClients("0", '+') != 0)
-        return (fail("return value should be 0"));
-    if(ch->setMaxClients("100", '+') != 0)
-        return (fail("return value should be 0"));
+        return (fail("return value should be 0 (2)"));
+    if(ch->setMaxClients(std::to_string(MAX_CLIENTS), '+') != 0)
+        return (fail("return value should be 0 (3)"));
     ok();
 }
 

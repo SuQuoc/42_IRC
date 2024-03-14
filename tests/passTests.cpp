@@ -7,7 +7,7 @@ void TestServer::correctPW()
 	std::cout << "correct password: ";
 
 	TestServer 	serv("Testserver", "password");
-	serv.addNewClientToFdMap(5, "127.0.0.0");
+	serv.addNewClientToFdMap(5, "127.0.0.0", 0);
 
 	Client *client = serv.getClient(5);
 	serv.runPass(client, "password");
@@ -40,8 +40,8 @@ void TestServer::availableNick()
 {
 	std::cout << "available nickname: ";
 	TestServer 	serv("Testserver", "password");
-	serv.addNewClientToFdMap(5, "127.0.0.0");
-	serv.addNewClientToFdMap(6, "127.0.0.1");
+	serv.addNewClientToFdMap(5, "127.0.0.0", 0);
+	serv.addNewClientToFdMap(6, "127.0.0.1", 0);
 	
 	Client *client = serv.getClient(5);
 	Client *client2 = serv.getClient(6);
@@ -62,8 +62,8 @@ void TestServer::unavailableNick()
 {
 	std::cout << "unavailable nickname: ";
 	TestServer 	serv("Testserver", "password");
-	serv.addNewClientToFdMap(5, "127.0.0.0");
-	serv.addNewClientToFdMap(6, "127.0.0.1");
+	serv.addNewClientToFdMap(5, "127.0.0.0", 0);
+	serv.addNewClientToFdMap(6, "127.0.0.1", 0);
 
 	Client *client = serv.getClient(5);
 	Client *client2 = serv.getClient(6);
@@ -82,7 +82,7 @@ void TestServer::wrongNick()
 {
 	std::cout << "wrong nickname: ";
 	TestServer 	serv("Testserver", "password");
-	serv.addNewClientToFdMap(5, "127.0.0.0");
+	serv.addNewClientToFdMap(5, "127.0.0.0", 0);
 	
 	Client *client = serv.getClient(5);
 	serv.runPass(client, "password");
@@ -106,8 +106,8 @@ void TestServer::wrongNick()
 void	TestServer::registerTwoClients()
 {
 	TestServer 	serv("Testserver", "password");
-	serv.addNewClientToFdMap(5, "127.0.0.0");
-	serv.addNewClientToFdMap(6, "127.0.0.1");
+	serv.addNewClientToFdMap(5, "127.0.0.0", 0);
+	serv.addNewClientToFdMap(6, "127.0.0.1", 0);
 
 	Client *client = serv.getClient(5);
 	Client *client2 = serv.getClient(6);
