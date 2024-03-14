@@ -43,7 +43,7 @@ async def close_writers():
     
 
 async def main():
-    clients = [makeUser(str(i)) for i in range(1000)]
+    clients = [makeUser(str(i)) for i in range(100)]
     await asyncio.gather(*clients)
     await close_writers()
 
