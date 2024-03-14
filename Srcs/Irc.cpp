@@ -17,7 +17,7 @@ Irc::~Irc() {}
 void	Irc::command_switch(Client *sender, const std::string message)
 {
 	_sender = sender;
-	/* std::cout << "message =" << message << "!" << std::endl; */
+	// std::cout << "msg from fd" << sender->getFd() << ": " << message << "!" << std::endl;
 
     std::stringstream	sstream(message);
     std::string	cmd;
@@ -363,16 +363,15 @@ void Irc::TOPIC(std::stringstream &sstream)
 		return (_replier.sendError(ERR_NEEDMOREPARAMS, _sender, "TOPIC"), void());
 	channel = getChannel(channel_name);
 	if (channel == NULL)
-		return ;
-	if (topic.empty()) //only wants to see current topic
+		return (_replier.sendError(ERR_NOSUCHCHANNEL, _sender, channel_name), void());
+	else if (channel->isInChannel(_sender) == false)
+		return (_replier.sendError(ERR_NOTONCHANNEL, _sender, channel_name), void());
+	else if (topic.empty()) //only wants to see current topic
 	{
 		if (channel->getTopic().empty())
 			_replier.sendRPL(RPL_NOTOPIC, _sender, channel_name);
 		else
-		{
-			std::string reply = channel_name + " :" + channel->getTopic();
-			_replier.sendRPL(RPL_TOPIC, _sender, reply);
-		}
+			_replier.sendRPL(RPL_TOPIC, _sender, _sender->getNickname() + " " + channel_name + " :" + channel->getTopic());
 	}
 	else
 	{

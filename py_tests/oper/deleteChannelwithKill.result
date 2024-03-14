@@ -1,0 +1,9 @@
+:AfterLife 001 client0 :Welcome to the Internet Relay Network, user0
+:AfterLife 005 client0 NICKLEN=9 CHANTYPES=#& CHANMODES=oiklt :are supported by this server
+:AfterLife 001 client1 :Welcome to the Internet Relay Network, user1
+:AfterLife 005 client1 NICKLEN=9 CHANTYPES=#& CHANMODES=oiklt :are supported by this server
+:client1!user1@10.12.2.6 JOIN #chan * :user1
+:AfterLife 442 client0 #chan :You're not on that channel
+:AfterLife 381 client0 :You are now an IRC operator
+:client0!user0@10.12.2.6 KILL client1 :kill client1
+:AfterLife 403 client0 #chan :No such channel

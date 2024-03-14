@@ -1,7 +1,10 @@
 
+.py_test_cache/
 .vscode
 .nfs*
 
+
+__pycache__/
 
 # Build
 objects_and_dependencies

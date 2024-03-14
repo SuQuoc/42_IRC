@@ -33,6 +33,7 @@ void	AServer::disconnectClient(const int& client_fd) //for case 0:
 
 void	AServer::disconnectClient(Client *client, const std::string& msg)
 {
+	// std::cout << "trying to disconnect client" << std::endl;
 	if (!client)
 		return ;
 
@@ -51,7 +52,7 @@ void	AServer::disconnectClient(Client *client, const std::string& msg)
 		}
 	}
 	rmClientFromMaps(client);
-	/* std::cout << "deleted client from maps" << std::endl; */
+	std::cout << "deleted client from maps" << std::endl;
 }
 
 int	AServer::process_event(const int& client_fd)
@@ -131,9 +132,14 @@ void 	AServer::rmClientFromNameMap(const std::string& nick_name)
 
 void 	AServer::rmClientFromMaps(Client *client)
 {
-	if (!client) 
+	if (!client)
 		return;
 	std::string nickname = client->getNickname();
+	/* if (client->getFd() != pollfds[client->_index_poll_struct].fd)
+	{
+		std::cerr << "Error: client fd and pollfd fd are not the same" << std::endl;
+		return;
+	} */
 	if(pollfds[client->_index_poll_struct].fd != 0)
 	{
 		std::cout << "hello" << std::endl;
@@ -151,7 +157,6 @@ void 	AServer::rmClientFromMaps(Client *client)
 	delete client;
 	_client_fds.erase(it);
 	//this will only be triggerd if the client didnt finish registration before losing connection
-	std::cout << "deleted client!!" << std::endl;
 	client_name_map_iter_t it2 = _client_names.find(nickname);
 	if (it2 == _client_names.end()) 
 		return;
@@ -266,7 +271,7 @@ int	AServer::createTcpSocket(const int& port)
 
 	if (bind(_sock_fd, reinterpret_cast<sockaddr*>(&saddr), sizeof(struct sockaddr_in)) == -1)
 		return (printErrorReturn("couldn't bind to socket"));
-
+	
 	if (listen(_sock_fd, 1000) == -1)
 		return (printErrorReturn("couldn't listen to socket"));
 
@@ -416,11 +421,11 @@ void	AServer::protectedPoll(int timeout)
 		throw (std::runtime_error("poll: "));
 	/* if (poll_return == 0)
 	{			
-		std::cout << "Clean up" << std::endl;													// if poll == 0(timeout), ping clients to see if pipe is broken.
-		for(client_fd_map_iter_t itr = _client_fds.begin(); itr != _client_fds.end(); itr++)
-			protectedSend(itr->second, ":ping");
-	} */
+		std::cout << "Clean up" << std::endl; */													// if poll == 0(timeout), ping clients to see if pipe is broken.
+	// for(client_fd_map_iter_t itr = _client_fds.begin(); itr != _client_fds.end(); itr++)
+		// protectedSend(itr->second, ":ping");
 }
+
 
 void	AServer::pollPrintClientsWho(std::string &stdin_input)
 {
