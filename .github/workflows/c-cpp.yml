@@ -2,9 +2,9 @@ name: C/C++ CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "working_poll_no_timer" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "working_poll_no_timer" ]
 
 jobs:
   build:
@@ -13,5 +13,5 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: create and run
-      run: make run
+    - name: run unit tests
+      run: make tester; make fclean
