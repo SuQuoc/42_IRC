@@ -1,0 +1,17 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "working_poll_no_timer" ]
+  pull_request:
+    branches: [ "working_poll_no_timer" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: run unit tests
+      run: make tester; make fclean
