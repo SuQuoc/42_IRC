@@ -135,7 +135,6 @@ void 	AServer::rmClientFromMaps(Client *client)
 	if (!client)
 		return;
 	std::string nickname = client->getNickname();
-	std::cout << "deleting client: index" << client->_index_poll_struct << std::endl;
 	/* if (client->getFd() != pollfds[client->_index_poll_struct].fd)
 	{
 		std::cerr << "Error: client fd and pollfd fd are not the same" << std::endl;
@@ -158,7 +157,6 @@ void 	AServer::rmClientFromMaps(Client *client)
 	delete client;
 	_client_fds.erase(it);
 	//this will only be triggerd if the client didnt finish registration before losing connection
-	std::cout << "deleted client!!" << std::endl;
 	client_name_map_iter_t it2 = _client_names.find(nickname);
 	if (it2 == _client_names.end()) 
 		return;

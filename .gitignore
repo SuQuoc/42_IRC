@@ -1,4 +1,5 @@
 
+.py_test_cache/
 .vscode
 .nfs*
 
