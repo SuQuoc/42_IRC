@@ -309,7 +309,7 @@ void	TestServer::joinAboveUserLimitInvited()
 
 	for (int i = 0; i < MAX_CLIENTS; i++)
 		serv.makeUserJoinChannel("#channel", std::to_string(i), 5 + i);
-	serv.makeUser("sara", 109);
+	serv.makeUser("sara", MAX_CLIENTS + 10);
 
 	channel = serv.getChannel("#channel");
 	sara = serv.getClient("sara");
@@ -366,8 +366,8 @@ void	TestServer::join_tests()
 	std::cout << "join channel with full user limit: ";
 	joinAboveUserLimit();
 	std::cout << "join channel with full user limit but invited: ";
-	/* joinAboveUserLimitInvited(); */
-	std::cout << "PLEASE FIX THIS TEST!!!!!!!!!!!!" << std::endl;
+	joinAboveUserLimitInvited();
+	/* std::cout << "PLEASE FIX THIS TEST!!!!!!!!!!!!" << std::endl; */
 
 	std::cout << std::endl;
 }

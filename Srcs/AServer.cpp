@@ -189,11 +189,6 @@ void 	AServer::rmChannelFromMap(std::string channel_name)
 	_channels.erase(it);
 }
 
-
-
-#include <iomanip>
-
-
 AServer::client_fd_map_const_it		AServer::getClientIter(int fd) const {return _client_fds.find(fd);}
 AServer::client_name_map_const_it	AServer::getClientIter(const std::string& name) const {return _client_names.find(name);}
 AServer::channel_map_const_it		AServer::getChannelIter(std::string name) const 
@@ -272,7 +267,7 @@ int	AServer::createTcpSocket(const int& port)
 	if (bind(_sock_fd, reinterpret_cast<sockaddr*>(&saddr), sizeof(struct sockaddr_in)) == -1)
 		return (printErrorReturn("couldn't bind to socket"));
 
-	if (listen(_sock_fd, 1) == -1)
+	if (listen(_sock_fd, 1000) == -1)
 		return (printErrorReturn("couldn't listen to socket"));
 
 	if (fcntl(_sock_fd, F_SETFL, O_NONBLOCK) == -1)

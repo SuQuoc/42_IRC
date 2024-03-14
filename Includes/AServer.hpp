@@ -19,6 +19,7 @@
 #include <cstring> //only strerror()
 #include <sstream>
 #include <cstdlib>
+#include <iomanip>
 #include <string>
 #include <poll.h>
 #include <map>
