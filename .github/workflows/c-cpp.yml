@@ -13,5 +13,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: apt install dependency
+      run: |
+        sudo apt upgrade
+        sudo apt-get -y install valgrind
+        sudo apt-get -y install libcunit1 libcunit1-doc libcunit1-dev 
     - name: run unit tests
       run: make tester; make fclean
