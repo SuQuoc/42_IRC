@@ -16,7 +16,7 @@ Client*	TestServer::makeUser(const std::string client_name, int client_fd)
 	std::string			nick_name(client_name);
 	Client*				client;
 
-	addNewClientToFdMap(client_fd, "127.0.0.1");
+	addNewClientToFdMap(client_fd, "127.0.0.1", 0);
 	addClientToNameMap(client_name, client_fd);
 	client = getClient(client_fd);
 	client->setNickname(client_name);
@@ -27,6 +27,7 @@ Client*	TestServer::makeUser(const std::string client_name, int client_fd)
 void	TestServer::fail(const std::string msg) const
 {
 	std::cout << "\033[0;91m FAIL:\033[0m " << msg << std::endl;
+	exit(1);
 }
 
 void	TestServer::ok() const
