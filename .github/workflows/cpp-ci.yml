@@ -37,5 +37,5 @@ jobs:
     - name: Test with connect clients
       run: |
         make; ./ircserv 6667 pw1234567 >/dev/null 2>&1 &
-        python ./tests/conection_tests/tcpSocket.py
-        python ./tests/conection_tests/basicTest.py
+        python ./tests/conection_tests/tcpSocket.py &
+        python ./tests/conection_tests/basicTest.py &
