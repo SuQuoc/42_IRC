@@ -36,5 +36,11 @@ jobs:
 
     - name: Stress test
       run: |
-        make re; ./ircserv 6667 pw1234567 >/dev/null 2>&1 &
-        python ./tests/conection_tests/basicTests.py
+        make re; 
+        ./ircserv 6667 pw1234567 >/dev/null 2>&1 &;
+        python ./tests/conection_tests/basicTests.py;
+    
+    - name: small test
+      run: |
+        make re; 
+        python ./tests/conection_tests/tcpSocket.py;
