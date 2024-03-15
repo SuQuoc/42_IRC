@@ -4,10 +4,10 @@
 :AfterLife 005 client1 NICKLEN=9 CHANTYPES=#& CHANMODES=oiklt :are supported by this server
 :AfterLife 001 client2 :Welcome to the Internet Relay Network, user2
 :AfterLife 005 client2 NICKLEN=9 CHANTYPES=#& CHANMODES=oiklt :are supported by this server
-:client1!user1@10.12.2.6 PRIVMSG client0 :You should see this message
-:client0!user0@10.12.2.6 NICK :newNick
-:client1!user1@10.12.2.6 PRIVMSG newNick :if you see this, it means that the nick was changed successfully
+:client1!user1@10.12.2.4 PRIVMSG client0 :You should see this message
+:client0!user0@10.12.2.4 NICK :newNick
+:client1!user1@10.12.2.4 PRIVMSG newNick :if you see this, it means that the nick was changed successfully
 :AfterLife 401 client1 client0 :No such nick/channel
-:client2!user2@10.12.2.6 NICK :client0
+:client2!user2@10.12.2.4 NICK :client0
 :AfterLife 433 client0 newNick :Nickname is already in use
-:client1!user1@10.12.2.6 PRIVMSG client0 :if you see this, it means that the nick was changed successfully
+:client1!user1@10.12.2.4 PRIVMSG client0 :if you see this, it means that the nick was changed successfully

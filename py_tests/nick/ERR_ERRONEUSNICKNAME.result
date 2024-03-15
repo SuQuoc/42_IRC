@@ -6,8 +6,8 @@
 :AfterLife 432 client0 clie,nt0 :Erroneus nickname
 :AfterLife 432 client0 clie@nt0 :Erroneus nickname
 :AfterLife 432 client0 clie!nt0 :Erroneus nickname
-:client0!user0@10.12.2.6 NICK :space
+:client0!user0@10.12.2.4 NICK :space
 :AfterLife 433 space space :Nickname is already in use
-:space!user0@10.12.2.6 NICK :space0
-:space0!user0@10.12.2.6 NICK :Nspace
+:space!user0@10.12.2.4 NICK :space0
+:space0!user0@10.12.2.4 NICK :Nspace
 :AfterLife 431 Nspace :No nickname given
