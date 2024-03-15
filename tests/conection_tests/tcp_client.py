@@ -42,6 +42,21 @@ class tcpClient:
         for i in range(1000):
             await self.writeMsg(f"PRIVMSG #666 :Under your nyancat is a bead\r\n")
 
+    async def joinChannel(self, can_join=True):
+        await self.writeMsg(f"JOIN #666\r\n")
+        await self.readMsg()
+        if can_join == True:
+            can_join = f":{self.name}!{self.name}@127.0.0.1 JOIN #666 * :{self.name}\r\n"
+        else:
+            can_join = f":AfterLife 473 {self.name} #666 :Cannot join channel (+i)\r\n"
+        await self.strcmpExit(self.last_data, can_join)
+
+    async def modeTest(self):
+       await self.joinChannel()
+       await self.writeMsg(f"MODE #666 +i\r\n")
+       await self.readMsg()
+       await self.strcmpExit(self.last_data, f":{self.name}!{self.name}@127.0.0.1 MODE #666 +i\r\n")
+
     async def __aexit__(self, exc_type, exc, tb):
         self.writer.close()
         await self.writer.wait_closed()
