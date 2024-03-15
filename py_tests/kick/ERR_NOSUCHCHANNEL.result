@@ -1,3 +1,0 @@
-:AfterLife 001 client0 :Welcome to the Internet Relay Network, user0
-:AfterLife 005 client0 NICKLEN=9 CHANTYPES=#& CHANMODES=oiklt :are supported by this server
-:AfterLife 403 client0 #noSuchCh :No such channel
