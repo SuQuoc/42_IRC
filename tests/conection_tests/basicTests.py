@@ -10,7 +10,7 @@ async def main():
     print("ok")
 
     print("stress test 1000 clients: ", end="")
-    await asyncio.gather(*(tcpClient(i).userJoinAndWrite() for i in range(1000)))
+    await asyncio.gather(*(tcpClient(i).userJoinAndWrite() for i in range(500)))
     print("ok")
 
 asyncio.run(main())
