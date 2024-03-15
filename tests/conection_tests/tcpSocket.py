@@ -51,7 +51,7 @@ async def connect_irc(message:str, cmpstr:str, nickname):
     await writer.drain()
 
     data = await reader.read(600)
-    strcmpExit(data.decode(), cmpstr, writer)
+    await strcmpExit(data.decode(), cmpstr, writer)
 
     writers.append({"w": writer, "r": reader})
     await sendMsg(nickname, writer, reader, "JOIN #666\r\nPRIVMSG #666 :under your bead is a nyancat!\r\n")
