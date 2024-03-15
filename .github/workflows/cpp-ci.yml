@@ -41,4 +41,5 @@ jobs:
 
     - name: 
       run: |
+        make; ./ircserv 6667 pw1234567 >/dev/null 2>&1 &
         python ./tests/conection_tests/basicTests.py &
