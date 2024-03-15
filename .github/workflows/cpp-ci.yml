@@ -42,5 +42,4 @@ jobs:
     
     - name: small test
       run: |
-        make re
         python ./tests/conection_tests/tcpSocket.py

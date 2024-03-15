@@ -10,7 +10,6 @@ class tcpClient:
         self.name = name
 
     async def __aenter__(self):
-        """ self.reader, self.writer = await asyncio.open_connection(IP, PORT) """
         return self
 
     async def writeMsg(self, message):
@@ -46,7 +45,6 @@ class tcpClient:
     async def __aexit__(self, exc_type, exc, tb):
         self.writer.close()
         await self.writer.wait_closed()
-        print(f"closed {self.name}")
 
 """ async def main():
     async with tcpClient("niki") as niki, tcpClient("eule") as eule:
