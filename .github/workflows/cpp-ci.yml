@@ -34,12 +34,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install asyncio
 
-    - name: Test with connect clients
+    - name: Stress test
       run: |
-        make; ./ircserv 6667 pw1234567 >/dev/null 2>&1 &
-        python ./tests/conection_tests/tcpSocket.py &
-
-    - name: 
-      run: |
-        make; ./ircserv 6667 pw1234567 >/dev/null 2>&1 &
+        make re; ./ircserv 6667 pw1234567 >/dev/null 2>&1 &
         python ./tests/conection_tests/basicTests.py &
