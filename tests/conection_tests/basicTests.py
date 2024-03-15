@@ -13,5 +13,4 @@ async def main():
     await asyncio.gather(*(tcpClient(i).userJoinAndWrite() for i in range(1000)))
     print("ok")
 
-
 asyncio.run(main())
