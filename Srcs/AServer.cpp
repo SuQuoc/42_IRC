@@ -15,8 +15,6 @@ AServer::~AServer()
 		close(_epoll_fd);
 	if (_sock_fd != -1)
 		close(_sock_fd);
-/* 	if (_timer_fd != -1)
-		close(_timer_fd); */
 }
 
 void	AServer::disconnectClient(const int& client_fd) //for case 0:
@@ -43,16 +41,13 @@ void	AServer::disconnectClient(Client *client, const std::string& msg)
 		Channel *channel = (*it);
 		if (!channel)
 			continue ;
-		/* std::cout << "Removing client from channel: " << channel->getName() << std::endl; */
 		int err = channel->rmClientIgnore(client, client, msg);
 		if (err == DELETE_CHANNEL)
 		{
 			rmChannelFromMap(channel->getName());		
-			/* std::cout << "Deleted Channel from Map!" << std::endl; */
 		}
 	}
 	rmClientFromMaps(client);
-	std::cout << "deleted client from maps" << std::endl;
 }
 
 int	AServer::process_event(const int& client_fd)
@@ -68,16 +63,9 @@ int	AServer::process_event(const int& client_fd)
 	{
 		case (-1):
 			std::cout << "case -1" << std::endl;
-			/* std::cout << "Warning: read faild" << std::endl;
-			disconnectClient(client_fd);
-			break ; */
-			/* if (errno == EAGAIN || errno == EWOULDBLOCK) */
-			/* throw (std::runtime_error("couldn't recieve data: ")); */
 			return -1;
 		case (0):
 			std::cout << "case 0" << std::endl;
-			/* disconnectClient(client_fd); */ //ctrl+c at netcat
-			/* sender->loadMsgBuf(buf); */
 			return 0;
 		default:
 			std::stringstream	sstream(buf);
@@ -135,25 +123,16 @@ void 	AServer::rmClientFromMaps(Client *client)
 	if (!client)
 		return;
 	std::string nickname = client->getNickname();
-	/* if (client->getFd() != pollfds[client->_index_poll_struct].fd)
-	{
-		std::cerr << "Error: client fd and pollfd fd are not the same" << std::endl;
-		return;
-	} */
 	if(pollfds[client->_index_poll_struct].fd != 0)
 	{
-		std::cout << "hello" << std::endl;
 		pollfds[client->_index_poll_struct].fd = 0;
 		pollfds[client->_index_poll_struct].events = 0;
 		pollfds[client->_index_poll_struct].revents = 0;
-		/* _useClient--; */
 	}
 
 	client_fd_map_iter_t it = _client_fds.find(client->getFd());
 	if (it == _client_fds.end())
-	{
 		return;
-	}
 	delete client;
 	_client_fds.erase(it);
 	//this will only be triggerd if the client didnt finish registration before losing connection
@@ -173,7 +152,6 @@ void 	AServer::rmClientFromMaps(int client_fd)
 		pollfds[it->second->_index_poll_struct].fd = 0;
 		pollfds[it->second->_index_poll_struct].events = 0;
 		pollfds[it->second->_index_poll_struct].revents = 0;
-		/* _useClient--; */
 	}
 	delete it->second;
 	_client_fds.erase(it);
@@ -329,16 +307,8 @@ void	AServer::accept_connection(pollfd *pollfds)
 		addNewClientToFdMap(client_fd, "9.6.9.6", index_poll_struct);
 }
 
-/* #include <sys/timerfd.h> */
-
 void AServer::resetTimerfd()
 {
-	/* timeout.it_interval.tv_sec = POLL_TIMEOUT;
-    timeout.it_interval.tv_nsec = 0;
-    timeout.it_value.tv_sec = POLL_TIMEOUT;
-    timeout.it_value.tv_nsec = 0;
-	if (timerfd_settime(_timer_fd, 0, &timeout, NULL) == -1)
-        throw (std::runtime_error("timerfd_settime: ")); */
 }
 
 void AServer::setPollFd(pollfd &pollfd, int fd, short int events, short int revents)
@@ -350,24 +320,8 @@ void AServer::setPollFd(pollfd &pollfd, int fd, short int events, short int reve
 
 int	AServer::createpoll()
 {
-	/* _timer_fd = timerfd_create(CLOCK_MONOTONIC, 0);
-    if (_timer_fd == -1)
-	{
-        throw (std::runtime_error("timerfd_create: "));
-	}
-	resetTimerfd(); */
 	setPollFd(pollfds[0], _sock_fd, POLLIN | POLLPRI | POLLHUP | POLLERR, 0);
-	/* pollfds[0].fd = _sock_fd;
-    pollfds[0].events = POLLIN | POLLPRI | POLLHUP | POLLERR;
-	pollfds[0].revents = 0; */
 	setPollFd(pollfds[1], 0, POLLIN, 0);
-	/* pollfds[1].fd = 0;
-   	pollfds[1].events = POLLIN;
-	pollfds[1].revents = 0; */
-	/* setPollFd(pollfds[2], _timer_fd, POLLIN, 0); */
-	/* pollfds[2].fd = _timer_fd;
-    pollfds[2].events = POLLIN;
-	pollfds[2].revents = 0; */
 	for (int i = 2; i < SERVER_MAX_CLIENTS; i++)
 		setPollFd(pollfds[i], 0, 0, 0);
 	return (0);
@@ -385,13 +339,11 @@ void	AServer::pollLoop()
 		{
 			pollPrintClientsWho(stdin_input);
 			pollfds[1].revents = 0;
-			/* continue; */
 		}
 		if (pollfds[0].revents & POLLIN)
 		{
 			accept_connection(pollfds);
 			pollfds[1].revents = 0;
-			/* continue; */
 		}
 		for (int i = 2; i < SERVER_MAX_CLIENTS; i++)
 		{
@@ -402,13 +354,6 @@ void	AServer::pollLoop()
 				if(process_event(pollfds[i].fd) < 1)
 					disconnectClient(pollfds[i].fd);
 		}
-		/* if (pollfds[2].revents & POLLIN)
-		{
-			for(client_fd_map_iter_t itr = _client_fds.begin(); itr != _client_fds.end(); itr++)
-				protectedSend(itr->second, ":ping");
-			resetTimerfd();
-			pollfds[2].revents = 0;
-    	} */
 	}
 }
 
@@ -419,11 +364,6 @@ void	AServer::protectedPoll(int timeout)
 	poll_return = poll(pollfds, static_cast<nfds_t>(SERVER_MAX_CLIENTS), timeout); 			// + 2 for the stdin watching and the poll also needs one
 	if (poll_return == -1)
 		throw (std::runtime_error("poll: "));
-	/* if (poll_return == 0)
-	{			
-		std::cout << "Clean up" << std::endl; */													// if poll == 0(timeout), ping clients to see if pipe is broken.
-	// for(client_fd_map_iter_t itr = _client_fds.begin(); itr != _client_fds.end(); itr++)
-		// protectedSend(itr->second, ":ping");
 }
 
 
