@@ -43,3 +43,6 @@ jobs:
     - name: small test
       run: |
         python ./tests/conection_tests/tcpSocket.py
+
+    - name: testscript
+      run: python testscript.py

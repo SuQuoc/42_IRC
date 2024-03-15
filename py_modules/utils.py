@@ -38,7 +38,7 @@ def quitAllNetcats(processes):
 		process.stdin.write(quit_message.encode())
 		process.stdin.flush()
 		""" process.communicate(quit_message.encode()) """
-		time.sleep(0.1)
+		time.sleep(0.2)
 
 def sigintAllClients(processes):
 	for process in processes:
@@ -60,7 +60,7 @@ def	registerClients(processes, password):
 		sendMsg(process, pass_msg)
 		sendMsg(process, nick_msg)
 		sendMsg(process, user_msg)
-		time.sleep(0.1)
+		time.sleep(0.2)
 		i+=1
 
 
@@ -86,7 +86,7 @@ def runMultiNonRegisClientTest(test_name, n_clients, vector, server):
 			client_id = pair[0]
 			msg = pair[1]
 			sendMsg(processes[client_id], msg)
-			time.sleep(0.1)
+			time.sleep(0.2)
 		sigintAllClients(processes)
 	
 	if not os.path.isfile(f'{test_name}.expected'):
@@ -95,6 +95,7 @@ def runMultiNonRegisClientTest(test_name, n_clients, vector, server):
 		print(f"{test_name}: ✅")
 	else:
 		print(f"{test_name}: ❌")
+		exit(1)
 
 def runMultiClientTest(test_name, n_clients, vector, server):
 	with open(f'{test_name}.result', 'w') as file:
@@ -114,6 +115,7 @@ def runMultiClientTest(test_name, n_clients, vector, server):
 		print(f"{test_name}: ✅")
 	else:
 		print(f"{test_name}: ❌")
+		exit(1)
 
 #------------------ERR CODES------------------
 def errNeedMoreParamsNotRegis(msg, server):

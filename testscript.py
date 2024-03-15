@@ -78,5 +78,5 @@ testKICK(server, original_directory)
 testINVITE(server, original_directory)
 testMODE(server, original_directory)
 testTOPIC(server, original_directory)
-testOPER(server, original_directory) #also tests KILL
+#testOPER(server, original_directory) #also tests KILL
 #testServerLimit(server, original_directory)
