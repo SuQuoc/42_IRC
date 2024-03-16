@@ -62,10 +62,8 @@ int	AServer::process_event(const int& client_fd)
 	switch (bytes_recieved)
 	{
 		case (-1):
-			std::cout << "case -1" << std::endl;
 			return -1;
 		case (0):
-			std::cout << "case 0" << std::endl;
 			return 0;
 		default:
 			std::stringstream	sstream(buf);
