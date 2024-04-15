@@ -1,6 +1,5 @@
 #include "../Includes/AServer.hpp"
 
-//con- and destructer
 AServer::AServer(): _epoll_fd(-1), _sock_fd(-1)/* , _useClient(0) */{}
 
 AServer::AServer(const std::string& name, const std::string& password): _name(name), _password(password), _epoll_fd(-1), _sock_fd(-1) {}
@@ -23,7 +22,7 @@ void	AServer::disconnectClient(const int& client_fd) //for case 0:
 
 	if (sender == NULL)
 	{
-		std::cout << "sender is null in diconnectClient" << std::endl;
+		std::cout << "sender is null in disconnectClient" << std::endl;
 		return ;
 	}
 	disconnectClient(sender, ":" + sender->getPrefix() + " QUIT :" + "lost connection, bye bye, see you in the AfterLife");
@@ -133,7 +132,7 @@ void 	AServer::rmClientFromMaps(Client *client)
 		return;
 	delete client;
 	_client_fds.erase(it);
-	//this will only be triggerd if the client didnt finish registration before losing connection
+	//this will only be triggered if the client didn't finish registration before losing connection
 	client_name_map_iter_t it2 = _client_names.find(nickname);
 	if (it2 == _client_names.end()) 
 		return;
@@ -214,17 +213,11 @@ void	AServer::protectedSend(Client *client, std::string msg)
 	}
 	msg += "\r\n";
 	if (send(client->getFd(), msg.c_str(), msg.size(), MSG_DONTWAIT | MSG_NOSIGNAL) == -1) //MSG_DONTWAIT sets to non-block //should be nonblocking anyways because of fcntl()
-	{
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return ;
         if (errno == EPIPE)
 		{
 			client->setPipe(true);
-			/* std::cerr << "\033[0;31mWarning: BROKEN PIPE\033[0m" << std::endl; */
             disconnectClient(client->getFd());
 		}
-       /*  throw (std::runtime_error("send failed: ")); */ //when this happens something went fundamentally wrong
-	}
 }
 
 //public methods
@@ -243,7 +236,7 @@ int	AServer::createTcpSocket(const int& port)
 
 	if (setsockopt(_sock_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1)
 		return (printErrorReturn("couldn't set socket options"));
-	//SO_REUSEADDR == to reuse the same socked adress. Otherwise server cloud not instaned bind socked after exit.
+	//SO_REUSEADDR == to reuse the same socked address. Otherwise server cloud not instated bind socked after exit.
 
 	if (bind(_sock_fd, reinterpret_cast<sockaddr*>(&saddr), sizeof(struct sockaddr_in)) == -1)
 		return (printErrorReturn("couldn't bind to socket"));
@@ -256,7 +249,6 @@ int	AServer::createTcpSocket(const int& port)
 
 	return (0);
 }
-
 
 void	AServer::accept_connection(pollfd *pollfds)
 {
@@ -275,6 +267,7 @@ void	AServer::accept_connection(pollfd *pollfds)
 			return ; */
 		throw (std::runtime_error("accept failed: "));//when this happens something went fundamentally wrong
 	}
+
 	for (index_poll_struct = 2; index_poll_struct < SERVER_MAX_CLIENTS; index_poll_struct++)		// look for a free spot in the poll struct
 	{
 		if (pollfds[index_poll_struct].fd == 0)
@@ -284,6 +277,7 @@ void	AServer::accept_connection(pollfd *pollfds)
 			break;
 		}
 	}
+
 	if(index_poll_struct == SERVER_MAX_CLIENTS)
 	{
 		send(client_fd, ":Server full", 13, MSG_DONTWAIT | MSG_NOSIGNAL);
@@ -305,10 +299,6 @@ void	AServer::accept_connection(pollfd *pollfds)
 		addNewClientToFdMap(client_fd, "9.6.9.6", index_poll_struct);
 }
 
-void AServer::resetTimerfd()
-{
-}
-
 void AServer::setPollFd(pollfd &pollfd, int fd, short int events, short int revents)
 {
 	pollfd.fd = fd;
@@ -316,7 +306,7 @@ void AServer::setPollFd(pollfd &pollfd, int fd, short int events, short int reve
 	pollfd.revents = revents;
 }
 
-int	AServer::createpoll()
+int	AServer::creatEpoll()
 {
 	setPollFd(pollfds[0], _sock_fd, POLLIN | POLLPRI | POLLHUP | POLLERR, 0);
 	setPollFd(pollfds[1], 0, POLLIN, 0);
@@ -341,12 +331,12 @@ void	AServer::pollLoop()
 		if (pollfds[0].revents & POLLIN)
 		{
 			accept_connection(pollfds);
-			pollfds[1].revents = 0; //? 1->0
+			pollfds[0].revents = 0; //? 1->0
 		}
 		for (int i = 2; i < SERVER_MAX_CLIENTS; i++)
 		{
 			client = getClient(pollfds[i].fd);
-			if((pollfds[i].revents & POLLHUP) || (pollfds[i].revents & POLLERR) || (client && client->getPipe() == true)) // client disconect or broken pipe
+			if((pollfds[i].revents & POLLHUP) || (pollfds[i].revents & POLLERR) || (client && client->getPipe() == true)) // client disconnect or broken pipe
 				disconnectClient(pollfds[i].fd);
 			else if ((pollfds[i].fd > 0) && (pollfds[i].revents & POLLIN))
 				if(process_event(pollfds[i].fd) < 1)
@@ -363,7 +353,6 @@ void	AServer::protectedPoll(int timeout)
 	if (poll_return == -1)
 		throw (std::runtime_error("poll: "));
 }
-
 
 void	AServer::pollPrintClientsWho(std::string &stdin_input)
 {

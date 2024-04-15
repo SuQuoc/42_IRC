@@ -1,4 +1,5 @@
 #include "../Includes/Irc.hpp"
+#include <csignal>
 
 static int	stoi_(const std::string str)
 {
@@ -8,7 +9,6 @@ static int	stoi_(const std::string str)
 	stream >> i;
 	return (i);
 }
-
 
 static bool isValidPort(const std::string& port)
 {
@@ -53,8 +53,6 @@ static bool isValidPassword(const std::string& password)
     return true;
 }
 
-#include <csignal>
-
 void signalHandler(int signum) {
 	if(signum == SIGINT)
     	std::cout << " Signal SIGINT(" << signum << ") received." << std::endl;
@@ -79,19 +77,16 @@ int main(const int argc, const char *argv[])
 	}
 	if (!isValidPort(argv[1]) || !isValidPassword(argv[2]))
 		return (0);
-	{
-		signalHandler();
-		Irc	server("AfterLife", argv[2]);
-		server.setOperatorHost(OPER_IP);
-		server.setOperatorPW(OPER_PW);
-		if (server.createTcpSocket(stoi_(argv[1])) == -1)
-			return (1);
-		if (server.createpoll() == -1)
-			return (1);
-		try {
-			server.pollLoop();
-		} catch (std::exception& e) {
-			std::cerr << "Error: thrown: " << e.what() << std::strerror(errno) << std::endl;
-		}
+	signalHandler();
+	Irc	server("AfterLife", argv[2]);
+	server.setOperatorHost(OPER_IP);
+	server.setOperatorPW(OPER_PW);
+	if (server.createTcpSocket(stoi_(argv[1])) == -1)
+		return (1);
+	server.creatEpoll();
+	try {
+		server.pollLoop();
+	} catch (std::exception& e) {
+		std::cerr << "Error: thrown: " << e.what() << std::strerror(errno) << std::endl;
 	}
 }

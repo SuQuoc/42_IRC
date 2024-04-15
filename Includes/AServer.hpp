@@ -42,7 +42,6 @@ protected:
 	struct epoll_event	_ev;
 	const std::string	_name;
 	const std::string	_password;
-	struct itimerspec timeout;
 	int		_epoll_fd;
 	int		_sock_fd;
 	int		_timer_fd;
@@ -89,15 +88,13 @@ protected:
 	void 		protectedSend(Client *client, std::string msg);
 
 public:
-//con- and destructer
 
 	virtual ~AServer();
 
 //methods
 	int		createTcpSocket(const int& port);
-	void	resetTimerfd();
 	void 	setPollFd(pollfd &pollfd, int fd, short int events, short int revents);
-	int		createpoll();
+	int		creatEpoll();
 	void	accept_connection(pollfd *pollfds);
 	void	pollLoop();
 	void	protectedPoll(int timeout);
