@@ -1,6 +1,6 @@
 #include "../Includes/Channel.hpp"
 
-//con- and destroctors
+//con- and destructors
 Channel::Channel(Client *owner, const std::string &channel_name) :
 _name(channel_name),
 _restrict_topic(true),
@@ -320,7 +320,7 @@ int Channel::sendMsg(Client *sender, const std::string &msg)
 	return (0);
 }
 
-//if faild returns -1
+//if failed returns -1
 void	Channel::protectedSendChannel(Client *client, std::string msg)
 {
 	msg += "\r\n";
@@ -328,11 +328,11 @@ void	Channel::protectedSendChannel(Client *client, std::string msg)
 		return ;
 	if (send(client->getFd(), msg.c_str(), msg.size(), MSG_DONTWAIT | MSG_NOSIGNAL) == -1) //MSG_DONTWAIT sets to non-block //should be nonblocking anyways because of fcntl()
 	{
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return ;
+		/* if (errno == EAGAIN || errno == EWOULDBLOCK)
+			return ; */
         if (errno == EPIPE)
 		{
-			/* std::cerr << "\033[0;31mWarning: BROKEN PIPE\033[0m" << std::endl; */
+			std::cerr << "\033[0;31mWarning: BROKEN PIPE\033[0m" << std::endl;
             client->setPipe(true);
 			return ;
 		}
