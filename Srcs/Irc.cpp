@@ -1,7 +1,5 @@
 #include "../Includes/Irc.hpp"
 
-
-//con- and destructer
 Irc::Irc(const std::string& name, const std::string& password): 
 AServer(name, password),
 _replier(_name),
@@ -239,8 +237,8 @@ int	Irc::PART(std::stringstream &sstream)
 }
 
 //cant use PART
-// - doesnt support listing with ',' e.g: "hungry,bye guys"
-// - i dont write myself a message when quiting
+// - doesn't support listing with ',' e.g: "hungry,bye guys"
+// - i dont write myself a message when quitting
 // - only errors with quit would be if client is the last in channel
 // 		or if the channel doesnt exist
 void	Irc::QUIT(std::stringstream &sstream)
@@ -269,7 +267,7 @@ int	Irc::KICK(std::stringstream &sstream)
 		return (_replier.sendError(ERR_NOSUCHCHANNEL, _sender, channel_name));
 	user_to_kick = getClient(nickname);
 	if (user_to_kick == NULL)
-		return (_replier.sendError(ERR_NOSUCHNICK, _sender, nickname)); //ERR-NOSUCHNICK is not in list of numeric replies for kick in protocoll
+		return (_replier.sendError(ERR_NOSUCHNICK, _sender, nickname)); //ERR-NOSUCHNICK is not in list of numeric replies for kick in protocol
 
 	msg = ":" + _sender->getPrefix() + " KICK " + channel_name + " " + nickname + " :" + msg;
 	err = channel->rmClient(_sender, user_to_kick, msg);
@@ -298,7 +296,7 @@ int	Irc::WHO(std::stringstream& sstream)
 
 
 // ERR_CANNOTSENDTOCHAN 404 --> unecessary, mode n,m, and v not required
-// Hexchat doesnt allow PRIVMSG with channels
+// Hexchat doesn't allow PRIVMSG with channels
 // our function allows /PRIVMSG nick1,#chan1 :message -> fine for me
 void Irc::PRIVMSG(std::stringstream &sstream)
 {

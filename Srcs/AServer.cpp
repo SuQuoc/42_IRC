@@ -52,13 +52,13 @@ void	AServer::disconnectClient(Client *client, const std::string& msg)
 int	AServer::process_event(const int& client_fd)
 {
 	char	buf[513];
-	int		bytes_recieved = -1;
+	int		bytes_received = -1;
 
 	Client *sender = getClient(client_fd);
 
 	std::memset(buf, '\0', 513);
-	bytes_recieved = recv(client_fd, buf, 512 * sizeof(char), 0);
-	switch (bytes_recieved)
+	bytes_received = recv(client_fd, buf, 512 * sizeof(char), 0);
+	switch (bytes_received)
 	{
 		case (-1):
 			return -1;
@@ -76,7 +76,7 @@ int	AServer::process_event(const int& client_fd)
 				sender = getClient(client_fd);
 			}
 	}
-	return (bytes_recieved);
+	return (bytes_received);
 }
 
 int	AServer::printErrorReturn(const std::string& error_msg)

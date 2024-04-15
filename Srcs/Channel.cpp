@@ -249,7 +249,7 @@ int Channel::changeMode(const char &add, bool &modes)
 	return (CH_SUCCESS);
 }
 
-//sucess = 1001 TOPIC_SET
+//success = 1001 TOPIC_SET
 int	Channel::setTopic(const std::string &name, const std::string &topic)
 {
 	clients_itr client;
@@ -278,16 +278,16 @@ int Channel::setOperator(const char &add, Client *client)
 		return ERR_NOSUCHNICK;
 	client_it = getClient(client);
 	if (client_it == _clients.end())
-		return ERR_USERNOTINCHANNEL;
+		return (ERR_USERNOTINCHANNEL);
 	if (add == '+' && client_it->is_operator == false)
 	{
 		client_it->is_operator = true;
-		return MODE_SET_PLUS;
+		return (MODE_SET_PLUS);
 	}
 	else if (add == '-' && client_it->is_operator == true)
 	{
 		client_it->is_operator = false;	// 324     RPL_CHANNELMODEIS
-		return MODE_SET_MINUS;
+		return (MODE_SET_MINUS);
 	}
 	return (CH_SUCCESS);
 }
@@ -327,15 +327,6 @@ void	Channel::protectedSendChannel(Client *client, std::string msg)
 	if(client->getPipe() == true)
 		return ;
 	if (send(client->getFd(), msg.c_str(), msg.size(), MSG_DONTWAIT | MSG_NOSIGNAL) == -1) //MSG_DONTWAIT sets to non-block //should be nonblocking anyways because of fcntl()
-	{
-		/* if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return ; */
         if (errno == EPIPE)
-		{
-			std::cerr << "\033[0;31mWarning: BROKEN PIPE\033[0m" << std::endl;
             client->setPipe(true);
-			return ;
-		}
-       /*  throw (std::runtime_error("send failed: ")); */ //when this happens something went fundamentally wrong
-	}
 }
