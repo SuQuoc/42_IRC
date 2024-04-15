@@ -102,9 +102,9 @@ int Irc::NICK(std::stringstream &sstream)
 
 	if (_sender->setNickname(nickname) != 0)
 	{
-		std::cout << "nickname: " << nickname << std::endl;
-		std::cout << "_sender: " << _sender->getNickname() << std::endl;
-	/* 	if (_sender->getNickname().empty())
+		/* std::cout << "nickname: " << nickname << std::endl;
+		std::cout << "_sender: " << _sender->getNickname() << std::endl; */
+		/* 	if (_sender->getNickname().empty())
 			sender */
 		return (_replier.sendError(ERR_ERRONEUSNICKNAME, _sender, nickname));
 	}

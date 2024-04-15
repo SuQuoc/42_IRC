@@ -6,7 +6,7 @@ IrcReply::IrcReply(const std::string& server_name): _server_name(server_name){}
 IrcReply::~IrcReply(){}
 
 
-//passing empty string on things that dont requie input?
+//passing empty string on things that dont require input?
 //takes in Client pointer to send()
 int	IrcReply::sendError(IRC_ERR error, Client* sender, const std::string& input)
 {
@@ -33,7 +33,7 @@ int	IrcReply::sendError(IRC_ERR error, Client* sender, const std::string& input)
 			err_message += input + " :You have joined too many channels"; //<channel name>
 			break;
 		case ERR_TOOMANYTARGETS:
-			err_message += input + " :Duplicate recipients. No message delivered"; //<target> ????? very weird stil when this is triggered --> protocoll
+			err_message += input + " :Duplicate recipients. No message delivered"; //<target> ????? very weird still when this is triggered --> protocol
 			break;
 		case ERR_NORECIPIENT:
 			err_message += ":No recipient given (" + input + ")"; //just privmsg
@@ -156,15 +156,7 @@ void	IrcReply::ReplyProtectedSend(Client *client, std::string msg)
 	if(client->getPipe() == true)
 		return ;
 	if (send(client->getFd(), msg.c_str(), msg.size(), MSG_DONTWAIT | MSG_NOSIGNAL) == -1) //MSG_DONTWAIT sets to non-block //should be nonblocking anyways because of fcntl()
-	{
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return ;
         if (errno == EPIPE)
-		{
-			/* std::cerr << "\033[0;31mWarning: BROKEN PIPE\033[0m" << std::endl; */
             client->setPipe(true);
-			return ;
-		}
        /*  throw (std::runtime_error("send failed: ")); */ //when this happens something went fundamentally wrong
-	}
 }
