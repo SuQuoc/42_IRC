@@ -422,7 +422,7 @@ int	Irc::INVITE(std::stringstream& sstream)
 }
 
 
-//chose to name the string "host" and not "user" irc protocoll a bit vague
+//chose to name the string "host" and not "user" irc protocol a bit vague
 void Irc::OPER(std::stringstream &sstream)
 {
 	std::string	host = extractWord(sstream); 
