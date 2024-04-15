@@ -275,7 +275,7 @@ void	AServer::accept_connection(pollfd *pollfds)
 			return ; */
 		throw (std::runtime_error("accept failed: "));//when this happens something went fundamentally wrong
 	}
-	for (index_poll_struct = 2; index_poll_struct < SERVER_MAX_CLIENTS; index_poll_struct++)		// look for a free spot in the pool struct
+	for (index_poll_struct = 2; index_poll_struct < SERVER_MAX_CLIENTS; index_poll_struct++)		// look for a free spot in the poll struct
 	{
 		if (pollfds[index_poll_struct].fd == 0)
 		{
@@ -341,7 +341,7 @@ void	AServer::pollLoop()
 		if (pollfds[0].revents & POLLIN)
 		{
 			accept_connection(pollfds);
-			pollfds[1].revents = 0;
+			pollfds[1].revents = 0; //? 1->0
 		}
 		for (int i = 2; i < SERVER_MAX_CLIENTS; i++)
 		{

@@ -2,10 +2,10 @@
 :AfterLife 005 client0 NICKLEN=9 CHANTYPES=#& CHANMODES=oiklt :are supported by this server
 :AfterLife 001 client1 :Welcome to the Internet Relay Network, user1
 :AfterLife 005 client1 NICKLEN=9 CHANTYPES=#& CHANMODES=oiklt :are supported by this server
-:client0!user0@10.12.2.4 JOIN #chan * :user0
-:client0!user0@10.12.2.4 INVITE client1 #chan
+:client0!user0@10.12.3.9 JOIN #chan * :user0
+:client0!user0@10.12.3.9 INVITE client1 #chan
 :AfterLife 341 client0 client1 #chan
-:client0!user0@10.12.2.4 MODE #chan +i
-:client1!user1@10.12.2.4 JOIN #chan * :user1
-:client1!user1@10.12.2.4 JOIN #chan * :user1
-:client0!user0@10.12.2.4 QUIT :Leaving
+:client0!user0@10.12.3.9 MODE #chan +i
+:client1!user1@10.12.3.9 JOIN #chan * :user1
+:client1!user1@10.12.3.9 JOIN #chan * :user1
+:client0!user0@10.12.3.9 QUIT :Leaving
