@@ -15,7 +15,7 @@ int	IrcReply::sendError(IRC_ERR error, Client* sender, const std::string& input)
 
 	error_code << error;
 	if(sender->getNickname().empty() == true)
-		err_message += ":" + _server_name + " " + error_code.str() + " ";
+		err_message += ":" + _server_name + " " + error_code.str() + " * ";
 	else
 		err_message += ":" + _server_name + " " + error_code.str() + " " + sender->getNickname() + " ";
 	switch (error)

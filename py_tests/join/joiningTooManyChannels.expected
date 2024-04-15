@@ -1,13 +1,13 @@
 :AfterLife 001 client0 :Welcome to the Internet Relay Network, user0
 :AfterLife 005 client0 NICKLEN=9 CHANTYPES=#& CHANMODES=oiklt :are supported by this server
-:client0!user0@10.12.2.4 JOIN #chan0 * :user0
-:client0!user0@10.12.2.4 JOIN #chan1 * :user0
-:client0!user0@10.12.2.4 JOIN #chan2 * :user0
-:client0!user0@10.12.2.4 JOIN #chan3 * :user0
-:client0!user0@10.12.2.4 JOIN #chan4 * :user0
-:client0!user0@10.12.2.4 JOIN #chan5 * :user0
-:client0!user0@10.12.2.4 JOIN #chan6 * :user0
-:client0!user0@10.12.2.4 JOIN #chan7 * :user0
-:client0!user0@10.12.2.4 JOIN #chan8 * :user0
-:client0!user0@10.12.2.4 JOIN #chan9 * :user0
+:client0!user0@10.12.3.7 JOIN #chan0 * :user0
+:client0!user0@10.12.3.7 JOIN #chan1 * :user0
+:client0!user0@10.12.3.7 JOIN #chan2 * :user0
+:client0!user0@10.12.3.7 JOIN #chan3 * :user0
+:client0!user0@10.12.3.7 JOIN #chan4 * :user0
+:client0!user0@10.12.3.7 JOIN #chan5 * :user0
+:client0!user0@10.12.3.7 JOIN #chan6 * :user0
+:client0!user0@10.12.3.7 JOIN #chan7 * :user0
+:client0!user0@10.12.3.7 JOIN #chan8 * :user0
+:client0!user0@10.12.3.7 JOIN #chan9 * :user0
 :AfterLife 405 client0 #chan10 :You have joined too many channels

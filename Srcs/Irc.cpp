@@ -101,7 +101,13 @@ int Irc::NICK(std::stringstream &sstream)
 	old_nick = _sender->getNickname();
 
 	if (_sender->setNickname(nickname) != 0)
+	{
+		std::cout << "nickname: " << nickname << std::endl;
+		std::cout << "_sender: " << _sender->getNickname() << std::endl;
+	/* 	if (_sender->getNickname().empty())
+			sender */
 		return (_replier.sendError(ERR_ERRONEUSNICKNAME, _sender, nickname));
+	}
 	if (old_nick.empty() == false)
 	{
 		rmClientFromNameMap(old_nick);
