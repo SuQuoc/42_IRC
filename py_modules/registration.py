@@ -62,13 +62,12 @@ def changingNick(server):
 	runMultiClientTest(test_name, 3, vector, server)
 
 def testNICK(server, original_directory):
-	setupTest("nick")	
+	setupTest("nick")
 	errNeedMoreParamsNotRegis("NICK", server) #ERR_NONICKNAMEGIVEN
 	errNeedMoreParams("NICK", server) #ERR_NONICKNAMEGIVEN
 	errErroneusNicknameNotRegis(server)
 	errErroneusNickname(server)
-	#errNicknameInUse("NICK client0") #already done by changing nick
-	changingNick(server)
+	changingNick(server) #NICKNAME in USE
 	os.chdir(original_directory)
 
 #------------------USER------------------
