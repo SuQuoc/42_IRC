@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stdio.h> //fileno not allowed, header not needed without it!
-
 #include "Channel.hpp"
 #include "Client.hpp"
 

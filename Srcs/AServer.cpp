@@ -1,6 +1,6 @@
 #include "../Includes/AServer.hpp"
 
-AServer::AServer(): _epoll_fd(-1), _sock_fd(-1)/* , _useClient(0) */{}
+AServer::AServer(): _epoll_fd(-1), _sock_fd(-1){}
 
 AServer::AServer(const std::string& name, const std::string& password): _name(name), _password(password), _epoll_fd(-1), _sock_fd(-1) {}
 
@@ -16,7 +16,7 @@ AServer::~AServer()
 		close(_sock_fd);
 }
 
-void	AServer::disconnectClient(const int& client_fd) //for case 0:
+void	AServer::disconnectClient(const int& client_fd)
 {
 	Client	*sender = getClient(client_fd);
 
@@ -30,7 +30,6 @@ void	AServer::disconnectClient(const int& client_fd) //for case 0:
 
 void	AServer::disconnectClient(Client *client, const std::string& msg)
 {
-	// std::cout << "trying to disconnect client" << std::endl;
 	if (!client)
 		return ;
 
@@ -240,7 +239,6 @@ int	AServer::createTcpSocket(const int& port)
 
 	if (setsockopt(_sock_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1)
 		return (printErrorReturn("couldn't set socket options"));
-	//SO_REUSEADDR == to reuse the same socked address. Otherwise server cloud not instated bind socked after exit.
 
 	if (bind(_sock_fd, reinterpret_cast<sockaddr*>(&saddr), sizeof(struct sockaddr_in)) == -1)
 		return (printErrorReturn("couldn't bind to socket"));
@@ -267,12 +265,10 @@ void	AServer::accept_connection(pollfd *pollfds)
 	if (client_fd == -1)
 	{
 		std::cerr << "Error: accept failed :" << std::strerror(errno) << std::endl;
-		/* if (errno == EAGAIN || errno == EWOULDBLOCK || errno == ECONNABORTED || errno == EFAULT || errno == EINTR || errno == EMFILE || errno == ENFILE || errno == EPERM)
-			return ; */
 		throw (std::runtime_error("accept failed: "));//when this happens something went fundamentally wrong
 	}
 
-	for (index_poll_struct = 2; index_poll_struct < SERVER_MAX_CLIENTS; index_poll_struct++)		// look for a free spot in the poll struct
+	for (index_poll_struct = 2; index_poll_struct < SERVER_MAX_CLIENTS; index_poll_struct++)// look for a free spot in the poll struct
 	{
 		if (pollfds[index_poll_struct].fd == 0)
 		{

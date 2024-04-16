@@ -7,7 +7,7 @@
 
 #include <iostream>
 #include <cstdlib>
-#include <cstring> //only strerror()
+#include <cstring>
 #include <sstream>
 #include <vector>
 #include <string>

@@ -124,7 +124,7 @@ int	Channel::rmClient(const Client *executor, const Client *rm_client, const std
 
 
 //returns -1 if last client leaves channel
-int	Channel::rmClient(const Client *rm_client, const std::string &leaving_msg) //add
+int	Channel::rmClient(const Client *rm_client, const std::string &leaving_msg)
 {
 	clients_itr itr;
 
@@ -181,7 +181,6 @@ void	Channel::sendWhoMessage(Client *sender, const std::string server_name)
 	protectedSendChannel(sender, ":" + server_name + " 366 " + sender->getNickname() + " " + _name + " :End of /NAMES list.");
 }
 
-//			setter
 void	Channel::setName(const std::string &name) { _name = name; }
 void	Channel::setMaxClients(const int &max_clients){ _max_clients = max_clients; }
 
@@ -223,8 +222,6 @@ int	Channel::setPassword(const std::string &password, const char &add)
 	return (ERR_KEYSET); // 467 ERR_KEYSET
 }
 
-//			getter
-
 const std::string &Channel::getPassword() const { return _password; }
 const std::string &Channel::getTopic() const { return _topic; }
 std::string Channel::getName() const { return _name; }
@@ -238,12 +235,12 @@ int Channel::changeMode(const char &add, bool &modes)
 {
 	if (add == '+' && modes == false)
 	{
-		modes = true;	// 324     RPL_CHANNELMODEIS
+		modes = true;
 		return MODE_SET_PLUS;
 	}
 	else if (add == '-' && modes == true)
 	{
-		modes = false;	// 324     RPL_CHANNELMODEIS
+		modes = false;
 		return MODE_SET_MINUS;
 	}
 	return (CH_SUCCESS);
@@ -286,7 +283,7 @@ int Channel::setOperator(const char &add, Client *client)
 	}
 	else if (add == '-' && client_it->is_operator == true)
 	{
-		client_it->is_operator = false;	// 324     RPL_CHANNELMODEIS
+		client_it->is_operator = false;
 		return (MODE_SET_MINUS);
 	}
 	return (CH_SUCCESS);
