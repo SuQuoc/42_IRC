@@ -34,6 +34,7 @@ private:
 	bool _registered;
 	bool _server_op;
 	bool broken_pipe;
+	bool _line_too_long;
 
 
 	Client(const Client&);
@@ -48,6 +49,7 @@ public:
 	~Client();
 
 	bool isRegistered() const;
+	bool isLineTooLong() const;
 	bool isAuthenticated() const;
 	bool isServerOp() const;
 	bool spaceForChannel() const;
@@ -56,6 +58,7 @@ public:
 	void authenticate();
 	void deauthenticate();
 	void elevateToServOp();
+	void setLineTooLong(const bool x);
 
 	int setNickname(const std::string& name);
 	int setUser(std::string& uname, const std::string& hname, const std::string& sname, const std::string& rname);
@@ -72,7 +75,7 @@ public:
 	void leaveChannel(Channel *channel);
 
 	void loadMsgBuf(const std::string& buf);
-	std::string	readMsgBuf() const;
+	std::string	readMsgBuf(const std::string& str);
 
 	void setPipe(bool pipe);
 	bool getPipe() const;

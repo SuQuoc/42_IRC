@@ -65,14 +65,6 @@ int	AServer::process_event(const int& client_fd)
 		buffer += buf;
 		std::memset(buf, '\0', 513);
 	}
-	if(buffer.size() > 512)
-	{
-		std::string nickname = sender->getNickname();
-		if(nickname.empty())
-			nickname = "*";
-		protectedSend(sender, ":" + _name + " 417 " + nickname + " :Input line was too long");
-		return (2);
-	}
 	if(buffer.size() == 0)
 		return (0);
 	std::stringstream	sstream(buffer);
@@ -80,7 +72,7 @@ int	AServer::process_event(const int& client_fd)
 	while(splitMsg(sstream, str) && sender != NULL) //we have to do a while loop cuz "CMD\nCMD1\nCMD3\n"
 	{
 		sender->loadMsgBuf(str);
-		str = sender->readMsgBuf();
+		str = sender->readMsgBuf(str);
 		if (!str.empty())
 			command_switch(sender, str);
 		sender = getClient(client_fd);

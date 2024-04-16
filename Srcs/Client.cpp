@@ -8,6 +8,7 @@ _authenticated(false),
 _registered(false),
 _server_op(false),
 broken_pipe(false),
+_line_too_long(false),
 _index_poll_struct(-1)
 {}
 
@@ -19,6 +20,7 @@ Client::~Client()
 bool Client::isServerOp() const {return _server_op;}
 bool Client::isAuthenticated() const {return _authenticated;}
 bool Client::isRegistered() const {return _registered;}
+bool Client::isLineTooLong() const {return _line_too_long;}
 bool Client::spaceForChannel() const
 {
 	if (_channel_count == 10) 
@@ -37,7 +39,7 @@ bool Client::isInChannel(Channel *channel) const
 void Client::authenticate() {_authenticated = true;}
 void Client::deauthenticate() {_authenticated = false;}
 void Client::elevateToServOp() {_server_op = true;}
-
+void Client::setLineTooLong(const bool x) {_line_too_long = x;}
 
 int Client::setNickname(const std::string& name)
 {
@@ -118,6 +120,7 @@ void	Client::loadMsgBuf(const std::string& str)
 {
 	if (str.empty())
 		return ;
+
 	if (_msg_buf.empty() || *(_msg_buf.end() - 1)  == '\n')
 		_msg_buf = str;
 	else
@@ -130,17 +133,22 @@ void	Client::loadMsgBuf(const std::string& str)
 	}
 }
 
-std::string	Client::readMsgBuf() const
+std::string	Client::readMsgBuf(const std::string& str)
 {
 	std::string msg;
+
+	if (*(str.end() - 1) == '\n' && *(_msg_buf.end() - 1) == '\n' && _msg_buf.size() == 513) //to check if line is too long and should be further processed
+	{
+		_line_too_long = true;
+		return ("\n"); //something except for empty string needs to be returned so it goes to command switch
+	}
 	if (!_msg_buf.empty() && *(_msg_buf.end() - 1) == '\n')
 	{
 		msg = _msg_buf;
 		msg.erase((msg.end() - 1));
 		return (msg);
 	}
-	else
-		return "";
+	return ("");
 }
 
 void Client::setPipe(bool pipe)
