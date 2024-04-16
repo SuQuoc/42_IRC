@@ -72,7 +72,7 @@ testPASS(server , original_directory)
 testNICK(server, original_directory)
 testUSER(server, original_directory)
 testPRIVMSG(server, original_directory)
-testJOIN(server, original_directory)
+testJOIN(server, original_directory) #wont test joining a full channel, bc 1000 clients can join and the tester uses 11
 testPART(server, original_directory)
 testQUIT(server, original_directory)
 testKICK(server, original_directory)
