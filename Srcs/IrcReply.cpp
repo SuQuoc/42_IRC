@@ -41,6 +41,9 @@ int	IrcReply::sendError(IRC_ERR error, Client* sender, const std::string& input)
 		case ERR_NOTEXTTOSEND:
 			err_message += ":No text to send";
 			break;
+		case ERR_INPUTTOOLONG:
+			err_message += ":Input line was too long";
+			break;
 		case ERR_UNKNOWNCOMMAND:
 			err_message += input + " :Unknown command"; //<command>
 			break;

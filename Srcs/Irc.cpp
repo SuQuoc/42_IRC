@@ -15,10 +15,16 @@ Irc::~Irc() {}
 void	Irc::command_switch(Client *sender, const std::string message)
 {
 	_sender = sender;
-	// std::cout << "msg from fd" << sender->getFd() << ": " << message << "!" << std::endl;
 
     std::stringstream	sstream(message);
     std::string	cmd;
+
+	if (_sender->isLineTooLong() == true)
+	{
+		_replier.sendError(ERR_INPUTTOOLONG, _sender, "");
+		_sender->setLineTooLong(false);
+		return ;
+	}
 
 	//this block checks for Prefix 
 	std::getline(sstream >> std::ws, cmd, ' ');
