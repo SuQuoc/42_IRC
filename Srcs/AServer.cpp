@@ -56,27 +56,36 @@ int	AServer::process_event(const int& client_fd)
 
 	Client *sender = getClient(client_fd);
 
+	std::string buffer;
 	std::memset(buf, '\0', 513);
-	bytes_received = recv(client_fd, buf, 512 * sizeof(char), 0);
-	switch (bytes_received)
+	while((bytes_received = recv(client_fd, buf, 512 * sizeof(char), MSG_DONTWAIT)) > 0)
 	{
-		case (-1):
-			return -1;
-		case (0):
-			return 0;
-		default:
-			std::stringstream	sstream(buf);
-			std::string str;
-			while(splitMsg(sstream, str) && sender != NULL) //we have to do a while loop cuz "CMD\nCMD1\nCMD3\n"
-			{
-				sender->loadMsgBuf(str);
-				str = sender->readMsgBuf();
-				if (!str.empty())
-					command_switch(sender, str);
-				sender = getClient(client_fd);
-			}
+		if(bytes_received == -1)
+			return (-1);
+		buffer += buf;
+		std::memset(buf, '\0', 513);
 	}
-	return (bytes_received);
+	if(buffer.size() > 512)
+	{
+		std::string nickname = sender->getNickname();
+		if(nickname.empty())
+			nickname = "*";
+		protectedSend(sender, ":" + _name + " 417 " + nickname + " :Input line was too long");
+		return (2);
+	}
+	if(buffer.size() == 0)
+		return (0);
+	std::stringstream	sstream(buffer);
+	std::string str;
+	while(splitMsg(sstream, str) && sender != NULL) //we have to do a while loop cuz "CMD\nCMD1\nCMD3\n"
+	{
+		sender->loadMsgBuf(str);
+		str = sender->readMsgBuf();
+		if (!str.empty())
+			command_switch(sender, str);
+		sender = getClient(client_fd);
+	}
+	return (1);
 }
 
 int	AServer::printErrorReturn(const std::string& error_msg)
@@ -214,8 +223,10 @@ void	AServer::protectedSend(Client *client, std::string msg)
 	msg += "\r\n";
 	if (send(client->getFd(), msg.c_str(), msg.size(), MSG_DONTWAIT | MSG_NOSIGNAL) == -1) //MSG_DONTWAIT sets to non-block //should be nonblocking anyways because of fcntl()
     {
-		/* if (errno != EPIPE)
-			return */
+		// ?????????????????????????????
+		if (DEBUG_MODE == true && errno != EPIPE)
+			return
+		// ?????????????????????????????
 		client->setPipe(true);
         disconnectClient(client->getFd());
 	}

@@ -8,7 +8,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <sys/epoll.h>
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -32,6 +31,7 @@
 
 #define SERVER_MAX_CLIENTS	1018
 #define POLL_TIMEOUT		3
+#define DEBUG_MODE	true
 
 class AServer
 {
@@ -39,7 +39,6 @@ protected:
 	std::map<std::string, Channel*>	_channels;
 	std::map<std::string, Client*>	_client_names;
 	std::map<int, Client*>			_client_fds;
-	struct epoll_event	_ev;
 	const std::string	_name;
 	const std::string	_password;
 	int		_epoll_fd;

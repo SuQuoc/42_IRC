@@ -118,7 +118,6 @@ void	Client::loadMsgBuf(const std::string& str)
 {
 	if (str.empty())
 		return ;
-
 	if (_msg_buf.empty() || *(_msg_buf.end() - 1)  == '\n')
 		_msg_buf = str;
 	else
