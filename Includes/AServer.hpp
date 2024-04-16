@@ -30,7 +30,7 @@
 
 #define OPER_PW "operPW"
 
-#define SERVER_MAX_CLIENTS	1020
+#define SERVER_MAX_CLIENTS	1018
 #define POLL_TIMEOUT		3
 
 class AServer

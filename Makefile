@@ -2,7 +2,7 @@ NAME		= ircserv
 IP_ADDRESS 	= "10.12.2.6"
 ARGS 		= 6667 pw1234567
 CXX			= c++
-CXXFLAGS	= -Wall -Wextra -Werror -MMD -MP -g -DOPER_IP='$(IP_ADDRESS)'
+CXXFLAGS	= -Wall -Wextra -Werror -MMD -MP -g -std=c++98 -pedantic -DOPER_IP='$(IP_ADDRESS)'
  
 INCLUDES 	= ./Includes
 

@@ -1,4 +1,4 @@
 :AfterLife 001 client0 :Welcome to the Internet Relay Network, user0
 :AfterLife 005 client0 NICKLEN=9 CHANTYPES=#& CHANMODES=oiklt :are supported by this server
-:client0!user0@10.12.3.7 JOIN #chan * :user0
+:client0!user0@10.12.3.8 JOIN #chan * :user0
 :AfterLife 401 client0 noNick :No such nick/channel

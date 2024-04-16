@@ -327,6 +327,6 @@ void	Channel::protectedSendChannel(Client *client, std::string msg)
 	if(client->getPipe() == true)
 		return ;
 	if (send(client->getFd(), msg.c_str(), msg.size(), MSG_DONTWAIT | MSG_NOSIGNAL) == -1) //MSG_DONTWAIT sets to non-block //should be nonblocking anyways because of fcntl()
-        if (errno == EPIPE)
-            client->setPipe(true);
+        client->setPipe(true);
+        /* if (errno == EPIPE) */
 }

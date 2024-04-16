@@ -21,9 +21,7 @@ static bool isValidPort(const std::string& port)
             return false;
 		}
     }
-
     int portnumber = stoi_(port);
-	
 	if (portnumber < 1024 || 49151 < portnumber)
 	{
 		std::cerr << "Error: Please choose a port reserved for server applications 1024 - 49151" << std::endl;
@@ -58,16 +56,6 @@ void signalHandler(int signum) {
     	std::cout << " Signal SIGINT(" << signum << ") received." << std::endl;
 }
 
-void signalHandler()
-{
-	struct sigaction sigact;
-    sigact.sa_handler = signalHandler; // Set signal handler function
-    sigemptyset(&sigact.sa_mask); // Clear the signal mask
-	sigact.sa_flags = 0;
-
-    sigaction(SIGINT, &sigact, NULL);
-}
-
 int main(const int argc, const char *argv[])
 {
 	if (argc != 3)
@@ -77,7 +65,7 @@ int main(const int argc, const char *argv[])
 	}
 	if (!isValidPort(argv[1]) || !isValidPassword(argv[2]))
 		return (0);
-	signalHandler();
+	std::signal(SIGINT, signalHandler);
 	Irc	server("AfterLife", argv[2]);
 	server.setOperatorHost(OPER_IP);
 	server.setOperatorPW(OPER_PW);

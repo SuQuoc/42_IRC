@@ -213,11 +213,12 @@ void	AServer::protectedSend(Client *client, std::string msg)
 	}
 	msg += "\r\n";
 	if (send(client->getFd(), msg.c_str(), msg.size(), MSG_DONTWAIT | MSG_NOSIGNAL) == -1) //MSG_DONTWAIT sets to non-block //should be nonblocking anyways because of fcntl()
-        if (errno == EPIPE)
-		{
-			client->setPipe(true);
-            disconnectClient(client->getFd());
-		}
+    {
+		/* if (errno != EPIPE)
+			return */
+		client->setPipe(true);
+        disconnectClient(client->getFd());
+	}
 }
 
 //public methods
@@ -263,7 +264,7 @@ void	AServer::accept_connection(pollfd *pollfds)
 	if (client_fd == -1)
 	{
 		std::cerr << "Error: accept failed :" << std::strerror(errno) << std::endl;
-		/* if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EAGAIN || errno == EWOULDBLOCK || errno == ECONNABORTED || errno == EFAULT || errno == EINTR || errno == EMFILE || errno == ENFILE || errno == EPERM)
+		/* if (errno == EAGAIN || errno == EWOULDBLOCK || errno == ECONNABORTED || errno == EFAULT || errno == EINTR || errno == EMFILE || errno == ENFILE || errno == EPERM)
 			return ; */
 		throw (std::runtime_error("accept failed: "));//when this happens something went fundamentally wrong
 	}
@@ -280,7 +281,8 @@ void	AServer::accept_connection(pollfd *pollfds)
 
 	if(index_poll_struct == SERVER_MAX_CLIENTS)
 	{
-		send(client_fd, ":Server full", 13, MSG_DONTWAIT | MSG_NOSIGNAL);
+		std::string msg(":" + _name + " 456 * :Server full, you will be disconnected\r\n");
+		send(client_fd, msg.c_str(), msg.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
 		close(client_fd);
 		return ;
 	}
@@ -331,7 +333,7 @@ void	AServer::pollLoop()
 		if (pollfds[0].revents & POLLIN)
 		{
 			accept_connection(pollfds);
-			pollfds[0].revents = 0; //? 1->0
+			pollfds[0].revents = 0;
 		}
 		for (int i = 2; i < SERVER_MAX_CLIENTS; i++)
 		{

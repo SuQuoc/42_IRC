@@ -48,7 +48,7 @@ int	IrcReply::sendError(IRC_ERR error, Client* sender, const std::string& input)
 			err_message += ":No nickname given";
 			break;
 		case ERR_ERRONEUSNICKNAME:
-			err_message += input + " :Erroneus nickname"; //<nick> did you mean Erroneous?!
+			err_message += input + " :Erroneous nickname"; //<nick>
 			break;
 		case ERR_NICKNAMEINUSE:
 			err_message += input + " :Nickname is already in use"; //<nick>
@@ -156,6 +156,5 @@ void	IrcReply::ReplyProtectedSend(Client *client, std::string msg)
 	if(client->getPipe() == true)
 		return ;
 	if (send(client->getFd(), msg.c_str(), msg.size(), MSG_DONTWAIT | MSG_NOSIGNAL) == -1) //MSG_DONTWAIT sets to non-block //should be nonblocking anyways because of fcntl()
-        if (errno == EPIPE)
-            client->setPipe(true);
+        client->setPipe(true);
 }

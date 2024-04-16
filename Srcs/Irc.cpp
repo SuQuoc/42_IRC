@@ -99,13 +99,7 @@ int Irc::NICK(std::stringstream &sstream)
 	old_nick = _sender->getNickname();
 
 	if (_sender->setNickname(nickname) != 0)
-	{
-		/* std::cout << "nickname: " << nickname << std::endl;
-		std::cout << "_sender: " << _sender->getNickname() << std::endl; */
-		/* 	if (_sender->getNickname().empty())
-			sender */
 		return (_replier.sendError(ERR_ERRONEUSNICKNAME, _sender, nickname));
-	}
 	if (old_nick.empty() == false)
 	{
 		rmClientFromNameMap(old_nick);
@@ -240,7 +234,7 @@ int	Irc::PART(std::stringstream &sstream)
 // - doesn't support listing with ',' e.g: "hungry,bye guys"
 // - i dont write myself a message when quitting
 // - only errors with quit would be if client is the last in channel
-// 		or if the channel doesnt exist
+// 		or if the channel doesn't exist
 void	Irc::QUIT(std::stringstream &sstream)
 {
 	std::string	comment = extractWord(sstream);
