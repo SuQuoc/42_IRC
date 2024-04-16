@@ -8,9 +8,9 @@
 :AfterLife 381 client0 :You are now an IRC operator
 :AfterLife 461 client0 KILL :Not enough parameters
 :AfterLife 401 client0 NoNick :No such nick/channel
-:client0!user0@10.12.3.8 PRIVMSG client1 :you should see this cuz client 1 is alive and was not kiled
-:client1!user1@10.12.3.8 PRIVMSG client0 :yes i am alive
-:client0!user0@10.12.3.8 KILL client1 :successfull kill of client1
+:client0!user0@10.12.3.7 PRIVMSG client1 :you should see this cuz client 1 is alive and was not kiled
+:client1!user1@10.12.3.7 PRIVMSG client0 :yes i am alive
+:client0!user0@10.12.3.7 KILL client1 :successfull kill of client1
 :AfterLife 401 client0 client1 :No such nick/channel
-:client0!user0@10.12.3.8 KILL client0 :killing myself??
+:client0!user0@10.12.3.7 KILL client0 :killing myself??
 :AfterLife 401 client2 client0 :No such nick/channel

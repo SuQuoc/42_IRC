@@ -3,7 +3,7 @@ import os
 import re
 from colorama import Fore, Style
 from py_modules import get_ip_address, Server
-from py_modules import testPASS, testNICK, testUSER, testPRIVMSG, testJOIN, testPART, testQUIT, testKICK, testINVITE, testMODE, testTOPIC, testOPER, testServerLimit
+from py_modules import testPASS, testNICK, testUSER, testPRIVMSG, testJOIN, testPART, testQUIT, testKICK, testINVITE, testMODE, testTOPIC, testOPER, testServerLimit, testWHO
 
 
 # Start netcat
@@ -67,6 +67,7 @@ server = Server(host, port, pw)
 
 setupExpectedFiles(test_dir)
 
+testWHO(server, original_directory)
 testPASS(server , original_directory)
 testNICK(server, original_directory)
 testUSER(server, original_directory)
