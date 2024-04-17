@@ -60,7 +60,7 @@ int main(const int argc, const char *argv[])
 {
 	if (argc != 3)
 	{
-		std::cerr << "Error: the server needs an IPv4-ADDRESS (e.g. 172.0.0.10) as first argument and a PORT (e.g. 8080) as second argument" << std::endl;
+		std::cerr << "Error: the server needs a PORT (from 1024 - 49151) and a server password (min 8 and max 30 chars) as second argument" << std::endl;
 		return (0);
 	}
 	if (!isValidPort(argv[1]) || !isValidPassword(argv[2]))
